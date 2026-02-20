@@ -1,0 +1,129 @@
+/* BITCORE Chatbot Styles */
+.bitcore-chatbot {
+    background: var(--bitcore-surface);
+    border: 1px solid var(--bitcore-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+}
+
+.chatbot-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: var(--bitcore-elevated);
+    border-bottom: 1px solid var(--bitcore-border);
+}
+
+.chatbot-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bitcore-accent) 0%, var(--bitcore-accent-dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.chatbot-info h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: #fff;
+}
+
+.chatbot-status {
+    font-size: 0.8rem;
+    color: var(--bitcore-accent);
+}
+
+.chatbot-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.chat-message {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    background: var(--bitcore-accent);
+    color: #000;
+}
+
+.chat-message.agent {
+    align-self: flex-start;
+    background: var(--bitcore-elevated);
+    border: 1px solid var(--bitcore-border);
+}
+
+.chatbot-input {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--bitcore-border);
+}
+
+.chatbot-input input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bitcore-bg);
+    border: 1px solid var(--bitcore-border);
+    border-radius: 8px;
+    color: var(--bitcore-text);
+}
+
+.chatbot-input button {
+    padding: 12px 20px;
+    background: var(--bitcore-accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.chatbot-input button:hover {
+    background: var(--bitcore-accent-dark);
+}
+
+/* BitFlux Avatar States */
+.bitflux-avatar {
+    transition: all 0.3s ease;
+}
+
+.bitflux-avatar[data-state="welcome"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bitflux-avatar[data-state="listen"] {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    animation: listening 1.5s ease-in-out infinite;
+}
+
+.bitflux-avatar[data-state="process"] {
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    animation: processing 1s linear infinite;
+}
+
+@keyframes listening {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes processing {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,342 @@
+/*
+Theme Name: BITCORE Librarian Theme
+Theme URI: https://bitwiki.org
+Author: BITCORE
+Author URI: https://bitwiki.org
+Description: Minimal theme for BITCORE Librarian interface
+Version: 1.0.0
+License: GPL v2
+Text Domain: bitcore-librarian-theme
+*/
+
+/* Reset everything */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+    background: #0a0a0f;
+    color: #f0f0f5;
+}
+
+/* Only style the librarian content */
+.bitcore-saas-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.bitcore-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background: #12121a;
+    border-bottom: 1px solid #2a2a3a;
+}
+
+.bitcore-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.bitcore-logo-mark {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #00d4aa, #6366f1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+.bitcore-brand-text h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #f0f0f5;
+}
+
+.bitcore-subtitle {
+    font-size: 12px;
+    color: #8a8a9a;
+    font-family: 'SF Mono', monospace;
+}
+
+.bitcore-system-status {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-text {
+    font-size: 13px;
+    color: #8a8a9a;
+    font-family: 'SF Mono', monospace;
+}
+
+.core-status {
+    display: flex;
+    gap: 8px;
+}
+
+.core-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'SF Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.core-badge.coraline {
+    background: #00d4aa;
+    color: #0a0a0f;
+}
+
+.core-badge.hyperion {
+    background: #6366f1;
+    color: white;
+}
+
+/* Main content */
+.bitcore-main {
+    flex: 1;
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Footer */
+.bitcore-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background: #12121a;
+    border-top: 1px solid #2a2a3a;
+    font-size: 12px;
+    color: #8a8a9a;
+}
+
+.bitcore-footer a {
+    color: #00d4aa;
+    text-decoration: none;
+}
+
+.bitcore-footer a:hover {
+    text-decoration: underline;
+}
+
+.observer-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: #1a1a25;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'SF Mono', monospace;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bitcore-header {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+    
+    .bitcore-main {
+        padding: 16px;
+    }
+    
+    .bitcore-footer {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+
+/* ========================================
+   BITCORE Office Suite - Additional Styles
+   ======================================== */
+
+/* Form Elements */
+.bf-form-group {
+    margin-bottom: var(--bf-space-md);
+}
+
+.bf-form-control {
+    width: 100%;
+    padding: var(--bf-space-sm) var(--bf-space-md);
+    background: var(--bf-bg-tertiary);
+    border: 1px solid var(--bf-border-primary);
+    border-radius: var(--bf-radius-md);
+    color: var(--bf-text-primary);
+    font-family: var(--bf-font-sans);
+    font-size: var(--bf-text-md);
+    resize: vertical;
+    transition: border-color var(--bf-transition-fast);
+}
+
+.bf-form-control:focus {
+    outline: none;
+    border-color: var(--bf-accent-primary);
+}
+
+.bf-form-control::placeholder {
+    color: var(--bf-text-tertiary);
+}
+
+.bf-form-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-md);
+    flex-wrap: wrap;
+}
+
+/* Radio buttons */
+.bf-radio {
+    display: flex;
+    align-items: center;
+    gap: var(--bf-space-xs);
+    cursor: pointer;
+    font-size: var(--bf-text-sm);
+    color: var(--bf-text-secondary);
+}
+
+.bf-radio input[type="radio"] {
+    accent-color: var(--bf-accent-primary);
+}
+
+/* Buttons */
+.bf-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--bf-space-xs);
+    padding: var(--bf-space-sm) var(--bf-space-md);
+    background: var(--bf-bg-tertiary);
+    border: 1px solid var(--bf-border-primary);
+    border-radius: var(--bf-radius-md);
+    color: var(--bf-text-primary);
+    font-family: var(--bf-font-sans);
+    font-size: var(--bf-text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--bf-transition-fast);
+}
+
+.bf-btn:hover {
+    background: var(--bf-bg-elevated);
+    border-color: var(--bf-border-accent);
+}
+
+.bf-btn-primary {
+    background: var(--bf-accent-primary);
+    border-color: var(--bf-accent-primary);
+    color: #000;
+}
+
+.bf-btn-primary:hover {
+    background: var(--bf-accent-secondary);
+    border-color: var(--bf-accent-secondary);
+}
+
+.bf-btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--bf-border-secondary);
+    border-radius: var(--bf-radius-md);
+    color: var(--bf-text-secondary);
+    font-size: var(--bf-text-lg);
+    cursor: pointer;
+    transition: all var(--bf-transition-fast);
+}
+
+.bf-btn-icon:hover {
+    background: var(--bf-bg-tertiary);
+    border-color: var(--bf-border-accent);
+    color: var(--bf-text-primary);
+}
+
+/* Header navigation */
+.bf-header-nav a {
+    color: var(--bf-text-secondary);
+    text-decoration: none;
+    font-size: var(--bf-text-sm);
+    font-weight: 500;
+    padding: var(--bf-space-sm) var(--bf-space-md);
+    border-radius: var(--bf-radius-sm);
+    transition: all var(--bf-transition-fast);
+}
+
+.bf-header-nav a:hover {
+    color: var(--bf-text-primary);
+    background: var(--bf-bg-tertiary);
+}
+
+/* Drag placeholder */
+.drag-placeholder {
+    background: var(--bf-bg-tertiary);
+    border: 2px dashed var(--bf-border-accent);
+    border-radius: var(--bf-radius-lg);
+    opacity: 0.5;
+}
+
+/* Scrollbar styling */
+.bf-feed-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.bf-feed-list::-webkit-scrollbar-track {
+    background: var(--bf-bg-tertiary);
+    border-radius: var(--bf-radius-sm);
+}
+
+.bf-feed-list::-webkit-scrollbar-thumb {
+    background: var(--bf-border-primary);
+    border-radius: var(--bf-radius-sm);
+}
+
+.bf-feed-list::-webkit-scrollbar-thumb:hover {
+    background: var(--bf-border-accent);
+}

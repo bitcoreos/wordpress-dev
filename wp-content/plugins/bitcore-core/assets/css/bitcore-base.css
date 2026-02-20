@@ -1,0 +1,131 @@
+/* BITCORE Base Styles */
+:root {
+    --bitcore-bg: #0a0a0f;
+    --bitcore-surface: #111118;
+    --bitcore-elevated: #1a1a2e;
+    --bitcore-border: #2a2a3e;
+    --bitcore-text: #e0e0e0;
+    --bitcore-text-muted: #888;
+    --bitcore-accent: #4ade80;
+    --bitcore-accent-dark: #22c55e;
+    --bitcore-error: #ef4444;
+    --bitcore-warning: #f59e0b;
+}
+
+.bitcore-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    background: var(--bitcore-bg);
+    color: var(--bitcore-text);
+    min-height: 100vh;
+}
+
+/* Cards */
+.bitcore-card {
+    background: var(--bitcore-surface);
+    border: 1px solid var(--bitcore-border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.bitcore-card h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+/* Buttons */
+.bitcore-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: var(--bitcore-elevated);
+    border: 1px solid var(--bitcore-border);
+    border-radius: 8px;
+    color: var(--bitcore-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.bitcore-btn:hover {
+    border-color: var(--bitcore-accent);
+    color: var(--bitcore-accent);
+}
+
+.bitcore-btn.primary {
+    background: linear-gradient(135deg, var(--bitcore-accent) 0%, var(--bitcore-accent-dark) 100%);
+    color: #000;
+    border: none;
+    font-weight: 500;
+}
+
+.bitcore-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(74, 222, 128, 0.3);
+}
+
+/* Forms */
+.bitcore-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bitcore-bg);
+    border: 1px solid var(--bitcore-border);
+    border-radius: 8px;
+    color: var(--bitcore-text);
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.bitcore-input:focus {
+    outline: none;
+    border-color: var(--bitcore-accent);
+}
+
+.bitcore-input::placeholder {
+    color: #444;
+}
+
+/* Status indicators */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    display: inline-block;
+}
+
+.status-dot.active {
+    background: var(--bitcore-accent);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Grid layouts */
+.bitcore-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.bitcore-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.bitcore-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 768px) {
+    .bitcore-grid-2,
+    .bitcore-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}

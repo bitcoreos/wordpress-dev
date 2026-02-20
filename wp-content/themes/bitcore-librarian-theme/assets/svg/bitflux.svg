@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" id="bitflux-avatar">
+  <defs>
+    <style>
+      /* Base styles */
+      .bf-bg { fill: #000; }
+      .bf-stroke { fill: none; stroke: #fff; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+      .bf-fill { fill: #fff; }
+      .bf-accent { fill: #4ade80; }
+
+      /* State visibility - default hidden */
+      .state-welcome, .state-listen, .state-chat-ready, .state-focused-shield,
+      .state-agent-task, .state-process, .state-swarm-guard, .state-crown-mode,
+      .state-portal-enter, .state-error-404 { display: none; }
+
+      /* Active state */
+      .bitflux-active-welcome .state-welcome,
+      .bitflux-active-listen .state-listen,
+      .bitflux-active-chat-ready .state-chat-ready,
+      .bitflux-active-focused-shield .state-focused-shield,
+      .bitflux-active-agent-task .state-agent-task,
+      .bitflux-active-process .state-process,
+      .bitflux-active-swarm-guard .state-swarm-guard,
+      .bitflux-active-crown-mode .state-crown-mode,
+      .bitflux-active-portal-enter .state-portal-enter,
+      .bitflux-active-error-404 .state-error-404 { display: block; }
+
+      /* Animations */
+      @keyframes bf-float {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50% { transform: translateY(-3px) scale(1.01); }
+      }
+      @keyframes bf-portal-wave {
+        0%, 70%, 100% { transform: translateY(0) rotate(0deg); }
+        74% { transform: translateY(-2px) rotate(-2deg); }
+        78% { transform: translateY(-1px) rotate(2deg); }
+        82% { transform: translateY(0) rotate(0deg); }
+      }
+      @keyframes bf-blink {
+        0%, 90%, 100% { transform: scaleY(1); }
+        92% { transform: scaleY(0.08); }
+        94% { transform: scaleY(1); }
+      }
+      @keyframes bf-pupil-peek {
+        0%, 70%, 100% { transform: translate(0, 0); }
+        74% { transform: translate(1.5px, 0.5px); }
+        78% { transform: translate(-1.2px, 0.6px); }
+        82% { transform: translate(0, 0); }
+      }
+      @keyframes bf-thinking-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.06); }
+      }
+      @keyframes bf-dash-drive {
+        to { stroke-dashoffset: -64; }
+      }
+      @keyframes bf-error-shiver {
+        0%, 86%, 100% { transform: translateX(0); }
+        88% { transform: translateX(-3px); }
+        90% { transform: translateX(3px); }
+        92% { transform: translateX(-2px); }
+        94% { transform: translateX(2px); }
+      }
+      @keyframes bf-x-flash {
+        0%, 70%, 100% { opacity: 1; }
+        85% { opacity: 0.25; }
+      }
+      @keyframes bf-portal-chase {
+        0%, 100% { opacity: 0.12; }
+        20% { opacity: 1; }
+        40% { opacity: 0.12; }
+      }
+
+      /* Animation classes */
+      .anim-float { animation: bf-float 5.2s ease-in-out infinite; }
+      .anim-portal-wave { animation: bf-portal-wave 6.8s ease-in-out infinite; }
+      .anim-blink { animation: bf-blink 7.8s infinite; transform-box: fill-box; transform-origin: center; }
+      .anim-pupil-peek { animation: bf-pupil-peek 6.6s ease-in-out infinite; }
+      .anim-thinking { animation: bf-thinking-pulse 4.4s ease-in-out infinite; }
+      .anim-dash { animation: bf-dash-drive 1.4s linear infinite; }
+      .anim-shiver { animation: bf-error-shiver 4.8s ease-in-out infinite; }
+      .anim-x-flash { animation: bf-x-flash 1.6s ease-in-out infinite; }
+      .anim-chase { animation: bf-portal-chase 1.2s linear infinite; }
+
+      /* Transform origins */
+      .bf-halo, .bf-eyes, .bf-pupil { transform-box: fill-box; transform-origin: center; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="256" height="256" class="bf-bg"/>
+
+  <!-- STATE: WELCOME -->
+  <g class="state-welcome">
+    <g class="anim-float">
+      <!-- Halo -->
+      <ellipse cx="128" cy="70" rx="70" ry="24" class="bf-stroke bf-halo anim-portal-wave"/>
+      <!-- Fins -->
+      <path d="M30 174c18-18 34-24 46-24-10 18-10 34 0 48-12 0-28-6-46-24Z" class="bf-stroke"/>
+      <path d="M226 174c-18-18-34-24-46-24 10 18 10 34 0 48 12 0 28-6 46-24Z" class="bf-stroke"/>
+      <!-- Body -->
+      <circle cx="128" cy="174" r="62" class="bf-stroke"/>
+      <!-- Face -->
+      <ellipse cx="128" cy="174" rx="40" ry="26" class="bf-stroke"/>
+      <!-- Eyes -->
+      <g class="bf-eyes anim-blink">
+        <circle cx="114" cy="174" r="12" class="bf-stroke"/>
+        <circle cx="142" cy="174" r="12" class="bf-stroke"/>
+      </g>
+      <!-- Pupils -->
+      <circle cx="114" cy="176" r="4" class="bf-fill bf-pupil anim-pupil-peek"/>
+      <circle cx="142" cy="176" r="4" class="bf-fill bf-pupil anim-pupil-peek"/>
+      <!-- Highlights -->
+      <circle cx="110" cy="170" r="2.5" class="bf-fill anim-thinking"/>
+      <circle cx="138" cy="170" r="2.5" class="bf-fill anim-thinking"/>
+      <!-- Cheeks -->
+      <circle cx="98" cy="186" r="2.5" class="bf-fill"/>
+      <circle cx="158" cy="186" r="2.5" class="bf-fill"/>
+    </g>
+  </g>
+
+  <!-- STATE: LISTEN -->
+  <g class="state-listen">
+    <g class="anim-float">
+      <!-- Halo -->
+      <ellipse cx="128" cy="70" rx="70" ry="24" class="bf-stroke bf-halo anim-portal-wave"/>
+      <!-- Fins (tucked) -->
+      <path d="M52 174c-18-12-24-26-18-40 8-18 30-18 44-2-10 10-14 26-10 42-6 4-10 6-16 0Z" class="bf-stroke"/>
+      <path d="M204 174c18-12 24-26 18-40-8-18-30-18-44-2 10 10 14 26 10 42 6 4 10 6 16 0Z" class="bf-stroke"/>
+      <!-- Body -->
+      <circle cx="128" cy="174" r="62" class="bf-stroke"/>
+      <!-- Face -->
+      <ellipse cx="128" cy="174" rx="42" ry="28" class="bf-stroke"/>
+      <!-- Eyes (wide) -->
+      <g class="bf-eyes anim-blink">
+        <circle cx="114" cy="174" r="13" class="bf-stroke"/>
+        <circle cx="142" cy="174" r="13" class="bf-stroke"/>
+      </g>
+      <!-- Pupils (low = attentive) -->
+      <circle cx="114" cy="178" r="4" class="bf-fill bf-pupil anim-pupil-peek"/>
+      <circle cx="142" cy="178" r="4" class="bf-fill bf-pupil anim-pupil-peek"/>
+      <!-- Highlights -->
+      <circle cx="110" cy="170" r="2.5" class="bf-fill"/>
+      <circle cx="138" cy="170" r="2.5" class="bf-fill"/>
+    </g>
+  </g>
+
+  <!-- STATE: CHAT_READY -->
+  <g class="state-chat-ready">
+    <g class="anim-float">
+      <!-- Fins -->
+      <path d="M52 154c18-18 34-26 48-26-8 20-8 38 0 58-14 0-30-8-48-32Z" class="bf-stroke"/>
+      <path d="M204 154c-18-18-34-26-48-26 8 20 8 38 0 58 14 0 30-8 48-32Z" class="bf-stroke"/>
+      <!-- Body -->
+      <circle cx="128" cy="156" r="64" class="bf-stroke"/>
+      <!-- Halo -->
+      <ellipse cx="128" cy="78" rx="66" ry="26" class="bf-stroke bf-halo anim-portal-wave"/>
+      <!-- Face -->
+      <ellipse cx="128" cy="156" rx="38" ry="24" class="bf-stroke"/>
+      <!-- Eyes -->
+      <g class="bf-eyes anim-blink">
+        <circle cx="116" cy="156" r="6" class="bf-fill"/>
+        <circle cx="140" cy="156" r="6" class="bf-fill"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- STATE: FOCUSED_SHIELD -->
+  <g class="state-focused-shield">
+    <g class="anim-float">
+      <!-- Halo -->
+      <ellipse cx="128" cy="76" rx="70" ry="26" class="bf-stroke bf-halo anim-portal-wave"/>
+      <!-- Fins -->
+      <path d="M56 154c16-16 30-22 42-22-8 16-8 30 0 46-12 0-26-6-42-24Z" class="bf-stroke"/>
+      <path d="M200 154c-16-16-30-22-42-22 8 16 8 30 0 46 12 0 26-6 42-24Z" class="bf-stroke"/>
+      <!-- Head -->
+      <path d="M128 96c40 0 66 30 66 62s-26 66-66 66-66-34-66-66 26-62 66-62Z" class="bf-stroke"/>
+      <!-- Face plate -->
+      <path d="M92 154c12-18 28-28 36-28s24 10 36 28c-12 18-28 28-36 28s-24-10-36-28Z" class="bf-stroke"/>
+      <!-- Single eye -->
+      <g class="bf-eyes anim-blink">
+        <circle cx="128" cy="154" r="12" class="bf-stroke"/>
+        <circle cx="128" cy="154" r="5" class="bf-fill bf-pupil anim-pupil-peek"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- STATE: AGENT_TASK -->
+  <g class="state-agent-task">
+    <!-- Halo with chase lights -->
+    <ellipse cx="128" cy="68" rx="70" ry="24" class="bf-stroke bf-halo" style="animation: bf-portal-wave 2.4s ease-in-out infinite;"/>
+    <!-- Chase lights -->
+    <g class="bf-fill">
+      <circle cx="198" cy="68" r="5" class="anim-chase" style="animation-delay: 0s;"/>
+      <circle cx="178" cy="84" r="5" class="anim-chase" style="animation-delay: 0.2s;"/>
+      <circle cx="78" cy="84" r="5" class="anim-chase" style="animation-delay: 0.4s;"/>
+      <circle cx="58" cy="68" r="5" class="anim-chase" style="animation-delay: 0.6s;"/>
+      <circle cx="78" cy="52" r="5" class="anim-chase" style="animation-delay: 0.8s;"/>
+      <circle cx="178" cy="52" r="5" class="anim-chase" style="animation-delay: 1.0s;"/>
+    </g>
+    <!-- Orb -->
+    <circle cx="128" cy="168" r="66" class="bf-stroke"/>
+    <!-- Eye -->
+    <ellipse cx="128" cy="168" rx="44" ry="28" class="bf-stroke"/>
+    <circle cx="128" cy="168" r="14" class="bf-stroke anim-thinking"/>
+    <!-- Pupil -->
+    <circle cx="128" cy="168" r="6" class="bf-fill bf-pupil"/>
+    <!-- Highlight -->
+    <circle cx="122" cy="162" r="2.5" class="bf-fill anim-thinking"/>
+  </g>
+
+  <!-- STATE: PROCESS -->
+  <g class="state-process">
+    <!-- Dashed halo -->
+    <ellipse cx="128" cy="68" rx="70" ry="24" class="bf-stroke anim-dash" stroke-dasharray="18 14"/>
+    <!-- Orbit dot -->
+    <circle cx="198" cy="68" r="6" class="bf-fill"/>
+    <!-- Orb -->
+    <circle cx="128" cy="168" r="66" class="bf-stroke"/>
+    <!-- Eye -->
+    <ellipse cx="128" cy="168" rx="44" ry="28" class="bf-stroke"/>
+    <circle cx="128" cy="168" r="14" class="bf-stroke"/>
+    <!-- Pupil -->
+    <circle cx="128" cy="168" r="6" class="bf-fill bf-pupil anim-thinking"/>
+    <!-- Highlight -->
+    <circle cx="122" cy="162" r="2.5" class="bf-fill anim-thinking"/>
+  </g>
+
+  <!-- STATE: SWARM_GUARD -->
+  <g class="state-swarm-guard">
+    <g class="anim-float">
+      <!-- Halo -->
+      <ellipse cx="128" cy="72" rx="72" ry="26" class="bf-stroke bf-halo anim-portal-wave"/>
+      <!-- Head -->
+      <path d="M128 94c38 0 66 28 66 64s-28 60-66 60-66-24-66-60 28-64 66-64Z" class="bf-stroke"/>
+      <!-- Fins (symmetric) -->
+      <path d="M62 156c-18-14-22-32-10-46 14-16 40-12 52 10-8 8-12 22-12 36s4 28 12 36c-12 22-38 26-52 10-12-14-8-32 10-46Z" class="bf-stroke"/>
+      <path d="M194 156c18-14 22-32 10-46-14-16-40-12-52 10 8 8 12 22 12 36s-4 28-12 36c12 22 38 26 52 10 12-14 8-32-10-46Z" class="bf-stroke"/>
+      <!-- Face plate -->
+      <path d="M92 158c14-26 26-36 36-36s22 10 36 36c-14 26-26 36-36 36s-22-10-36-36Z" class="bf-stroke"/>
+      <!-- Single eye -->
+      <g class="bf-eyes anim-blink">
+        <ellipse cx="128" cy="158" rx="18" ry="14" class="bf-stroke"/>
+        <circle cx="128" cy="158" r="6" class="bf-fill"/>
+      </g>
+      <!-- Sparkle -->
+      <circle cx="122" cy="154" r="2.5" class="bf-fill anim-thinking"/>
+    </g>
+  </g>
+
+  <!-- STATE: CROWN_MODE -->
+  <g class="state-crown-mode">
+    <g class="anim-float">
+      <!-- Crown -->
+      <path d="M78 86l22-22 28 22 28-22 22 22v18H78V86Z" class="bf-stroke"/>
+      <!-- Head -->
+      <circle cx="128" cy="156" r="70" class="bf-stroke"/>
+      <!-- Face -->
+      <ellipse cx="128" cy="156" rx="42" ry="26" class="bf-stroke"/>
+      <!-- Eyes -->
+      <g class="bf-eyes anim-blink">
+        <circle cx="112" cy="156" r="6" class="bf-fill"/>
+        <circle cx="144" cy="156" r="6" class="bf-fill"/>
+      </g>
+      <!-- Halo shard -->
+      <path d="M128 34l18 34h-36l18-34Z" class="bf-stroke"/>
+    </g>
+  </g>
+
+  <!-- STATE: PORTAL_ENTER -->
+  <g class="state-portal-enter">
+    <g class="anim-float">
+      <!-- Halo -->
+      <circle cx="128" cy="84" r="54" class="bf-stroke bf-halo anim-portal-wave"/>
+      <circle cx="128" cy="84" r="6" class="bf-fill"/>
+      <circle cx="182" cy="84" r="6" class="bf-fill"/>
+      <circle cx="74" cy="84" r="6" class="bf-fill"/>
+      <!-- Crown -->
+      <path d="M90 120l14-18 24 18 24-18 14 18v16H90v-16Z" class="bf-stroke"/>
+      <!-- Body -->
+      <circle cx="128" cy="164" r="56" class="bf-stroke"/>
+      <!-- Face -->
+      <ellipse cx="128" cy="164" rx="34" ry="22" class="bf-stroke"/>
+      <!-- Eyes -->
+      <g class="bf-eyes anim-blink">
+        <circle cx="116" cy="164" r="6" class="bf-fill"/>
+        <circle cx="140" cy="164" r="6" class="bf-fill"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- STATE: ERROR_404 -->
+  <g class="state-error-404">
+    <g class="anim-shiver">
+      <!-- Broken halo -->
+      <path d="M64 68c22-16 46-20 64-20s42 4 64 20" class="bf-stroke"/>
+      <path d="M72 84c18 10 36 12 56 12s38-2 56-12" class="bf-stroke"/>
+      <!-- Orb -->
+      <circle cx="128" cy="168" r="66" class="bf-stroke"/>
+      <!-- Eye -->
+      <ellipse cx="128" cy="168" rx="44" ry="28" class="bf-stroke"/>
+      <!-- X pupils -->
+      <g class="bf-stroke anim-x-flash" stroke-width="6">
+        <path d="M108 162l12 12M120 162l-12 12"/>
+        <path d="M136 162l12 12M148 162l-12 12"/>
+      </g>
+      <!-- Warning dot -->
+      <circle cx="128" cy="110" r="4" class="bf-fill"/>
+    </g>
+  </g>
+</svg>
