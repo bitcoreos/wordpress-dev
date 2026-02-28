@@ -1,7 +1,14 @@
 <?php
 /**
  * BITCORE Core Class
- * Service-oriented architecture with modular modules
+ * Pattern: Service Container with Modular Architecture
+ * Source: AI Engine, AI Services, Orchestrator templates
+ * 
+ * Service-oriented architecture with dependency injection container,
+ * encrypted options, capability-based model selection, and REST auth filtering.
+ *
+ * @package BITCORE
+ * @since 1.0.0
  */
 
 class BITCORE_Core {
@@ -17,6 +24,12 @@ class BITCORE_Core {
     public $connector_n8n = null;
     public $connector_bithub = null;
     public $connector_bitwiki = null;
+    
+    // Pattern-based services (new)
+    public $container = null;
+    public $encrypted_options = null;
+    public $model_selector = null;
+    public $rest_auth_filter = null;
 
     // Module instances
     public $chatbot = null;
@@ -25,6 +38,7 @@ class BITCORE_Core {
     public $rest = null;
     public $search = null;
     public $forms = null;
+    public $tasks = null;
 
     private $options = null;
 
@@ -39,15 +53,20 @@ class BITCORE_Core {
     }
 
     public function init() {
-        // Initialize services
+        // Initialize pattern-based services first
+        $this->init_pattern_services();
+
+        // Initialize core services
         $this->init_services();
 
         // Initialize modules based on options
         $this->init_modules();
 
-        // REST API
+        // REST API with auth filter
         if ( $this->is_rest ) {
+            $this->rest_auth_filter = new BITCORE_Rest_Auth_Filter();
             $this->rest = new BITCORE_Rest_API( $this );
+            $this->rest_tasks = new BITCORE_Rest_Tasks( $this );
         }
 
         // Admin
@@ -60,6 +79,29 @@ class BITCORE_Core {
         add_shortcode( 'bitcore_agent', [ $this, 'agent_shortcode' ] );
         add_shortcode( 'bitcore_artifacts', [ $this, 'artifacts_shortcode' ] );
         add_shortcode( 'bitcore_feed', [ $this, 'feed_shortcode' ] );
+    }
+
+    /**
+     * Initialize pattern-based services
+     * Pattern: Service Container with Dependency Injection
+     */
+    private function init_pattern_services() {
+        // Service Container (singleton)
+        $this->container = BITCORE_Container::get_instance();
+        
+        // Register services in container
+        $this->container
+            ->set( 'core', $this )
+            ->register( 'encrypted_options', function() {
+                return new BITCORE_Encrypted_Options();
+            } )
+            ->register( 'model_selector', function() {
+                return new BITCORE_Model_Selector();
+            } );
+        
+        // Get service instances
+        $this->encrypted_options = $this->container->get( 'encrypted_options' );
+        $this->model_selector = $this->container->get( 'model_selector' );
     }
 
     private function init_services() {
@@ -96,6 +138,11 @@ class BITCORE_Core {
         // Forms module
         if ( $this->get_option( 'module_forms', true ) ) {
             $this->forms = new BITCORE_Modules_Forms( $this );
+        }
+
+        // Tasks module (A4)
+        if ( $this->get_option( 'module_tasks', true ) ) {
+            $this->tasks = new BITCORE_Modules_Tasks( $this );
         }
     }
 
@@ -222,14 +269,56 @@ class BITCORE_Core {
 
     // Utility functions
     public function get_option( $key, $default = false ) {
+        // Use encrypted options for sensitive keys
+        $encrypted_keys = [ 'api_key', 'secret', 'token', 'password' ];
+        
+        foreach ( $encrypted_keys as $encrypted_key ) {
+            if ( strpos( $key, $encrypted_key ) !== false && $this->encrypted_options ) {
+                return $this->encrypted_options->get_encrypted_option( $key, $default );
+            }
+        }
+        
         $options = get_option( 'bitcore_options', [] );
         return isset( $options[ $key ] ) ? $options[ $key ] : $default;
     }
 
     public function update_option( $key, $value ) {
+        // Use encrypted options for sensitive keys
+        $encrypted_keys = [ 'api_key', 'secret', 'token', 'password' ];
+        
+        foreach ( $encrypted_keys as $encrypted_key ) {
+            if ( strpos( $key, $encrypted_key ) !== false && $this->encrypted_options ) {
+                return $this->encrypted_options->update_encrypted_option( $key, $value );
+            }
+        }
+        
         $options = get_option( 'bitcore_options', [] );
         $options[ $key ] = $value;
         update_option( 'bitcore_options', $options );
+    }
+
+    /**
+     * Get AI model for current user and task
+     * 
+     * @param string $task_type Task type (coding, analysis, chat)
+     * @return array|false Model config or false
+     */
+    public function get_model_for_task( $task_type = 'chat' ) {
+        if ( ! $this->model_selector ) {
+            return false;
+        }
+        
+        return $this->model_selector->select_model_for_user( get_current_user_id(), $task_type );
+    }
+
+    /**
+     * Get service from container
+     * 
+     * @param string $name Service name
+     * @return mixed Service instance
+     */
+    public function get_service( $name ) {
+        return $this->container ? $this->container->get( $name ) : null;
     }
 
     private function is_rest_request() {
