@@ -67,5 +67,17 @@ spl_autoload_register( function ( $class ) {
 // Initialize
 require_once( BITCORE_PATH . '/classes/core.php' );
 
+
+
+// Activation/Deactivation Hooks
+register_activation_hook( BITCORE_ENTRY, [ 'BITCORE_Core', 'activate' ] );
+register_deactivation_hook( BITCORE_ENTRY, [ 'BITCORE_Core', 'deactivate' ] );
+
+// REST API Routes
+add_action( 'rest_api_init', [ 'BITCORE_Rest_Tasks', 'register_routes' ] );
+
+// Admin Scripts
+add_action( 'admin_enqueue_scripts', [ 'BITCORE_Integration', 'enqueue_rest_nonce' ] );
+
 // Global instance
 $GLOBALS['bitcore'] = new BITCORE_Core();

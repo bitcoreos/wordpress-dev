@@ -324,4 +324,59 @@ class BITCORE_Core {
     private function is_rest_request() {
         return defined( 'REST_REQUEST' ) && REST_REQUEST;
     }
+
+
+    /**
+     * Plugin activation handler
+     *
+     * Registers custom capabilities on plugin activation.
+     *
+     * Based on patterns from bitcore/wordpress-security
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public static function activate(): void {
+        // Register custom capabilities for roles
+        if ( class_exists( 'BITCORE_Modules_Capabilities' ) ) {
+            BITCORE_Modules_Capabilities::register();
+        }
+
+        // Flush rewrite rules for custom post types
+        flush_rewrite_rules();
+
+        /**
+         * Fires after plugin activation
+         *
+         * @since 1.0.0
+         */
+        do_action( 'bitcore_activated' );
+    }
+
+    /**
+     * Plugin deactivation handler
+     *
+     * Cleans up capabilities on plugin deactivation.
+     *
+     * Based on patterns from bitcore/wordpress-security
+     *
+     * @since 1.0.0
+     * @return void
+     */
+    public static function deactivate(): void {
+        // Unregister custom capabilities
+        if ( class_exists( 'BITCORE_Modules_Capabilities' ) ) {
+            BITCORE_Modules_Capabilities::unregister();
+        }
+
+        // Flush rewrite rules
+        flush_rewrite_rules();
+
+        /**
+         * Fires after plugin deactivation
+         *
+         * @since 1.0.0
+         */
+        do_action( 'bitcore_deactivated' );
+    }
 }
