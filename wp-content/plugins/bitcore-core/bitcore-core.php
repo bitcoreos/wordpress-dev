@@ -3,7 +3,7 @@
  * Plugin Name: BITCORE Core
  * Plugin URI: https://bitcore.org
  * Description: Core plugin for BITCORE Intelligence Factory. Modular AI system with MCP, REST API, and agent orchestration.
- * Version: 1.0.1
+ * Version: 1.1.0
  * Author: BITCORE
  * Author URI: https://bitcore.org
  * Text Domain: bitcore
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'BITCORE_VERSION', '1.0.1' );
+define( 'BITCORE_VERSION', '1.1.0' );
 define( 'BITCORE_PREFIX', 'bitcore' );
 define( 'BITCORE_DOMAIN', 'bitcore' );
 define( 'BITCORE_ENTRY', __FILE__ );
@@ -110,6 +110,7 @@ function bitcore_run_migrations() {
 // REST API Routes
 add_action( 'rest_api_init', [ 'BITCORE_Rest_Tasks', 'register_routes' ] );
 add_action( 'rest_api_init', [ 'BITCORE_Rest_Health_Knowledge', 'register_routes' ] );
+add_action( 'rest_api_init', [ 'BITCORE_Rest_Research_Intelligence', 'register_routes' ] );
 
 // Admin Scripts
 add_action( 'admin_enqueue_scripts', [ 'BITCORE_Integration', 'enqueue_rest_nonce' ] );
