@@ -81,3 +81,39 @@ add_action( 'admin_enqueue_scripts', [ 'BITCORE_Integration', 'enqueue_rest_nonc
 
 // Global instance
 $GLOBALS['bitcore'] = new BITCORE_Core();
+
+// SSE Events REST Routes
+add_action( 'rest_api_init', [ 'BITCORE_Rest_Sse_Events', 'register_routes' ] );
+
+// Enqueue SSE Client Script
+add_action( 'wp_enqueue_scripts', function() {
+    wp_enqueue_script(
+        'bitcore-sse',
+        BITCORE_URL . 'assets/js/bitcore-sse.js',
+        array(),
+        BITCORE_VERSION,
+        true
+    );
+    
+    // Localize script with endpoint
+    wp_localize_script( 'bitcore-sse', 'bitcoreSSE', array(
+        'endpoint' => rest_url( 'bitcore/v1/events/stream' ),
+        'nonce' => wp_create_nonce( 'wp_rest' ),
+    ) );
+} );
+
+// Enqueue admin SSE Client Script
+add_action( 'admin_enqueue_scripts', function() {
+    wp_enqueue_script(
+        'bitcore-sse-admin',
+        BITCORE_URL . 'assets/js/bitcore-sse.js',
+        array(),
+        BITCORE_VERSION,
+        true
+    );
+    
+    wp_localize_script( 'bitcore-sse-admin', 'bitcoreSSE', array(
+        'endpoint' => rest_url( 'bitcore/v1/events/stream' ),
+        'nonce' => wp_create_nonce( 'wp_rest' ),
+    ) );
+} );
