@@ -1,44 +1,106 @@
 <?php
 /**
+ * BITCORE_Core implementation
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
+ */
+
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
  * BITCORE Core Class
  * Service-oriented architecture with modular modules
+ * 
+ * @package BITCORE_Core
+ * @since 1.0.0
  */
 
 class BITCORE_Core {
-    public $version = BITCORE_VERSION;
-    public $is_rest = false;
-    public $is_cli = false;
+    public string $version = BITCORE_VERSION;
+    public bool $is_rest = false;
+    public bool $is_cli = false;
+
+    /** @var BITCORE_Container Service container */
+    public ?BITCORE_Container $container = null;
 
     // Service instances
-    public $response_id_manager = null;
-    public $message_builder = null;
-    public $session_service = null;
-    public $usage_stats = null;
-    public $connector_n8n = null;
-    public $connector_bithub = null;
-    public $connector_bitwiki = null;
+    public ?BITCORE_Services_Response_ID_Manager $response_id_manager = null;
+    public ?BITCORE_Services_Message_Builder $message_builder = null;
+    public ?BITCORE_Services_Session $session_service = null;
+    public ?BITCORE_Services_Usage_Stats $usage_stats = null;
+    public ?BITCORE_Services_Connector_N8N $connector_n8n = null;
+    public ?BITCORE_Services_Connector_BIThub $connector_bithub = null;
+    public ?BITCORE_Services_Connector_BITwiki $connector_bitwiki = null;
 
     // Module instances
-    public $chatbot = null;
-    public $discussions = null;
-    public $mcp = null;
-    public $rest = null;
-    public $search = null;
-    public $forms = null;
+    public ?BITCORE_Modules_Chatbot $chatbot = null;
+    public ?BITCORE_Modules_Discussions $discussions = null;
+    public ?BITCORE_MCP_Core $mcp = null;
+    public ?BITCORE_Rest_API $rest = null;
+    public ?BITCORE_Rest_Tasks $rest_tasks = null;
+    public ?BITCORE_Modules_Search $search = null;
+    public ?BITCORE_Modules_Forms $forms = null;
+    public ?BITCORE_Modules_Tasks $tasks = null;
 
-    private $options = null;
+    private ?array $options = null;
 
     public function __construct() {
         $this->is_rest = $this->is_rest_request();
-        $this->is_cli = defined( 'WP_CLI' );
+        $this->is_cli = defined('WP_CLI') && WP_CLI;
+        
+        // Initialize container BEFORE plugins_loaded
+        $this->init_container();
 
-        add_action( 'plugins_loaded', [ $this, 'init' ] );
-        add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ] );
-        add_action( 'admin_menu', [ $this, 'admin_menu' ] );
+        add_action('plugins_loaded', [$this, 'init']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
+        add_action('admin_menu', [$this, 'admin_menu']);
     }
 
-    public function init() {
+    /**
+     * Initialize service container
+     */
+    /**
+     * Initialize service container
+     */
+    private function init_container(): void {
+        require_once BITCORE_PATH . 'classes/container.php';
+        $this->container = new BITCORE_Container();
+        $this->container->register_core_services($this);
+
+        // Infrastructure Services
+        require_once BITCORE_PATH . 'infrastructure/auth/manager.php';
+        require_once BITCORE_PATH . 'infrastructure/auth/CapabilityManager.php';
+        $this->container->register('auth.manager', '\BITCORE\Infrastructure\Auth\AuthManager');
+        $this->container->register('auth.capability', '\BITCORE\Infrastructure\Auth\CapabilityManager');
+
+        require_once BITCORE_PATH . 'infrastructure/multitenancy/tenant.php';
+        $this->container->register('tenant.resolver', '\BITCORE\Infrastructure\MultiTenancy\TenantResolver');
+
+        require_once BITCORE_PATH . 'infrastructure/cache/manager.php';
+        $this->container->register('cache.manager', '\BITCORE\Infrastructure\Cache\CacheManager');
+
+        require_once BITCORE_PATH . 'infrastructure/queue/worker.php';
+        $this->container->register('queue.worker', '\BITCORE\Infrastructure\Queue\QueueWorker');
+
+        require_once BITCORE_PATH . 'infrastructure/logging/logger.php';
+        $this->container->register('logger', '\BITCORE\Infrastructure\Logging\Logger');
+
+        require_once BITCORE_PATH . 'infrastructure/ratelimit/manager.php';
+        $this->container->register('ratelimit.manager', '\BITCORE\Infrastructure\RateLimit\RateLimitManager');
+
+        require_once BITCORE_PATH . 'infrastructure/webhooks/manager.php';
+        $this->container->register('webhooks.manager', '\BITCORE\Infrastructure\Webhooks\WebhookManager');
+    }
+
+    public function init(): void {
         // Initialize services
         $this->init_services();
 
@@ -46,74 +108,80 @@ class BITCORE_Core {
         $this->init_modules();
 
         // REST API
-        if ( $this->is_rest ) {
-            $this->rest = new BITCORE_Rest_API( $this );
+        if ($this->is_rest) {
+            $this->rest = new BITCORE_Rest_API($this);
+            $this->rest_tasks = new BITCORE_Rest_Tasks($this);
         }
 
         // Admin
-        if ( is_admin() ) {
+        if (is_admin()) {
             $this->init_admin();
         }
 
         // Shortcodes
-        add_shortcode( 'bitcore_chat', [ $this, 'chatbot_shortcode' ] );
-        add_shortcode( 'bitcore_agent', [ $this, 'agent_shortcode' ] );
-        add_shortcode( 'bitcore_artifacts', [ $this, 'artifacts_shortcode' ] );
-        add_shortcode( 'bitcore_feed', [ $this, 'feed_shortcode' ] );
+        add_shortcode('bitcore_chat', [$this, 'chatbot_shortcode']);
+        add_shortcode('bitcore_agent', [$this, 'agent_shortcode']);
+        add_shortcode('bitcore_artifacts', [$this, 'artifacts_shortcode']);
+        add_shortcode('bitcore_feed', [$this, 'feed_shortcode']);
     }
 
-    private function init_services() {
-        $this->response_id_manager = new BITCORE_Services_Response_ID_Manager( $this );
-        $this->message_builder = new BITCORE_Services_Message_Builder( $this );
-        $this->session_service = new BITCORE_Services_Session( $this );
-        $this->usage_stats = new BITCORE_Services_Usage_Stats( $this );
-        $this->connector_n8n = new BITCORE_Services_Connector_N8N( $this );
-        $this->connector_bithub = new BITCORE_Services_Connector_BIThub( $this );
-        $this->connector_bitwiki = new BITCORE_Services_Connector_BITwiki( $this );
+    private function init_services(): void {
+        $this->response_id_manager = $this->container->get('response_id_manager');
+        $this->message_builder = $this->container->get('message_builder');
+        $this->session_service = $this->container->get('session_service');
+        $this->usage_stats = $this->container->get('usage_stats');
+        $this->connector_n8n = $this->container->get('connector_n8n');
+        $this->connector_bithub = $this->container->get('connector_bithub');
+        $this->connector_bitwiki = $this->container->get('connector_bitwiki');
     }
 
-    private function init_modules() {
+    private function init_modules(): void {
         // Chatbot module
-        if ( $this->get_option( 'module_chatbot', true ) ) {
-            $this->chatbot = new BITCORE_Modules_Chatbot( $this );
+        if ($this->get_option('module_chatbot', true)) {
+            $this->chatbot = new BITCORE_Modules_Chatbot($this);
         }
 
         // Discussions module
-        if ( $this->get_option( 'module_discussions', true ) ) {
-            $this->discussions = new BITCORE_Modules_Discussions( $this );
+        if ($this->get_option('module_discussions', true)) {
+            $this->discussions = new BITCORE_Modules_Discussions($this);
         }
 
         // MCP module
-        if ( $this->get_option( 'module_mcp', true ) ) {
-            $this->mcp = new BITCORE_MCP_Core( $this );
+        if ($this->get_option('module_mcp', true)) {
+            $this->mcp = new BITCORE_MCP_Core($this);
         }
 
         // Search module
-        if ( $this->get_option( 'module_search', true ) ) {
-            $this->search = new BITCORE_Modules_Search( $this );
+        if ($this->get_option('module_search', true)) {
+            $this->search = new BITCORE_Modules_Search($this);
         }
 
         // Forms module
-        if ( $this->get_option( 'module_forms', true ) ) {
-            $this->forms = new BITCORE_Modules_Forms( $this );
+        if ($this->get_option('module_forms', true)) {
+            $this->forms = new BITCORE_Modules_Forms($this);
+        }
+
+        // Tasks module (A4)
+        if ($this->get_option('module_tasks', true)) {
+            $this->tasks = new BITCORE_Modules_Tasks($this);
         }
     }
 
-    private function init_admin() {
-        add_action( 'admin_init', [ $this, 'admin_init' ] );
+    private function init_admin(): void {
+        add_action('admin_init', [$this, 'admin_init']);
     }
 
-    public function admin_init() {
+    public function admin_init(): void {
         // Admin initialization actions
     }
 
-    public function admin_menu() {
+    public function admin_menu(): void {
         add_menu_page(
             'BITCORE',
             'BITCORE',
             'manage_options',
             'bitcore',
-            [ $this, 'admin_page' ],
+            [$this, 'admin_page'],
             'dashicons-art',
             30
         );
@@ -124,7 +192,7 @@ class BITCORE_Core {
             'Dashboard',
             'manage_options',
             'bitcore',
-            [ $this, 'admin_page' ]
+            [$this, 'admin_page']
         );
 
         add_submenu_page(
@@ -133,7 +201,7 @@ class BITCORE_Core {
             'Agents',
             'manage_options',
             'bitcore-agents',
-            [ $this, 'agents_page' ]
+            [$this, 'agents_page']
         );
 
         add_submenu_page(
@@ -142,7 +210,7 @@ class BITCORE_Core {
             'MCP Tools',
             'manage_options',
             'bitcore-mcp',
-            [ $this, 'mcp_page' ]
+            [$this, 'mcp_page']
         );
 
         add_submenu_page(
@@ -151,88 +219,191 @@ class BITCORE_Core {
             'Settings',
             'manage_options',
             'bitcore-settings',
-            [ $this, 'settings_page' ]
+            [$this, 'settings_page']
         );
     }
 
-    public function admin_page() {
+    public function admin_page(): void {
         include BITCORE_PATH . '/admin/dashboard.php';
     }
 
-    public function agents_page() {
+    public function agents_page(): void {
         include BITCORE_PATH . '/admin/agents.php';
     }
 
-    public function mcp_page() {
+    public function mcp_page(): void {
         include BITCORE_PATH . '/admin/mcp.php';
     }
 
-    public function settings_page() {
+    public function settings_page(): void {
         include BITCORE_PATH . '/admin/settings.php';
     }
 
-    public function enqueue_scripts() {
-        wp_enqueue_style( 'bitcore-base', BITCORE_URL . 'assets/css/bitcore-base.css', [], BITCORE_VERSION );
-        wp_enqueue_script( 'bitcore-chat', BITCORE_URL . 'assets/js/bitcore-chat.js', [ 'jquery' ], BITCORE_VERSION, true );
+    public function enqueue_scripts(): void {
+        wp_enqueue_style('bitcore-base', BITCORE_URL . 'assets/css/bitcore-base.css', [], BITCORE_VERSION);
+        wp_enqueue_script('bitcore-chat', BITCORE_URL . 'assets/js/bitcore-chat.js', ['jquery'], BITCORE_VERSION, true);
 
-        wp_localize_script( 'bitcore-chat', 'bitcoreConfig', [
-            'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-            'restUrl' => rest_url( 'bitcore/v1/' ),
-            'nonce' => wp_create_nonce( 'bitcore_nonce' ),
+        wp_localize_script('bitcore-chat', 'bitcoreConfig', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'restUrl' => rest_url('bitcore/v1/'),
+            'nonce' => wp_create_nonce('bitcore_nonce'),
             'userId' => get_current_user_id(),
             'userName' => wp_get_current_user()->display_name,
-        ] );
+        ]);
     }
 
-    public function enqueue_admin_scripts( $hook ) {
-        if ( strpos( $hook, 'bitcore' ) !== false ) {
-            wp_enqueue_style( 'bitcore-admin', BITCORE_URL . 'assets/css/bitcore-admin.css', [], BITCORE_VERSION );
-            wp_enqueue_script( 'bitcore-admin', BITCORE_URL . 'assets/js/bitcore-admin.js', [ 'jquery' ], BITCORE_VERSION, true );
+    public function enqueue_admin_scripts(string $hook): void {
+        if (strpos($hook, 'bitcore') !== false) {
+            wp_enqueue_style('bitcore-admin', BITCORE_URL . 'assets/css/bitcore-admin.css', [], BITCORE_VERSION);
+            wp_enqueue_script('bitcore-admin', BITCORE_URL . 'assets/js/bitcore-admin.js', ['jquery'], BITCORE_VERSION, true);
         }
     }
 
     // Shortcode handlers
-    public function chatbot_shortcode( $atts ) {
-        $atts = shortcode_atts( [
+    public function chatbot_shortcode(array $atts): string {
+        $atts = shortcode_atts([
             'agent' => 'coraline',
             'theme' => 'dark',
-        ], $atts );
+        ], $atts);
 
         ob_start();
         include BITCORE_PATH . '/templates/chatbot.php';
         return ob_get_clean();
     }
 
-    public function agent_shortcode( $atts ) {
-        $atts = shortcode_atts( [
+    public function agent_shortcode(array $atts): string {
+        $atts = shortcode_atts([
             'name' => 'coraline',
             'show_avatar' => true,
-        ], $atts );
+        ], $atts);
 
-        return '<div class="bitcore-agent" data-agent="' . esc_attr( $atts['name'] ) . '"></div>';
+        return '<div class="bitcore-agent" data-agent="' . esc_attr($atts['name']) . '"></div>';
     }
 
-    public function artifacts_shortcode( $atts ) {
+    public function artifacts_shortcode(): string {
         return '<div class="bitcore-artifacts"></div>';
     }
 
-    public function feed_shortcode( $atts ) {
+    public function feed_shortcode(): string {
         return '<div class="bitcore-feed"></div>';
     }
 
     // Utility functions
-    public function get_option( $key, $default = false ) {
-        $options = get_option( 'bitcore_options', [] );
-        return isset( $options[ $key ] ) ? $options[ $key ] : $default;
+    public function get_option(string $key, $default = false) {
+        $options = get_option('bitcore_options', []);
+        return $options[$key] ?? $default;
     }
 
-    public function update_option( $key, $value ) {
-        $options = get_option( 'bitcore_options', [] );
-        $options[ $key ] = $value;
-        update_option( 'bitcore_options', $options );
+    public function update_option(string $key, $value): void {
+        $options = get_option('bitcore_options', []);
+        $options[$key] = $value;
+        update_option('bitcore_options', $options);
     }
 
-    private function is_rest_request() {
-        return defined( 'REST_REQUEST' ) && REST_REQUEST;
+    private function is_rest_request(): bool {
+        return defined('REST_REQUEST') && REST_REQUEST;
     }
 }
+
+        // Wave 4: Security Middleware Services
+        require_once BITCORE_PATH . 'infrastructure/security/middleware-pipeline.php';
+        $this->container->register('security.middleware.pipeline', '\BITCORE\Infrastructure\Security\MiddlewarePipeline');
+
+        require_once BITCORE_PATH . 'infrastructure/security/audit-logger.php';
+        $this->container->register('security.audit.logger', '\BITCORE\Infrastructure\Security\AuditLogger');
+
+        require_once BITCORE_PATH . 'infrastructure/security/hardening.php';
+        $this->container->register('security.hardening.manager', '\BITCORE\Infrastructure\Security\HardeningManager');
+
+        // Wave 4: A2A Swarm Services
+        require_once BITCORE_PATH . 'infrastructure/swarm/a2a-dispatcher.php';
+        $this->container->register('swarm.dispatcher', '\BITCORE\Infrastructure\Swarm\A2ADispatcher');
+
+        require_once BITCORE_PATH . 'infrastructure/swarm/swarm-coordinator.php';
+        $this->container->register('swarm.coordinator', '\BITCORE\Infrastructure\Swarm\SwarmCoordinator');
+
+        require_once BITCORE_PATH . 'infrastructure/swarm/health-monitor.php';
+        $this->container->register('health.monitor', '\BITCORE\Infrastructure\Swarm\HealthMonitor');
+
+        // Initialize Wave 4 Services
+        add_action('bitcore_init', function() {
+            // Apply hardening
+            $hardening = $this->container->get('security.hardening.manager');
+            $hardening->apply();
+
+            // Initialize health monitoring
+            $monitor = $this->container->get('health.monitor');
+            $monitor->registerChecker(new \BITCORE\Infrastructure\Swarm\DatabaseHealthChecker());
+            $monitor->registerChecker(new \BITCORE\Infrastructure\Swarm\CacheHealthChecker(
+                $this->container->get('cache.manager')
+            ));
+        });
+    }
+
+    /**
+     * Initialize Wave 4 security and swarm modules
+     */
+    public function init_wave4(): void {
+        // Security middleware pipeline
+        add_action('rest_api_init', [$this, 'register_security_middleware']);
+
+        // Health check endpoint
+        add_action('rest_api_init', [$this, 'register_health_endpoint']);
+    }
+
+    /**
+     * Register security middleware for REST API
+     */
+    public function register_security_middleware(): void {
+        $pipeline = $this->container->get('security.middleware.pipeline');
+
+        add_filter('rest_pre_dispatch', function($result, $server, $request) use ($pipeline) {
+            $context = new \BITCORE\Infrastructure\Security\RequestContext(
+                path: $request->get_route(),
+                method: $request->get_method(),
+                headers: $request->get_headers(),
+                queryParams: $request->get_query_params(),
+                body: $request->get_json_params() ?? [],
+                clientIp: $request->get_header('x_forwarded_for')
+                    ?? $request->get_header('x_real_ip')
+                    ?? $_SERVER['REMOTE_ADDR']
+                    ?? 'unknown'
+            );
+
+            $response = $pipeline->process($context, fn($ctx) => new \BITCORE\Infrastructure\Security\ResponseContext(
+                status: 200,
+                shouldProceed: true
+            ));
+
+            if (!$response->shouldProceed) {
+                return new \WP_Error(
+                    'security_blocked',
+                    $response->error ?? 'Request blocked by security middleware',
+                    ['status' => $response->status]
+                );
+            }
+
+            return $result;
+        }, 10, 3);
+    }
+
+    /**
+     * Register health check REST endpoint
+     */
+    public function register_health_endpoint(): void {
+        register_rest_route('bitcore/v1', '/health', [
+            'methods' => 'GET',
+            'callback' => function() {
+                $monitor = $this->container->get('health.monitor');
+                $status = $monitor->checkLocal();
+
+                return rest_ensure_response([
+                    'status' => $status->state->value,
+                    'score' => $status->score,
+                    'checks' => array_map(fn($c) => $c->toArray(), $status->checks),
+                    'timestamp' => time(),
+                ]);
+            },
+            'permission_callback' => '__return_true',
+        ]);
+    }

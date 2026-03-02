@@ -1,9 +1,18 @@
 <?php
 /**
- * BITCORE Forms Module
- * AI-powered forms with intent detection
+ * BITCORE_Modules_Forms class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Modules_Forms {
     private $core;
 

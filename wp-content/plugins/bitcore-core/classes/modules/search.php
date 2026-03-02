@@ -1,9 +1,18 @@
 <?php
 /**
- * BITCORE Search Module
- * Unified search across BITCORE systems
+ * BITCORE_Modules_Search class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Modules_Search {
     private $core;
 
