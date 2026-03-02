@@ -328,7 +328,7 @@ wp bitcore mcp list-tools
 | Agent | Status | Date |
 |-------|--------|------|
 | Coraline | ✅ Created | 2026-03-01 19:46 UTC |
-| Hyperion | ⏳ Pending | A2A unreachable - awaiting relay |
+| Hyperion | ✅ Approved | 2026-03-01 21:52 UTC |
 
 ---
 
