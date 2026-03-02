@@ -3,69 +3,319 @@
  * Plugin Name: BITCORE Core
  * Plugin URI: https://bitcore.org
  * Description: Core plugin for BITCORE Intelligence Factory. Modular AI system with MCP, REST API, and agent orchestration.
- * Version: 1.0.0
+ * Version: 1.2.0
  * Author: BITCORE
  * Author URI: https://bitcore.org
- * Text Domain: bitcore
- * License: GPLv2 or later
+ * Text Domain: bitcore-core
+ * Domain Path: /languages
+ * License: GPLv2+
+ *
+ * @package BITCORE
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
+// Prevent direct access.
+if (!defined('ABSPATH')) {
     exit;
 }
 
-define( 'BITCORE_VERSION', '1.0.0' );
-define( 'BITCORE_PREFIX', 'bitcore' );
-define( 'BITCORE_DOMAIN', 'bitcore' );
-define( 'BITCORE_ENTRY', __FILE__ );
-define( 'BITCORE_PATH', dirname( __FILE__ ) );
-define( 'BITCORE_URL', plugin_dir_url( __FILE__ ) );
-define( 'BITCORE_TIMEOUT', 300 );
-define( 'BITCORE_FALLBACK_MODEL', 'coraline-v1' );
-define( 'BITCORE_FALLBACK_MODEL_FAST', 'hyperion-v1' );
+// Define constants.
+define('BITCORE_VERSION', '1.2.0');
+define('BITCORE_DB_VERSION', '1.2.0');
+define('BITCORE_PLUGIN_FILE', __FILE__);
+define('BITCORE_ENTRY', __FILE__);
+define('BITCORE_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('BITCORE_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('BITCORE_PATH', plugin_dir_path(__FILE__));
+define('BITCORE_URL', plugin_dir_url(__FILE__));
+define('BITCORE_PREFIX', 'bitcore');
+define('BITCORE_DOMAIN', 'bitcore');
+define('BITCORE_TIMEOUT', 300);
+define('BITCORE_FALLBACK_MODEL', 'coraline-v1');
+define('BITCORE_FALLBACK_MODEL_FAST', 'hyperion-v1');
 
-// Autoloader (from AI Engine pattern)
-spl_autoload_register( function ( $class ) {
+// === FROM CORALINE: Class Autoloader ===
+spl_autoload_register(function ($class) {
     $file = null;
 
-    if ( strpos( $class, 'BITCORE_Modules' ) !== false ) {
-        $filename = str_replace( 'BITCORE_Modules_', '', $class );
-        $filename = strtolower( str_replace( '_', '-', $filename ) );
+    if (strpos($class, 'BITCORE_Modules') !== false) {
+        $filename = str_replace('BITCORE_Modules_', '', $class);
+        $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/classes/modules/' . $filename . '.php';
-    }
-    else if ( strpos( $class, 'BITCORE_Services' ) !== false ) {
-        $filename = str_replace( 'BITCORE_Services_', '', $class );
-        $filename = strtolower( str_replace( '_', '-', $filename ) );
+    } elseif (strpos($class, 'BITCORE_Services') !== false) {
+        $filename = str_replace('BITCORE_Services_', '', $class);
+        $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/classes/services/' . $filename . '.php';
-    }
-    else if ( strpos( $class, 'BITCORE_Engines' ) !== false ) {
-        $filename = str_replace( 'BITCORE_Engines_', '', $class );
-        $filename = strtolower( str_replace( '_', '-', $filename ) );
+    } elseif (strpos($class, 'BITCORE_Engines') !== false) {
+        $filename = str_replace('BITCORE_Engines_', '', $class);
+        $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/classes/engines/' . $filename . '.php';
-    }
-    else if ( strpos( $class, 'BITCORE_Rest' ) !== false ) {
-        $filename = str_replace( 'BITCORE_Rest_', '', $class );
-        $filename = strtolower( str_replace( '_', '-', $filename ) );
+    } elseif (strpos($class, 'BITCORE_Rest') !== false) {
+        $filename = str_replace('BITCORE_Rest_', '', $class);
+        $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/rest/' . $filename . '.php';
-    }
-    else if ( strpos( $class, 'BITCORE_MCP' ) !== false ) {
-        $filename = str_replace( 'BITCORE_MCP_', '', $class );
-        $filename = strtolower( str_replace( '_', '-', $filename ) );
+    } elseif (strpos($class, 'BITCORE_MCP') !== false) {
+        $filename = str_replace('BITCORE_MCP_', '', $class);
+        $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/mcp/' . $filename . '.php';
-    }
-    else if ( strpos( $class, 'BITCORE' ) !== false ) {
-        $filename = str_replace( 'BITCORE_', '', $class );
-        $filename = strtolower( str_replace( '_', '-', $filename ) );
+    } elseif (strpos($class, 'BITCORE') !== false) {
+        $filename = str_replace('BITCORE_', '', $class);
+        $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/classes/' . $filename . '.php';
     }
 
-    if ( $file && file_exists( $file ) ) {
-        require_once( $file );
+    if ($file && file_exists($file)) {
+        require_once $file;
     }
-} );
+});
 
-// Initialize
-require_once( BITCORE_PATH . '/classes/core.php' );
+// === FROM HYPERION: Pattern Autoloader ===
+function bitcore_load_patterns(): void {
+    $autoloader_file = BITCORE_PLUGIN_DIR . 'classes/patterns-autoloader.php';
+    if (file_exists($autoloader_file)) {
+        require_once $autoloader_file;
+        \BITCORE\Patterns\PatternAutoloader::instance()->load();
+    }
+}
+add_action('plugins_loaded', 'bitcore_load_patterns', 5);
 
-// Global instance
-$GLOBALS['bitcore'] = new BITCORE_Core();
+// === FROM HYPERION: Initialize Infrastructure ===
+function bitcore_init_infrastructure(): void {
+    if (!isset($GLOBALS['bitcore'])) {
+        require_once BITCORE_PLUGIN_DIR . 'classes/core.php';
+        $GLOBALS['bitcore'] = new BITCORE_Core();
+    }
+}
+add_action('plugins_loaded', 'bitcore_init_infrastructure', 15);
+
+// === FROM HYPERION: WP-CLI Commands ===
+function bitcore_cli_init(): void {
+    if (defined('WP_CLI') && WP_CLI) {
+        require_once BITCORE_PLUGIN_DIR . 'infrastructure/cli/commands.php';
+        \WP_CLI::add_command('bitcore', \BITCORE\Infrastructure\CLI\BitcoreCommand::class);
+    }
+}
+add_action('init', 'bitcore_cli_init');
+
+// === FROM HYPERION: Custom Cron Schedules ===
+function bitcore_cron_schedules(array $schedules): array {
+    $schedules['bitcore_queue_1min'] = [
+        'interval' => 60,
+        'display'  => __('BITCORE Queue: Every Minute'),
+    ];
+    $schedules['bitcore_queue_5min'] = [
+        'interval' => 300,
+        'display'  => __('BITCORE Queue: Every 5 Minutes'),
+    ];
+    $schedules['bitcore_webhooks_retry'] = [
+        'interval' => 900,
+        'display'  => __('BITCORE Webhooks: Retry Failed (15 min)'),
+    ];
+    $schedules['bitcore_health_check'] = [
+        'interval' => 3600,
+        'display'  => __('BITCORE System: Health Check (Hourly)'),
+    ];
+    return $schedules;
+}
+add_filter('cron_schedules', 'bitcore_cron_schedules', 10, 1);
+
+// === FROM HYPERION: Schedule Cron Events ===
+function bitcore_schedule_cron(): void {
+    if (!wp_next_scheduled('bitcore_queue_worker')) {
+        wp_schedule_event(time(), 'bitcore_queue_1min', 'bitcore_queue_worker');
+    }
+    if (!wp_next_scheduled('bitcore_webhooks_retry')) {
+        wp_schedule_event(time(), 'bitcore_webhooks_retry', 'bitcore_webhooks_retry');
+    }
+    if (!wp_next_scheduled('bitcore_health_check')) {
+        wp_schedule_event(time(), 'bitcore_health_check', 'bitcore_health_check');
+    }
+}
+add_action('wp', 'bitcore_schedule_cron');
+
+// === FROM HYPERION: Queue Worker Cron ===
+function bitcore_queue_worker_cron(): void {
+    if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
+        $worker = $GLOBALS['bitcore']->container->get('queue.worker');
+        if ($worker) {
+            $worker->process(10);
+        }
+    }
+}
+add_action('bitcore_queue_worker', 'bitcore_queue_worker_cron');
+
+// === FROM HYPERION: Webhooks Retry Cron ===
+function bitcore_webhooks_retry_cron(): void {
+    if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
+        $manager = $GLOBALS['bitcore']->container->get('webhooks.manager');
+        if ($manager) {
+            $manager->retryFailed(5);
+        }
+    }
+}
+add_action('bitcore_webhooks_retry', 'bitcore_webhooks_retry_cron');
+
+// === FROM HYPERION: Health Check Cron ===
+function bitcore_health_check_cron(): void {
+    if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
+        $logger = $GLOBALS['bitcore']->container->get('logger');
+        if ($logger) {
+            $health = [
+                'timestamp' => time(),
+                'memory'    => memory_get_usage(true),
+                'peak'      => memory_get_peak_usage(true),
+                'queue'     => $GLOBALS['wpdb']->get_var("SELECT COUNT(*) FROM {$GLOBALS['wpdb']->prefix}bitcore_jobs WHERE status = 'pending'"),
+            ];
+            $logger->info('Health check completed', $health);
+        }
+    }
+}
+add_action('bitcore_health_check', 'bitcore_health_check_cron');
+
+// === FROM CORALINE: Token Rotation Schedule ===
+function bitcore_schedule_token_check(): void {
+    if (!wp_next_scheduled('bitcore_token_rotation_check')) {
+        wp_schedule_event(time(), 'daily', 'bitcore_token_rotation_check');
+    }
+}
+add_action('wp', 'bitcore_schedule_token_check');
+
+add_action('bitcore_token_rotation_check', function() {
+    if (class_exists('BITCORE_Services_Token_Manager')) {
+        BITCORE_Services_Token_Manager::ensure_valid_token();
+    }
+});
+
+// === FROM HYPERION: Clear Cron on Deactivation ===
+function bitcore_clear_cron(): void {
+    wp_clear_scheduled_hook('bitcore_queue_worker');
+    wp_clear_scheduled_hook('bitcore_webhooks_retry');
+    wp_clear_scheduled_hook('bitcore_health_check');
+    wp_clear_scheduled_hook('bitcore_token_rotation_check');
+}
+add_action('bitcore_clear_cron', 'bitcore_clear_cron');
+
+// === FROM HYPERION: Register Widgets ===
+function bitcore_register_widgets(): void {
+    if (class_exists('\BITCORE\Patterns\PatternAutoloader')) {
+        $autoloader = \BITCORE\Patterns\PatternAutoloader::instance();
+        $autoloader->registerWidgets();
+    }
+}
+add_action('widgets_init', 'bitcore_register_widgets');
+
+// === FROM CORALINE: REST API Routes Registration ===
+add_action('rest_api_init', ['BITCORE_Rest_Tasks', 'register_routes']);
+add_action('rest_api_init', ['BITCORE_Rest_Health_Knowledge', 'register_routes']);
+add_action('rest_api_init', ['BITCORE_Rest_Research_Intelligence', 'register_routes']);
+add_action('rest_api_init', ['BITCORE_Rest_Sse_Events', 'register_routes']);
+
+// === FROM CORALINE: Admin Scripts ===
+add_action('admin_enqueue_scripts', ['BITCORE_Integration', 'enqueue_rest_nonce']);
+
+// === FROM CORALINE: SSE Client Scripts ===
+add_action('wp_enqueue_scripts', function() {
+    wp_enqueue_script(
+        'bitcore-sse',
+        BITCORE_URL . 'assets/js/bitcore-sse.js',
+        [],
+        BITCORE_VERSION,
+        true
+    );
+    wp_localize_script('bitcore-sse', 'bitcoreSSE', [
+        'endpoint' => rest_url('bitcore/v1/events/stream'),
+        'nonce'    => wp_create_nonce('wp_rest'),
+    ]);
+});
+
+add_action('admin_enqueue_scripts', function() {
+    wp_enqueue_script(
+        'bitcore-sse-admin',
+        BITCORE_URL . 'assets/js/bitcore-sse.js',
+        [],
+        BITCORE_VERSION,
+        true
+    );
+    wp_localize_script('bitcore-sse-admin', 'bitcoreSSE', [
+        'endpoint' => rest_url('bitcore/v1/events/stream'),
+        'nonce'    => wp_create_nonce('wp_rest'),
+    ]);
+});
+
+// === MERGED: Activation Hook ===
+function bitcore_activate(): void {
+    // Load autoloader
+    $autoloader_file = BITCORE_PLUGIN_DIR . 'classes/patterns-autoloader.php';
+    if (file_exists($autoloader_file)) {
+        require_once $autoloader_file;
+    }
+
+    // Initialize database schema (Hyperion)
+    if (class_exists('\BITCORE\Patterns\PatternAutoloader')) {
+        \BITCORE\Patterns\PatternAutoloader::activate();
+    }
+
+    // Run migrations (Coraline)
+    bitcore_run_migrations();
+
+    // Initialize token state (Coraline)
+    if (!get_option('bitcore_token_state')) {
+        update_option('bitcore_token_state', [
+            'token'          => wp_generate_password(64, false),
+            'created'        => time(),
+            'previous_token' => null,
+            'previous_expires' => null,
+        ]);
+    }
+
+    // Schedule initial cron events
+    bitcore_schedule_cron();
+
+    // Flush rewrite rules
+    flush_rewrite_rules();
+}
+register_activation_hook(__FILE__, 'bitcore_activate');
+
+// === FROM CORALINE: Run Database Migrations ===
+function bitcore_run_migrations(): void {
+    global $wpdb;
+    
+    $migration_file = BITCORE_PATH . '/migrations/agent-identities.sql';
+    
+    if (file_exists($migration_file)) {
+        $sql = file_get_contents($migration_file);
+        $sql = str_replace('{wpdb_prefix}', $wpdb->prefix, $sql);
+        
+        $statements = array_filter(array_map('trim', explode(';', $sql)));
+        
+        foreach ($statements as $statement) {
+            if (!empty($statement)) {
+                $wpdb->query($statement);
+            }
+        }
+    }
+}
+
+// === MERGED: Deactivation Hook ===
+function bitcore_deactivate(): void {
+    // Clear scheduled events
+    bitcore_clear_cron();
+    
+    // Deactivate via core class (Coraline)
+    if (class_exists('BITCORE_Core')) {
+        BITCORE_Core::deactivate();
+    }
+
+    flush_rewrite_rules();
+}
+register_deactivation_hook(__FILE__, 'bitcore_deactivate');
+
+// === FROM HYPERION: Helper Log Function ===
+function bitcore_log(string $message, array $context = []): void {
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log(sprintf(
+            '[BITCORE] %s | Context: %s',
+            $message,
+            json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+        ));
+    }
+}

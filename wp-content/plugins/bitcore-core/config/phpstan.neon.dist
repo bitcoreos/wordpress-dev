@@ -1,0 +1,28 @@
+includes:
+- phar://phpstan.phar/conf/bleedingEdge.neon
+
+parameters:
+level: 6
+paths:
+../patterns/
+../database/
+../domain/
+../validation/
+../realtime/
+../classes/
+../templates/
+../widgets/
+../bitcore-core.php
+scanDirectories:
+../vendor
+treatPhpDocTypesAsCertain: false
+ignoreErrors:
+'#PHPDoc tag @var#'
+'#Function apply_filters not found#'
+'#Function do_action not found#'
+'#Function get_transient not found#'
+'#Function set_transient not found#'
+'#Function delete_transient not found#'
+'#Function wp_cache_get not found#'
+'#Function wp_cache_set not found#'
+'#Function wp_cache_delete not found#'
