@@ -12,6 +12,14 @@ declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
+
+class Bitcore_Migration_Commands {
+    private $logger;
+
+    public function __construct() {
+        $this->logger = new BITCORE_Infrastructure_Logging_Logger();
+    }
+
 }
 
     // MIGRATION COMMANDS
@@ -261,3 +269,4 @@ if (!defined('ABSPATH')) {
     }
 
     // =================================================================================
+}

@@ -18,6 +18,8 @@ if (!defined('ABSPATH')) {
  * Class REST_Tasks
  *
  * Handles REST API endpoints for task management with security hardening.
+ */
+
 trait REST_Tasks_Schema {
     public function prepare_item_for_response($post, $request) {
         $data = array(
@@ -160,4 +162,6 @@ trait REST_Tasks_Schema {
 
         if (is_bool($data)) {
             return boolval($data);
+}
+}
 }

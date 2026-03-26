@@ -41,4 +41,4 @@ trait Permissions {
         return false;
     }
 }
-}
+

@@ -1,6 +1,6 @@
 <?php
 /**
- * REST API Controller for Tasks
+ * REST API Tasks Permissions Trait
  *
  * @package Bitcore\Tasks
  * @since 1.0.0
@@ -15,10 +15,19 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Class REST_Tasks
- *
- * Handles REST API endpoints for task management with security hardening.
+ * Trait REST_Tasks_Permissions
+ * 
+ * Permission checks for task REST API endpoints.
+ */
 trait REST_Tasks_Permissions {
+    
+    /**
+     * Permission check for getting items
+     *
+     * @since 1.0.0
+     * @param \WP_REST_Request $request Full request object
+     * @return bool|\WP_Error True if allowed, error otherwise
+     */
     public function get_items_permissions_check($request) {
         $nonce = $request->get_header('X-WP-Nonce');
         if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
@@ -106,32 +115,4 @@ trait REST_Tasks_Permissions {
         }
         return current_user_can('bitcore_delete_tasks');
     }
-
-    /**
-     * Permission check for dispatching tasks
-     *
-     * @since 1.0.0
-     * @param \WP_REST_Request $request Full request object
-     * @return bool|\WP_Error True if allowed, error otherwise
-     */
-    public function dispatch_item_permissions_check($request) {
-        $nonce = $request->get_header('X-WP-Nonce');
-        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
-            return new \WP_Error(
-                'rest_forbidden',
-                __('Invalid or missing nonce.', 'bitcore-tasks'),
-                array('status' => 403)
-            );
-        }
-        return current_user_can('bitcore_dispatch_tasks');
-    }
-
-    /**
-     * Prepare item for REST response
-     *
-     * @since 1.0.0
-     * @param \WP_Post          $post    Post object
-     * @param \WP_REST_Request $request Full request object
-     * @return \WP_REST_Response Response object
-     */
 }

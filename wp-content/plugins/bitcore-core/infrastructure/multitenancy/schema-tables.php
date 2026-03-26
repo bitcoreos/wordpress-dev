@@ -498,3 +498,6 @@ class SchemaManager {
             }
 
             // Initialize schema version
+}
+}
+}

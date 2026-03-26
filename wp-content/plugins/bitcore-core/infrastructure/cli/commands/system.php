@@ -12,6 +12,14 @@ declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
+
+class Bitcore_System_Commands {
+    private $logger;
+
+    public function __construct() {
+        $this->logger = new BITCORE_Infrastructure_Logging_Logger();
+    }
+
 }
 
     // SYSTEM COMMANDS
@@ -547,7 +555,7 @@ if (defined('WP_CLI') && WP_CLI) {
 
     // Auto-initialize if container is available
     add_action('cli_init', 'bitcore_cli_init');
-}
+
 
 // =================================================================================
 // TEST SCAFFOLD
@@ -578,3 +586,4 @@ if (defined('WP_CLI') && WP_CLI) {
  *
  * @since 1.0.0
  */
+}

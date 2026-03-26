@@ -3,6 +3,7 @@
  * Migration logic and version management for Bitcore schema
  *
  * @package    Bitcore
+ * @subpackage Infrastructure\MultiTenancy
  * @since      2026.03.01
  * @version    1.3.0
  * @author     hyperion
@@ -14,8 +15,59 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-            $this->setTenantSchemaVersion($tenantId, '1.0.0');
+class SchemaManager {
 
+    /** @var object Database connection */
+    private $db;
+
+    /** @var string Schema versions table name */
+    private string $versionsTable;
+
+    /** @var array<string, array{up: callable, down: callable}> Registered migrations */
+    private array $migrations = [];
+
+    /** @var int|null Active tenant ID */
+    private ?int $activeTenant = null;
+
+    /** @var object Tenant context manager */
+    private $tenantContext;
+
+    /** @var array<string> Shared tables (never prefixed) */
+    private array $sharedTables = [];
+
+    /** @var array<string> Row-level isolation tables */
+    private array $rowLevelTables = [];
+
+    /** @var string Isolation strategy ('prefix' or 'row') */
+    private string $isolationStrategy = 'prefix';
+
+    /**
+     * Constructor.
+     *
+     * @since 1.0.0
+     */
+    public function __construct() {
+        global $wpdb;
+        $this->db = $wpdb;
+        $this->versionsTable = $wpdb->prefix . 'bitcore_schema_versions';
+    }
+
+    /**
+     * Create tenant schema
+     *
+     * Initializes schema for a new tenant.
+     *
+     * @param int $tenantId Tenant ID
+     * @return void
+     * @since 1.0.0
+     */
+    public function createTenantSchema(int $tenantId): void {
+        $this->switchToTenant($tenantId);
+
+        try {
+            // Run initial migrations for new tenant
+            $this->runMigrations($tenantId);
+            $this->setTenantSchemaVersion($tenantId, '1.0.0');
         } finally {
             $this->resetToShared();
         }
@@ -201,8 +253,6 @@ if (!defined('ABSPATH')) {
     /**
      * Get table name with tenant context
      *
-     * Returns table name with appropriate prefix or isolation.
-     *
      * @param string $table Base table name
      * @param int|null $tenantId Tenant ID (null for current)
      * @return string Full table name
@@ -232,34 +282,32 @@ if (!defined('ABSPATH')) {
     /**
      * Switch to tenant context
      *
-     * Activates tenant for subsequent operations.
-     *
      * @param int $tenantId Tenant ID
      * @return void
      * @since 1.0.0
      */
     public function switchToTenant(int $tenantId): void {
         $this->activeTenant = $tenantId;
-        $this->tenantContext->setTenant($tenantId);
+        if ($this->tenantContext) {
+            $this->tenantContext->setTenant($tenantId);
+        }
     }
 
     /**
      * Reset to shared context
-     *
-     * Clears tenant-specific context.
      *
      * @return void
      * @since 1.0.0
      */
     public function resetToShared(): void {
         $this->activeTenant = null;
-        $this->tenantContext->clearTenant();
+        if ($this->tenantContext) {
+            $this->tenantContext->clearTenant();
+        }
     }
 
     /**
      * Configure shared tables
-     *
-     * Tables that are never prefixed per tenant.
      *
      * @param array<string> $tables Table names
      * @return void
@@ -271,8 +319,6 @@ if (!defined('ABSPATH')) {
 
     /**
      * Configure row-level isolation tables
-     *
-     * Tables that use tenant_id column instead of prefixing.
      *
      * @param array<string> $tables Table names
      * @return void
@@ -287,6 +333,7 @@ if (!defined('ABSPATH')) {
      *
      * @param string $strategy 'prefix' or 'row'
      * @return void
+     * @throws InvalidArgumentException If strategy is invalid
      * @since 1.0.0
      */
     public function setIsolationStrategy(string $strategy): void {
@@ -294,6 +341,17 @@ if (!defined('ABSPATH')) {
             throw new InvalidArgumentException("Invalid isolation strategy: {$strategy}");
         }
         $this->isolationStrategy = $strategy;
+    }
+
+    /**
+     * Set tenant context
+     *
+     * @param object $tenantContext Tenant context manager
+     * @return void
+     * @since 1.0.0
+     */
+    public function setTenantContext($tenantContext): void {
+        $this->tenantContext = $tenantContext;
     }
 
     /**
@@ -406,34 +464,3 @@ if (!defined('ABSPATH')) {
         dbDelta($sql);
     }
 }
-
-/*
- * Test Scaffold:
- * TODO: Implement unit tests
- * - SchemaVersion DTO:
- *   - Test constructor validation (empty version)
- *   - Test isSuccessful() returns correct boolean
- *   - Test isApplied() returns correct boolean
- *   - Test toArray() serialization
- * - MigrationInterface:
- *   - Test implementations extend AbstractMigration
- *   - Test up() and down() contracts
- *   - Test getVersion() and getDescription() return strings
- * - AbstractMigration:
- *   - Test getTableName() with and without SchemaManager
- *   - Test execute() error handling
- *   - Test delta() uses dbDelta correctly
- * - SchemaManager:
- *   - Test createTenantSchema() creates tables with prefix
- *   - Test migrateTenantSchema() runs pending migrations
- *   - Test rollbackTenantSchema() reverses migrations
- *   - Test getTenantSchemaVersion() returns correct version
- *   - Test registerMigration() stores callbacks
- *   - Test runMigrations() executes all pending
- *   - Test getTableName() with prefix strategy
- *   - Test getTableName() with row strategy
- *   - Test switchToTenant() and resetToShared()
- *   - Test shared tables not prefixed
- *   - Test ensureVersionsTable() creates schema_versions
- *   - Test error handling and rollback on failure
- */

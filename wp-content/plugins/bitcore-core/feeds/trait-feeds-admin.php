@@ -18,6 +18,8 @@ if (!defined('ABSPATH')) {
 /**
  * Feeds Module Loader
  *
+ */
+
 trait FeedsAdmin {
     public static function check_read_permission(): bool
     {
@@ -57,4 +59,4 @@ trait FeedsAdmin {
 
 // Initialize module
 add_action('plugins_loaded', [Feeds_Loader::class, 'init']);
-}
+

@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
+
+class BITCORE_REST_Tasks_Permissions {
+
 }
     public function get_items_permissions_check($request) {
         $nonce = $request->get_header('X-WP-Nonce');
@@ -269,3 +272,8 @@ if (!defined('ABSPATH')) {
 
         if (is_bool($data)) {
             return boolval($data);
+
+
+}
+}
+}

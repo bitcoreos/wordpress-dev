@@ -18,6 +18,8 @@ if (!defined('ABSPATH')) {
 /**
  * Feeds Module Loader
  *
+ */
+
 trait FeedsEndpoints {
     public static function get_feeds(\WP_REST_Request $request): \WP_REST_Response
     {

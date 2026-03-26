@@ -20,147 +20,173 @@ use RuntimeException;
  */
 class JwtTokenManager implements TokenManagerInterface {
 
-/** @var string The secret key for token signing */
-private string $secretKey;
+    /** @var string The secret key for token signing */
+    private string $secretKey;
 
-/** @var string The algorithm for token signing */
-private string $algorithm = 'HS256';
+    /** @var string The algorithm for token signing */
+    private string $algorithm = 'HS256';
 
-/** @var array<string, true> Revoked tokens cache */
-private array $revokedTokens = [];
+    /** @var array<string, true> Revoked tokens cache */
+    private array $revokedTokens = [];
 
-/**
- * Constructor.
- *
- * @since 1.0.0
- * @param string $secretKey The secret key for token signing.
- */
-public function __construct(string $secretKey) {
-(empty($secretKey)) {
-new InvalidArgumentException('Secret key cannot be empty');
- = $secretKey;
-}
+    /**
+     * Constructor.
+     *
+     * @since 1.0.0
+     * @param string $secretKey The secret key for token signing.
+     */
+    public function __construct(string $secretKey) {
+        if (empty($secretKey)) {
+            throw new InvalidArgumentException('Secret key cannot be empty');
+        }
+        $this->secretKey = $secretKey;
+    }
 
-/**
- * Generate a new token for the given payload.
- *
- * @since 1.0.0
- * @param array<string, mixed> $payload The data to encode in the token.
- * @param int                  $ttl Time-to-live in seconds.
- * @return string The generated token.
- */
-public function generate(array $payload, int $ttl = 3600): string {
-(empty($payload)) {
-new InvalidArgumentException('Payload cannot be empty');
-= time();
-= $issuedAt + $ttl;
+    /**
+     * Generate a new token for the given payload.
+     *
+     * @since 1.0.0
+     * @param array<string, mixed> $payload The data to encode in the token.
+     * @param int                  $ttl Time-to-live in seconds.
+     * @return string The generated token.
+     */
+    public function generate(array $payload, int $ttl = 3600): string {
+        if (empty($payload)) {
+            throw new InvalidArgumentException('Payload cannot be empty');
+        }
 
-Data = [
-=> $issuedAt,
-=> $expiresAt,
-=> $payload,
-= json_encode(['typ' => 'JWT', 'alg' => $this->algorithm]);
- = json_encode($tokenData);
+        $issuedAt = time();
+        $expiresAt = $issuedAt + $ttl;
 
-= $this->base64UrlEncode($header);
-load = $this->base64UrlEncode($body);
+        $tokenData = [
+            'iat' => $issuedAt,
+            'exp' => $expiresAt,
+            'data' => $payload,
+        ];
 
-ature = hash_hmac('sha256', "$base64Header.$base64Payload", $this->secretKey, true);
-ature = $this->base64UrlEncode($signature);
+        $header = json_encode(['typ' => 'JWT', 'alg' => $this->algorithm]);
+        $body = json_encode($tokenData);
 
- "$base64Header.$base64Payload.$base64Signature";
-}
+        $base64Header = $this->base64UrlEncode($header);
+        $base64Payload = $this->base64UrlEncode($body);
 
-/**
- * Validate a token and return its decoded payload.
- *
- * @since 1.0.0
- * @param string $token The token to validate.
- * @return TokenPayload The decoded token payload.
- * @throws InvalidArgumentException If token is invalid.
- * @throws RuntimeException If token has expired or been revoked.
- */
-public function validate(string $token): TokenPayload {
-(empty($token)) {
-new InvalidArgumentException('Token cannot be empty');
-(isset($this->revokedTokens[$token])) {
-new RuntimeException('Token has been revoked');
-= explode('.', $token);
-(count($parts) !== 3) {
-new InvalidArgumentException('Invalid token format');
-$base64Payload, $base64Signature] = $parts;
+        $signature = hash_hmac('sha256', "$base64Header.$base64Payload", $this->secretKey, true);
+        $base64Signature = $this->base64UrlEncode($signature);
 
-= json_decode($this->base64UrlDecode($base64Header), true);
-load = json_decode($this->base64UrlDecode($base64Payload), true);
+        return "$base64Header.$base64Payload.$base64Signature";
+    }
 
-(!$header || !$payload) {
-new InvalidArgumentException('Invalid token encoding');
-Verify signature
-ature = hash_hmac('sha256', "$base64Header.$base64Payload", $this->secretKey, true);
-ature = $this->base64UrlEncode($expectedSignature);
+    /**
+     * Validate a token and return its decoded payload.
+     *
+     * @since 1.0.0
+     * @param string $token The token to validate.
+     * @return TokenPayload The decoded token payload.
+     * @throws InvalidArgumentException If token is invalid.
+     * @throws RuntimeException If token has expired or been revoked.
+     */
+    public function validate(string $token): TokenPayload {
+        if (empty($token)) {
+            throw new InvalidArgumentException('Token cannot be empty');
+        }
 
-(!hash_equals($expectedSignature, $base64Signature)) {
-new RuntimeException('Invalid token signature');
-Check expiration
-(isset($payload['exp']) && $payload['exp'] < time()) {
-new RuntimeException('Token has expired');
-= $payload['data'] ?? [];
+        if (isset($this->revokedTokens[$token])) {
+            throw new RuntimeException('Token has been revoked');
+        }
 
- new TokenPayload(
-$data['user_id'] ?? 0,
-$data['roles'] ?? [],
-$payload['iat'] ?? time(),
-$payload['exp'] ?? (time() + 3600),
-$data
-* Revoke a token, making it invalid for future use.
- *
- * @since 1.0.0
- * @param string $token The token to revoke.
- * @return void
- */
-public function revoke(string $token): void {
-s[$token] = true;
-}
+        $parts = explode('.', $token);
 
-/**
- * Refresh a token, generating a new one with extended expiration.
- *
- * @since 1.0.0
- * @param string $token The token to refresh.
- * @return string The new refreshed token.
- */
-public function refresh(string $token): string {
-load = $this->validate($token);
-ewPayload = [
-=> $payload->userId,
-=> $payload->roles,
-=> $payload->data,
-Revoke old token
-);
+        if (count($parts) !== 3) {
+            throw new InvalidArgumentException('Invalid token format');
+        }
 
- $this->generate($newPayload);
-}
+        [$base64Header, $base64Payload, $base64Signature] = $parts;
 
-/**
- * Base64 URL-safe encode.
- *
- * @param string $data The data to encode.
- * @return string The encoded string.
- */
-private function base64UrlEncode(string $data): string {
- rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
-}
+        $header = json_decode($this->base64UrlDecode($base64Header), true);
+        $payload = json_decode($this->base64UrlDecode($base64Payload), true);
 
-/**
- * Base64 URL-safe decode.
- *
- * @param string $data The data to decode.
- * @return string The decoded string.
- */
-private function base64UrlDecode(string $data): string {
-der = strlen($data) % 4;
-($remainder) {
-.= str_repeat('=', 4 - $remainder);
- base64_decode(strtr($data, '-_', '+/'));
-}
+        if (!$header || !$payload) {
+            throw new InvalidArgumentException('Invalid token encoding');
+        }
+
+        // Verify signature
+        $expectedSignature = hash_hmac('sha256', "$base64Header.$base64Payload", $this->secretKey, true);
+        $expectedSignature = $this->base64UrlEncode($expectedSignature);
+
+        if (!hash_equals($expectedSignature, $base64Signature)) {
+            throw new RuntimeException('Invalid token signature');
+        }
+
+        // Check expiration
+        if (isset($payload['exp']) && $payload['exp'] < time()) {
+            throw new RuntimeException('Token has expired');
+        }
+
+        $data = $payload['data'] ?? [];
+
+        return new TokenPayload(
+            $data['user_id'] ?? 0,
+            $data['roles'] ?? [],
+            $payload['iat'] ?? time(),
+            $payload['exp'] ?? (time() + 3600),
+            $data
+        );
+    }
+
+    /**
+     * Revoke a token, making it invalid for future use.
+     *
+     * @since 1.0.0
+     * @param string $token The token to revoke.
+     * @return void
+     */
+    public function revoke(string $token): void {
+        $this->revokedTokens[$token] = true;
+    }
+
+    /**
+     * Refresh a token, generating a new one with extended expiration.
+     *
+     * @since 1.0.0
+     * @param string $token The token to refresh.
+     * @return string The new refreshed token.
+     */
+    public function refresh(string $token): string {
+        $payload = $this->validate($token);
+
+        $newPayload = [
+            'user_id' => $payload->userId,
+            'roles' => $payload->roles,
+            'data' => $payload->data,
+        ];
+
+        // Revoke old token
+        $this->revoke($token);
+
+        return $this->generate($newPayload);
+    }
+
+    /**
+     * Base64 URL-safe encode.
+     *
+     * @param string $data The data to encode.
+     * @return string The encoded string.
+     */
+    private function base64UrlEncode(string $data): string {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    /**
+     * Base64 URL-safe decode.
+     *
+     * @param string $data The data to decode.
+     * @return string The decoded string.
+     */
+    private function base64UrlDecode(string $data): string {
+        $remainder = strlen($data) % 4;
+        if ($remainder) {
+            $data .= str_repeat('=', 4 - $remainder);
+        }
+        return base64_decode(strtr($data, '-_', '+/'));
+    }
 }

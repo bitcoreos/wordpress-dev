@@ -13,6 +13,8 @@ namespace BITCORE\Feeds;
 
 /**
  * RAG Workspace
+ */
+
 trait RAG_Embedding {
     private function get_embedding(string $text)
     {

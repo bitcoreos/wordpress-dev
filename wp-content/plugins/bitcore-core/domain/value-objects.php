@@ -13,6 +13,9 @@ namespace BITCORE\Domain;
 
 if (!defined('ABSPATH')) {
     exit;
+
+class ValueObjects {
+
 }
 
 /**
@@ -102,4 +105,8 @@ final class TokenCount extends AbstractValueObject {
         }
         $this->value = $value;
     }
+
+
+
+}
 }

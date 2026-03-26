@@ -12,6 +12,14 @@ declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
+
+class Bitcore_Cache_Commands {
+    private $logger;
+
+    public function __construct() {
+        $this->logger = new BITCORE_Infrastructure_Logging_Logger();
+    }
+
 }
 
     // CACHE COMMANDS
@@ -240,3 +248,4 @@ if (!defined('ABSPATH')) {
     }
 
     // =================================================================================
+}
