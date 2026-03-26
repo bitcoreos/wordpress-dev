@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Knowledge Graph - Entity relationship tracking
  * Pattern extracted from flux

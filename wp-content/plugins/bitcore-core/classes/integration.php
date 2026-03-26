@@ -1,5 +1,20 @@
 <?php
 /**
+ * BITCORE_Integration implementation
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
+ */
+
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
  * Integration Class
  *
  * Handles admin scripts, nonce enqueuing, and REST route registration.

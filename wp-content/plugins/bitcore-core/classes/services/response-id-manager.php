@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Response ID Manager Service
  * Manages correlation IDs for tracking requests

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE BIThub Connector Service
  * Handles communication with hub.bitwiki.org (Discourse)

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE BITwiki Connector Service
  * Handles communication with bitwiki.org (MediaWiki)

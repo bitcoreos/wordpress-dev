@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Webhooks REST API
  * Extends bitcore-core with webhook triggers for external systems

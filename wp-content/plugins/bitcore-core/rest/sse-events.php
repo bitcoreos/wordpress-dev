@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * SSE Events - Server-Sent Events for real-time updates
  * 

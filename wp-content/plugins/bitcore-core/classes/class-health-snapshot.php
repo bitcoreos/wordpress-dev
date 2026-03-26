@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Health Snapshots - System health tracking
  * Pattern extracted from OpenClaw-OPS-Suite

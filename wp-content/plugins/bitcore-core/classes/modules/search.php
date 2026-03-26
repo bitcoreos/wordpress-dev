@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Search Module
  * Unified search across BITCORE systems

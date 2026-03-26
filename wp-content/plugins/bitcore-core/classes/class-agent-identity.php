@@ -1,16 +1,18 @@
 <?php
 /**
- * Agent Identity - Cryptographic identity binding
- * Pattern extracted from DashClaw
- * 
- * @package BitCore
- * @license MIT
+ * BITCORE_Agent_Identity class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
+
+declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
 }
-
 class BITCORE_Agent_Identity {
     
     /**

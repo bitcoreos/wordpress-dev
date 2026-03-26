@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Model Selector
  * Pattern: Capability-Based Model Selection

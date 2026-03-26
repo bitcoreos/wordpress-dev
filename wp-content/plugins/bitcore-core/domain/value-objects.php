@@ -1,5 +1,20 @@
 <?php
 /**
+ * ValueObjectInterface implementation
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
+ */
+
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
  * Domain Value Objects
  *
  * Immutable objects with validation
@@ -8,8 +23,6 @@
  * @package BITCORE\Domain
  * @since 1.0.0
  */
-
-declare(strict_types=1);
 
 namespace BITCORE\Domain;
 

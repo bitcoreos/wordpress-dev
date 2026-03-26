@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Rate Limiter - Request rate limiting
  * Pattern extracted from clawd-control

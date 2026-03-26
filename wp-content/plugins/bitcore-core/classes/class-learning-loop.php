@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Learning Loop - Episode Scoring and Knowledge Retention
  *

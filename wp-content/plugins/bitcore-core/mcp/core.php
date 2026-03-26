@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE MCP (Model Context Protocol) Core
  * Pattern: Enhanced MCP Protocol Implementation

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * REST API - Health and Knowledge Graph Endpoints
  * P1/P2 Feature Implementation

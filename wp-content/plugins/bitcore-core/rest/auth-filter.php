@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE REST Authentication Filter
  * Pattern: REST Auth Filter with API Key Support

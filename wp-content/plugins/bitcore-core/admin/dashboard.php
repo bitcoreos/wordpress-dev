@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Admin Dashboard
  */
@@ -77,6 +78,7 @@
             <h2>Quick Actions</h2>
             <div class="action-buttons">
                 <a href="<?php echo admin_url('admin.php?page=bitcore-agents'); ?>" class="button button-primary">Manage Agents</a>
+declare(strict_types=1);
                 <a href="<?php echo admin_url('admin.php?page=bitcore-mcp'); ?>" class="button">MCP Tools</a>
                 <a href="<?php echo admin_url('admin.php?page=bitcore-settings'); ?>" class="button">Settings</a>
             </div>

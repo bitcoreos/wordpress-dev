@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Admin Settings Page
  */
@@ -8,6 +9,7 @@
 
     <form method="post" action="options.php">
         <?php settings_fields('bitcore_options'); ?>
+declare(strict_types=1);
 
         <div class="bitcore-settings-grid">
             <!-- n8n Settings -->

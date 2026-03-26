@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE n8n Connector Service
  * Handles communication with n8n workflow automation

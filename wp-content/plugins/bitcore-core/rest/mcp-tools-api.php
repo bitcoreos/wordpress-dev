@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE MCP Tools REST API
  * Exposes WordPress abilities as MCP tools for n8n-mcp integration

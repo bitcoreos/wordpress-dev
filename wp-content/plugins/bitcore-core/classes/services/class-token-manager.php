@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * Token Manager - Secure token rotation with grace period
  * Pattern extracted from clawd-control
