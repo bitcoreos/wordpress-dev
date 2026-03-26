@@ -257,7 +257,7 @@ abstract class AbstractMigration implements MigrationInterface {
         $result = $this->db->query($sql);
 
         if ($result === false) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 "Migration failed for tenant {$this->tenantId}: " . $this->db->last_error
             );
         }
@@ -498,6 +498,13 @@ class SchemaManager {
             }
 
             // Initialize schema version
-}
+            $this->set_schema_version($tenantId, 1);
+
+        } catch (\Exception $e) {
+            $this->restoreBlog();
+            throw new \RuntimeException("Failed to create tenant schema: " . $e->getMessage());
+        }
+
+        $this->restoreBlog();
 }
 }

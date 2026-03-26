@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
+}
 
 class Bitcore_System_Commands {
     private $logger;
@@ -20,10 +21,6 @@ class Bitcore_System_Commands {
         $this->logger = new BITCORE_Infrastructure_Logging_Logger();
     }
 
-}
-
-    // SYSTEM COMMANDS
-    // =================================================================================
 
     /**
      * Show system health

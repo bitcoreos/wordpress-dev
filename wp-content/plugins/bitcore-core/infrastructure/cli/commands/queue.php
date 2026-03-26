@@ -13,6 +13,12 @@ declare(strict_types=1);
 if (!defined('ABSPATH')) {
     exit;
 }
+class Bitcore_Queue_Commands {
+    private $logger;
+
+    public function __construct() {
+        $this->logger = new BITCORE_Infrastructure_Logging_Logger();
+    }
 
     // QUEUE COMMANDS
     // =================================================================================

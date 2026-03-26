@@ -18,6 +18,7 @@ use DateInterval;
 use DateTime;
 use BITCORE\Infrastructure\Multitenancy\TenantContext;
 
+/**
 
  * Object Cache Tier - WordPress Object Cache wrapper
  *

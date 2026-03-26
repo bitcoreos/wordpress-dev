@@ -17,7 +17,6 @@ if (!defined('ABSPATH')) {
 
 /**
  * Feeds Module Loader
- *
  */
 
 trait FeedsEndpoints {
@@ -225,4 +224,25 @@ trait FeedsEndpoints {
 
     /**
      * Check read permission.
+     */
+    public static function check_read_permission(): bool
+    {
+        return current_user_can('read');
+    }
+
+    /**
+     * Check write permission.
+     */
+    public static function check_write_permission(): bool
+    {
+        return current_user_can('edit_posts');
+    }
+
+    /**
+     * Check admin permission.
+     */
+    public static function check_admin_permission(): bool
+    {
+        return current_user_can('manage_options');
+    }
 }

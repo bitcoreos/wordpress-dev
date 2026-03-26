@@ -214,7 +214,7 @@ class WebhookManager {
                 0,
                 [],
                 '',
-                new \\Exception("Subscription not found: {$subscriptionId}")
+                new \Exception("Subscription not found: {$subscriptionId}")
             );
         }
 
@@ -224,7 +224,7 @@ class WebhookManager {
                 0,
                 [],
                 '',
-                new \\Exception("Subscription is inactive: {$subscriptionId}")
+                new \Exception("Subscription is inactive: {$subscriptionId}")
             );
         }
 
@@ -259,7 +259,7 @@ class WebhookManager {
                 0,
                 [],
                 '',
-                new \\Exception("Subscription not found: {$delivery->subscriptionId}")
+                new \Exception("Subscription not found: {$delivery->subscriptionId}")
             );
         }
 
@@ -425,7 +425,7 @@ class WebhookManager {
                 0,
                 [],
                 '',
-                new \\Exception("Delivery not found: {$deliveryId}")
+                new \Exception("Delivery not found: {$deliveryId}")
             );
         }
 

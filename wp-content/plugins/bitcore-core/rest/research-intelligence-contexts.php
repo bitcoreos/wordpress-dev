@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
+}
 
 class BITCORE_Research_Intelligence_Contexts {
 
-}
     public static function list_episodes($request) {
         $learning = new BITCORE_Learning_Loop();
         $org_id = sanitize_text_field($request->get_param('org_id')) ?: 'org_default';
@@ -333,7 +333,5 @@ class BITCORE_Research_Intelligence_Contexts {
         }
         return false;
     }
-
-
 
 }

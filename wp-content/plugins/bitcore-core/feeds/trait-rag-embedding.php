@@ -80,9 +80,9 @@ trait RAG_Embedding {
 
         // Get all embeddings for workspace
         $embeddings = $wpdb->get_results($wpdb->prepare(
-            "SELECT e.*, d.title as document_title, d.source_url 
-            FROM {$this->embeddings_table} e 
-            LEFT JOIN {$this->documents_table} d ON e.document_id = d.id 
+            "SELECT e.*, d.title as document_title, d.source_url
+            FROM {$this->embeddings_table} e
+            LEFT JOIN {$this->documents_table} d ON e.document_id = d.id
             WHERE e.workspace_id = %d",
             $this->workspace_id
         ));
@@ -182,4 +182,10 @@ trait RAG_Embedding {
      *
      * @return Chunker Chunker instance.
      * @since 1.0.0
+     */
+    private function get_chunker()
+    {
+        // Placeholder - implement actual chunker instantiation
+        return null;
+    }
 }
