@@ -3,28 +3,26 @@
  * BITCORE Task Bid System
  * General-purpose bidding for tasks, projects, and assignments
  *
- * @package BITCORE\Coordination
+ * @package BITCORE_Core
  * @since 1.3.0
  */
 
 declare(strict_types=1);
 
-namespace BITCORE\Coordination;
-
 /**
- * Class TaskBid
+ * Class BITCORE_Coordination_TaskBid
  * Represents an agent's bid on any entity (task, project, mission, etc.)
  */
-readonly class TaskBid {
+class BITCORE_Coordination_TaskBid {
 
     public string $id;
-    public string $entity_type;    // task, project, mission, sprint, marathon
+    public string $entity_type;
     public int $entity_id;
     public string $agent_id;
-    public float $confidence;      // 0.0-1.0
+    public float $confidence;
     public int $estimated_tokens;
     public int $estimated_seconds;
-    public int $priority;          // 1-10
+    public int $priority;
     public string $rationale;
     public array $capabilities;
     public int $created_at;
@@ -53,9 +51,6 @@ readonly class TaskBid {
         $this->created_at = time();
     }
 
-    /**
-     * Calculate bid score (higher = better)
-     */
     public function calculate_score(): float {
         return ($this->confidence * 50) + 
                ($this->priority * 5) - 

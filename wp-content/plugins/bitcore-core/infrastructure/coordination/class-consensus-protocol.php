@@ -3,24 +3,22 @@
  * BITCORE Consensus Protocol
  * Decision-making logic for agent coordination
  *
- * @package BITCORE\Coordination
+ * @package BITCORE_Core
  * @since 1.3.0
  */
 
 declare(strict_types=1);
 
-namespace BITCORE\Coordination;
-
 /**
- * Class ConsensusProtocol
+ * Class BITCORE_Coordination_ConsensusProtocol
  * Implements consensus mechanisms for TRINITY coordination
  */
-class ConsensusProtocol {
+class BITCORE_Coordination_ConsensusProtocol {
 
-    const TYPE_UNANIMOUS = 'unanimous';
-    const TYPE_MAJORITY = 'majority';
-    const TYPE_WEIGHTED = 'weighted';
-    const TYPE_USER_DECIDES = 'user_decides';
+    public const TYPE_UNANIMOUS = 'unanimous';
+    public const TYPE_MAJORITY = 'majority';
+    public const TYPE_WEIGHTED = 'weighted';
+    public const TYPE_USER_DECIDES = 'user_decides';
 
     private string $type;
     private array $agent_weights;
@@ -36,10 +34,7 @@ class ConsensusProtocol {
         $this->threshold = $threshold;
     }
 
-    /**
-     * Evaluate consensus on a vote engine result
-     */
-    public function evaluate(VoteEngine $engine): array {
+    public function evaluate(BITCORE_Coordination_VoteEngine $engine): array {
         $tally = $engine->get_tally();
         $winner = $engine->get_winner();
         $participation = $engine->get_participation();
@@ -61,22 +56,21 @@ class ConsensusProtocol {
         ];
     }
 
-    /**
-     * Make decision based on consensus type
-     */
     private function make_decision(float $ratio, float $participation, int $option_count): string {
-        return match ($this->type) {
-            self::TYPE_UNANIMOUS => $ratio >= 1.0 ? 'approved' : 'rejected',
-            self::TYPE_MAJORITY => $ratio >= $this->threshold ? 'approved' : 'rejected',
-            self::TYPE_WEIGHTED => $ratio >= $this->threshold ? 'approved' : 'rejected',
-            self::TYPE_USER_DECIDES => $ratio >= $this->threshold ? 'approved' : 'user_decision_needed',
-            default => 'unknown',
-        };
+        switch ($this->type) {
+            case self::TYPE_UNANIMOUS:
+                return $ratio >= 1.0 ? 'approved' : 'rejected';
+            case self::TYPE_MAJORITY:
+                return $ratio >= $this->threshold ? 'approved' : 'rejected';
+            case self::TYPE_WEIGHTED:
+                return $ratio >= $this->threshold ? 'approved' : 'rejected';
+            case self::TYPE_USER_DECIDES:
+                return $ratio >= $this->threshold ? 'approved' : 'user_decision_needed';
+            default:
+                return 'unknown';
+        }
     }
 
-    /**
-     * Evaluate bid auction and select winner
-     */
     public function evaluate_bids(array $bids): array {
         if (empty($bids)) {
             return ['winner' => null, 'reason' => 'no_bids'];
@@ -94,9 +88,6 @@ class ConsensusProtocol {
         ];
     }
 
-    /**
-     * Set agent weight for weighted consensus
-     */
     public function set_weight(string $agent_id, float $weight): void {
         $this->agent_weights[$agent_id] = $weight;
     }
