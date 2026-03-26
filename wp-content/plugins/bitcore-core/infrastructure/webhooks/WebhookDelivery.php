@@ -1,21 +1,5 @@
 <?php
 /**
- * Webhook delivery classes, enums, interfaces and value objects
- *
- * @package    Bitcore
- * @since      2026.03.01
- * @version    1.3.0
- * @author     hyperion
- */
-
-declare(strict_types=1);
-
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-<?php
-/**
  * Webhook Manager
  *
  * Enterprise-grade webhook subscription management, event dispatching,

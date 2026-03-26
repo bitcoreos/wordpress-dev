@@ -1,21 +1,5 @@
 <?php
 /**
- * A2A support classes and interfaces for Bitcore
- *
- * @package    Bitcore
- * @since      2026.03.01
- * @version    1.3.0
- * @author     hyperion
- */
-
-declare(strict_types=1);
-
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-<?php
-/**
  * A2A (Agent-to-Agent) Dispatcher
  *
  * Provides message dispatch and routing between distributed agents.

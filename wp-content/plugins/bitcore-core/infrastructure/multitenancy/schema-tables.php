@@ -1,21 +1,5 @@
 <?php
 /**
- * Schema table creation and database structure for Bitcore multitenancy
- *
- * @package    Bitcore
- * @since      2026.03.01
- * @version    1.3.0
- * @author     hyperion
- */
-
-declare(strict_types=1);
-
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-<?php
-/**
  * Multi-Tenancy Schema Management
  *
  * Provides schema isolation, migration system, and database abstraction
