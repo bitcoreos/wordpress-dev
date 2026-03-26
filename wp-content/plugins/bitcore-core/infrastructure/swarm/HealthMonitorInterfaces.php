@@ -1,37 +1,5 @@
 <?php
 /**
- * Health checker interfaces for Bitcore swarm monitoring
- *
- * @package    Bitcore
- * @since      2026.03.01
- * @version    1.3.0
- * @author     hyperion
- */
-
-declare(strict_types=1);
-
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-<?php
-/**
- * Main health monitoring for Bitcore
- *
- * @package    Bitcore
- * @since      2026.03.01
- * @version    1.3.0
- * @author     hyperion
- */
-
-declare(strict_types=1);
-
-if (!defined('ABSPATH')) {
-    exit;
-}
-
-<?php
-/**
  * Distributed Health Monitor
  *
  * Provides health checking, status aggregation, and monitoring for

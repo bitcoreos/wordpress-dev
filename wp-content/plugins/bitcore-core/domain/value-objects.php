@@ -100,7 +100,7 @@ final class TaskId extends AbstractValueObject {
      * @param string $value Task ID.
      * @throws \InvalidArgumentException If invalid.
      */
-    protected function __construct(string $value) {
+    protected function __construct($value) {
         if (empty($value)) {
             throw new \InvalidArgumentException(__('Task ID cannot be empty.', 'bitcore-core'));
         }
@@ -146,7 +146,7 @@ final class UserId extends AbstractValueObject {
      * @param int $value User ID.
      * @throws \InvalidArgumentException If invalid.
      */
-    protected function __construct(int $value) {
+    protected function __construct($value) {
         if ($value < 1) {
             throw new \InvalidArgumentException(__('User ID must be positive.', 'bitcore-core'));
         }
@@ -189,7 +189,7 @@ final class ConnectorUrl extends AbstractValueObject {
      * @param string $value URL.
      * @throws \InvalidArgumentException If invalid.
      */
-    protected function __construct(string $value) {
+    protected function __construct($value) {
         if (empty($value)) {
             throw new \InvalidArgumentException(__('URL cannot be empty.', 'bitcore-core'));
         }
@@ -256,7 +256,7 @@ final class EmailAddress extends AbstractValueObject {
      * @param string $value Email address.
      * @throws \InvalidArgumentException If invalid.
      */
-    protected function __construct(string $value) {
+    protected function __construct($value) {
         if (empty($value)) {
             throw new \InvalidArgumentException(__('Email cannot be empty.', 'bitcore-core'));
         }
