@@ -387,3 +387,43 @@ class BITCORE_Core {
         do_action('bitcore_deactivated');
     }
 }
+
+    /**
+     * Plugin activation handler (from coraline)
+     */
+    public static function activate(): void {
+        // Register custom capabilities for roles
+        if ( class_exists( 'BITCORE_Modules_Capabilities' ) ) {
+            BITCORE_Modules_Capabilities::register();
+        }
+
+        // Flush rewrite rules for custom post types
+        flush_rewrite_rules();
+
+        /**
+         * Fires after plugin activation
+         *
+         * @since 1.0.0
+         */
+        do_action( 'bitcore_activated' );
+    }
+
+    /**
+     * Plugin deactivation handler (from coraline)
+     */
+    public static function deactivate(): void {
+        // Unregister custom capabilities
+        if ( class_exists( 'BITCORE_Modules_Capabilities' ) ) {
+            BITCORE_Modules_Capabilities::unregister();
+        }
+
+        // Flush rewrite rules
+        flush_rewrite_rules();
+
+        /**
+         * Fires after plugin deactivation
+         *
+         * @since 1.0.0
+         */
+        do_action( 'bitcore_deactivated' );
+    }
