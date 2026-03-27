@@ -20,11 +20,6 @@ class BITCORE_Container {
 
     /**
      * Register a service factory
-     *
-     * @param string   $id      Service identifier
-     * @param callable $factory Factory function returning service instance
-     * @param bool     $shared  Whether to cache as singleton (default: true)
-     * @return $this
      */
     public function set(string $id, callable $factory, bool $shared = true): self {
         $this->definitions[$id] = [
@@ -36,11 +31,6 @@ class BITCORE_Container {
 
     /**
      * Alias for set() - Coraline compatibility
-     *
-     * @param string   $name    Service identifier
-     * @param callable $factory Factory function
-     * @param bool     $shared  Whether to cache as singleton
-     * @return $this
      */
     public function register(string $name, callable $factory, bool $shared = true): self {
         return $this->set($name, $factory, $shared);
@@ -48,13 +38,8 @@ class BITCORE_Container {
 
     /**
      * Get a service instance
-     *
-     * @param string $id Service identifier
-     * @return mixed Service instance
-     * @throws \RuntimeException If service not found
      */
     public function get(string $id): mixed {
-        // Return cached singleton if available
         if (isset($this->instances[$id])) {
             return $this->instances[$id];
         }
@@ -66,7 +51,6 @@ class BITCORE_Container {
         $definition = $this->definitions[$id];
         $instance = $definition['factory']($this);
 
-        // Cache singleton
         if ($definition['shared']) {
             $this->instances[$id] = $instance;
         }
@@ -76,9 +60,6 @@ class BITCORE_Container {
 
     /**
      * Check if service is registered
-     *
-     * @param string $id Service identifier
-     * @return bool
      */
     public function has(string $id): bool {
         return isset($this->definitions[$id]);
@@ -86,9 +67,6 @@ class BITCORE_Container {
 
     /**
      * Unregister a service (Coraline utility)
-     *
-     * @param string $id Service identifier
-     * @return bool True if service was removed
      */
     public function unregister(string $id): bool {
         if (!isset($this->definitions[$id])) {
@@ -101,8 +79,6 @@ class BITCORE_Container {
 
     /**
      * Get all registered service names (Coraline utility)
-     *
-     * @return array
      */
     public function get_registered(): array {
         return array_keys($this->definitions);
@@ -110,8 +86,6 @@ class BITCORE_Container {
 
     /**
      * Clear all instances (Coraline utility - for testing)
-     *
-     * @return void
      */
     public function clear(): void {
         $this->instances = [];
@@ -119,9 +93,6 @@ class BITCORE_Container {
 
     /**
      * Register core services
-     *
-     * @param BITCORE_Core $core Core instance
-     * @return void
      */
     public function register_core_services(BITCORE_Core $core): void {
         // Core service (not shared - direct reference)
@@ -158,6 +129,11 @@ class BITCORE_Container {
 
         $this->set('connector_bitwiki', fn($c) =>
             new BITCORE_Services_Connector_BITwiki($c->get('core'))
+        );
+
+        // Hermes Connector
+        $this->set('connector_hermes', fn($c) =>
+            new BITCORE_Services_Connector_Hermes($c->get('core'))
         );
     }
 }
