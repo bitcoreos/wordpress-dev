@@ -33,17 +33,6 @@ use BITCORE\Infrastructure\Cache\CacheManager;
  * @package BITCORE\Infrastructure\Swarm
  * @since 1.0.0
  */
-enum CheckType: string {
-    case CONNECTIVITY = 'connectivity';
-    case RESPONSE_TIME = 'response_time';
-    case CAPACITY = 'capacity';
-    case MEMORY = 'memory';
-    case DATABASE = 'database';
-    case CACHE = 'cache';
-    case QUEUE = 'queue';
-    case DISK = 'disk';
-    case CUSTOM = 'custom';
-}
 
 // ============================================================================
 // HEALTH CHECK RESULT
