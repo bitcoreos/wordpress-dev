@@ -56,6 +56,7 @@ class BITCORE_Core {
         // Initialize container BEFORE plugins_loaded (Hyperion pattern)
         $this->init_container();
 
+        add_action('rest_api_init', [$this, 'init_rest'], 5);
         add_action('plugins_loaded', [$this, 'init']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
@@ -138,6 +139,14 @@ class BITCORE_Core {
         }
     }
 
+    /**
+     * Early REST API initialization (runs before plugins_loaded)
+     */
+    public function init_rest(): void {
+        require_once BITCORE_PATH . 'rest/Hermes_Api.php';
+        $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
+    }
+
     public function init(): void {
         // Initialize Coraline pattern-based services
         $this->encrypted_options = $this->container->get('encrypted_options');
@@ -154,7 +163,7 @@ class BITCORE_Core {
             $this->rest_auth_filter = new BITCORE_Rest_Auth_Filter();
             $this->rest = new BITCORE_Rest_API($this);
             $this->rest_tasks = new BITCORE_Rest_Tasks($this);
-            $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
+        // REST Hermes initialized in init_rest() for early hook timing
         require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
         $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         }
