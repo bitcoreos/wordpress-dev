@@ -13,7 +13,8 @@ class BITCORE_Rest_Hermes_Api {
 
     public function __construct( $core ) {
         $this->core = $core;
-        add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+        // Call directly since we're already in rest_api_init context
+        $this->register_routes();
     }
 
     /**
