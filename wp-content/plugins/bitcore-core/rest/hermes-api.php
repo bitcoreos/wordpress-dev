@@ -185,8 +185,12 @@ class BITCORE_Rest_Hermes_Api {
      * Health check
      */
     public function health_check( $request ) {
-        $response = $this->core->connector_hermes->health_check();
-        return rest_ensure_response( $response );
+        $connected = $this->core->connector_hermes->health_check();
+        return rest_ensure_response( [
+            'status' => $connected ? 'ok' : 'error',
+            'bridge' => $connected ? 'connected' : 'disconnected',
+            'timestamp' => current_time( 'iso' )
+        ] );
     }
 
     /**
