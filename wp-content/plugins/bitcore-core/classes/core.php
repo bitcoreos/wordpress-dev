@@ -80,34 +80,34 @@ class BITCORE_Core {
         });
 
         // === Hyperion: Infrastructure Services ===
-        $this->container->register('auth.manager', '\BITCORE\Infrastructure\Auth\AuthManager');
-        $this->container->register('auth.capability', '\BITCORE\Infrastructure\Auth\CapabilityManager');
-        $this->container->register('tenant.resolver', '\BITCORE\Infrastructure\MultiTenancy\TenantResolver');
-        $this->container->register('cache.manager', '\BITCORE\Infrastructure\Cache\CacheManager');
-        $this->container->register('queue.worker', '\BITCORE\Infrastructure\Queue\QueueWorker');
-        $this->container->register('logger', '\BITCORE\Infrastructure\Logging\Logger');
-        $this->container->register('ratelimit.manager', '\BITCORE\Infrastructure\RateLimit\RateLimitManager');
-        $this->container->register('webhooks.manager', '\BITCORE\Infrastructure\Webhooks\WebhookManager');
+        $this->container->register('auth.manager', function() { return new \BITCORE\Infrastructure\Auth\AuthManager(); });
+        $this->container->register('auth.capability', function() { return new \BITCORE\Infrastructure\Auth\CapabilityManager(); });
+        $this->container->register('tenant.resolver', function() { return new \BITCORE\Infrastructure\MultiTenancy\TenantResolver(); });
+        $this->container->register('cache.manager', function() { return new \BITCORE\Infrastructure\Cache\CacheManager(); });
+        $this->container->register('queue.worker', function() { return new \BITCORE\Infrastructure\Queue\QueueWorker(); });
+        $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
+        $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
+        $this->container->register('webhooks.manager', function() { return new \BITCORE\Infrastructure\Webhooks\WebhookManager(); });
 
         // === Hyperion: Wave 4 Security Services ===
         require_once BITCORE_PATH . 'infrastructure/security/middleware-pipeline.php';
-        $this->container->register('security.middleware.pipeline', '\BITCORE\Infrastructure\Security\MiddlewarePipeline');
+        $this->container->register('security.middleware.pipeline', function() { return new \BITCORE\Infrastructure\Security\MiddlewarePipeline(); });
 
         require_once BITCORE_PATH . 'infrastructure/security/audit-logger.php';
-        $this->container->register('security.audit.logger', '\BITCORE\Infrastructure\Security\AuditLogger');
+        $this->container->register('security.audit.logger', function() { return new \BITCORE\Infrastructure\Security\AuditLogger(); });
 
         require_once BITCORE_PATH . 'infrastructure/security/hardening.php';
-        $this->container->register('security.hardening.manager', '\BITCORE\Infrastructure\Security\HardeningManager');
+        $this->container->register('security.hardening.manager', function() { return new \BITCORE\Infrastructure\Security\HardeningManager(); });
 
         // === Hyperion: A2A Swarm Services ===
         require_once BITCORE_PATH . 'infrastructure/swarm/a2a-dispatcher.php';
-        $this->container->register('swarm.dispatcher', '\BITCORE\Infrastructure\Swarm\A2ADispatcher');
+        $this->container->register('swarm.dispatcher', function() { return new \BITCORE\Infrastructure\Swarm\A2ADispatcher(); });
 
         require_once BITCORE_PATH . 'infrastructure/swarm/swarm-coordinator.php';
-        $this->container->register('swarm.coordinator', '\BITCORE\Infrastructure\Swarm\SwarmCoordinator');
+        $this->container->register('swarm.coordinator', function() { return new \BITCORE\Infrastructure\Swarm\SwarmCoordinator(); });
 
         require_once BITCORE_PATH . 'infrastructure/swarm/health-monitor.php';
-        $this->container->register('health.monitor', '\BITCORE\Infrastructure\Swarm\HealthMonitor');
+        $this->container->register('health.monitor', function() { return new \BITCORE\Infrastructure\Swarm\HealthMonitor(); });
 
         // Initialize Wave 4 Services
         add_action('bitcore_init', [$this, 'init_wave4_services']);
