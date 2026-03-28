@@ -145,7 +145,7 @@ class BITCORE_Core {
     public function init_rest(): void {
         require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
         require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
-        require_once BITCORE_PATH . 'rest/Hermes_Api.php';
+        require_once BITCORE_PATH . 'rest/hermes-api.php';
         $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
     }
