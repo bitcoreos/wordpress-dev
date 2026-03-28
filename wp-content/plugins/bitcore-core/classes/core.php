@@ -42,6 +42,7 @@ class BITCORE_Core {
     public ?BITCORE_Rest_API $rest = null;
     public ?BITCORE_Rest_Tasks $rest_tasks = null;
     public ?BITCORE_Rest_Hermes_Api $rest_hermes = null;
+    public ?BITCORE_Services_Connector_Hermes $connector_hermes = null;
     public ?BITCORE_Modules_Search $search = null;
     public ?BITCORE_Modules_Forms $forms = null;
     public ?BITCORE_Modules_Tasks $tasks = null;
@@ -154,6 +155,8 @@ class BITCORE_Core {
             $this->rest = new BITCORE_Rest_API($this);
             $this->rest_tasks = new BITCORE_Rest_Tasks($this);
             $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
+        require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
+        $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         }
 
         // Initialize Wave 4 security middleware
