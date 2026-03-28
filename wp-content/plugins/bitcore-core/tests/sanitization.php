@@ -218,7 +218,7 @@ class BITCORE_Tests_Sanitization extends WP_UnitTestCase {
      * @return void
      */
     public function test_special_characters(): void {
-        $input = 'Test & "quotes" 'apostrophe' <br>';
+        $input = 'Test & "quotes" \'apostrophe\' <br>';
         $result = sanitize_text_field( $input );
         $this->assertStringNotContainsString( '<br>', $result );
     }
