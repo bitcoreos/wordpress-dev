@@ -10,8 +10,11 @@
 
 declare(strict_types=1);
 
+namespace BITCORE\Infrastructure\Webhooks;
+
 if (!defined('ABSPATH')) {
     exit;
+
 }
 
 class WebhookManager {

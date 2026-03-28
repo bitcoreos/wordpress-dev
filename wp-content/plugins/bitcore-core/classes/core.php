@@ -85,9 +85,11 @@ class BITCORE_Core {
         $this->container->register('auth.capability', function() { return new \BITCORE\Infrastructure\Auth\CapabilityManager(); });
         $this->container->register('tenant.resolver', function() { return new \BITCORE\Infrastructure\MultiTenancy\TenantResolver(); });
         $this->container->register('cache.manager', function() { return new \BITCORE\Infrastructure\Cache\CacheManager(); });
+        require_once BITCORE_PATH . 'infrastructure/queue/QueueWorker.php';
         $this->container->register('queue.worker', function() { return new \BITCORE\Infrastructure\Queue\QueueWorker(); });
         $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
         $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
+        require_once BITCORE_PATH . 'infrastructure/webhooks/WebhookManager.php';
         $this->container->register('webhooks.manager', function() { return new \BITCORE\Infrastructure\Webhooks\WebhookManager(); });
 
         // === Hyperion: Wave 4 Security Services ===

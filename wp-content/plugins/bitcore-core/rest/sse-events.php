@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @license MIT
  */
 
-declared('ABSPATH') || exit;
+defined('ABSPATH') || exit;
 
 class BITCORE_Rest_Sse_Events {
     
