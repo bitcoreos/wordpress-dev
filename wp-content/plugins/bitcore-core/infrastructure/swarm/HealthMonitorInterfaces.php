@@ -26,13 +26,6 @@ use BITCORE\Infrastructure\Cache\CacheManager;
  * @package BITCORE\Infrastructure\Swarm
  * @since 1.0.0
  */
-enum HealthState: string {
-    case HEALTHY = 'healthy';
-    case DEGRADED = 'degraded';
-    case UNHEALTHY = 'unhealthy';
-    case UNKNOWN = 'unknown';
-    case OFFLINE = 'offline';
-}
 
 /**
  * Enumeration of check types.
