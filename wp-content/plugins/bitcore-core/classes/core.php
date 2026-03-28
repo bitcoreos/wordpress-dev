@@ -143,7 +143,10 @@ class BITCORE_Core {
      * Early REST API initialization (runs before plugins_loaded)
      */
     public function init_rest(): void {
+        require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
+        require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
         require_once BITCORE_PATH . 'rest/Hermes_Api.php';
+        $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
     }
 
