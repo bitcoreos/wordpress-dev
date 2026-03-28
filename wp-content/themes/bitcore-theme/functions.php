@@ -390,3 +390,14 @@ function bitcore_register_rest_routes(): void {
     ) );
 }
 add_action( 'rest_api_init', 'bitcore_register_rest_routes' );
+
+/**
+ * Enqueue Librarian Template CSS
+ */
+function bitcore_enqueue_librarian_css() {
+    wp_enqueue_style('bitcore-base-css', get_template_directory_uri() . '/assets/css/base.css', array(), '1.0.0');
+    wp_enqueue_style('bitcore-dashboard-css', get_template_directory_uri() . '/assets/css/dashboard.css', array(), '1.0.0');
+    wp_enqueue_style('bitcore-template-bridge-css', get_template_directory_uri() . '/assets/css/template-bridge.css', array(), '1.0.0');
+    wp_enqueue_style('bitcore-librarian-css', get_template_directory_uri() . '/assets/css/librarian-expanded.css', array(), '1.0.0');
+}
+add_action('wp_enqueue_scripts', 'bitcore_enqueue_librarian_css');

@@ -1,12 +1,11 @@
-<!-- wp:template {"slug":"intent","title":"Intent"} -->
-<div class="wp-site-blocks">
-<!-- wp:template-part {"slug":"header"} /-->
-<!-- wp:group {"className":"bitcore-content","layout":{"type":"constrained"}} -->
-<div class="wp-block-group bitcore-content">
-<!-- wp:heading {"level":1} --><h1>Submit Intent</h1><!-- /wp:heading -->
-<!-- wp:paragraph --><p>Express your intent to the BITCORE swarm.</p><!-- /wp:paragraph -->
-</div>
+<!-- wp:template {"slug":"intent","title":"Intent Form"} -->
+<!-- wp:group {"className":"bitcore-layout","layout":{"type":"default"}} -->
+<!-- wp:template-part {"slug":"sidebar","theme":"bitcore-theme"} /-->
+<!-- wp:group {"className":"bitcore-content-area"} -->
+<!-- wp:template-part {"slug":"header","theme":"bitcore-theme"} /-->
+<!-- wp:group {"className":"bitcore-main"} -->
+<!-- wp:shortcode {"text":"[bitcore-intent-form]"} /-->
 <!-- /wp:group -->
-<!-- wp:template-part {"slug":"footer"} /-->
-</div>
+<!-- /wp:group -->
+<!-- /wp:group -->
 <!-- /wp:template -->
