@@ -323,9 +323,19 @@ function bitcore_log(string $message, array $context = []): void {
     }
 }
 
-// Paperclip Integration REST API Routes
-// DISABLED: add_action('rest_api_init', ['BITCORE\REST\Checkout_API', 'register_routes']);
-// DISABLED: add_action('rest_api_init', ['BITCORE\REST\Org_Chart_API', 'register_routes']);
-// DISABLED: add_action('rest_api_init', ['BITCORE\REST\Budget_API', 'register_routes']);
-// DISABLED: add_action('rest_api_init', ['BITCORE\REST\Goals_API', 'register_routes']);
-// DISABLED: add_action('rest_api_init', ['BITCORE\REST\Approvals_API', 'register_routes']);
+// Paperclip Integration REST API Routes (Instance-based registration)
+add_action('rest_api_init', function() {
+    $apis = [
+        'BITCORE\REST\Checkout_API',
+        'BITCORE\REST\Org_Chart_API',
+        'BITCORE\REST\Budget_API',
+        'BITCORE\REST\Goals_API',
+        'BITCORE\REST\Approvals_API',
+    ];
+    foreach ($apis as $api_class) {
+        if (class_exists($api_class)) {
+            $instance = new $api_class();
+            $instance->register_routes();
+        }
+    }
+});
