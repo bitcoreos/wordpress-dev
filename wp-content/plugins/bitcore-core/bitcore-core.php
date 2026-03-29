@@ -326,11 +326,11 @@ function bitcore_log(string $message, array $context = []): void {
 // Paperclip Integration REST API Routes (Instance-based registration)
 add_action('rest_api_init', function() {
     $apis = [
-        'BITCORE\REST\Checkout_API',
-        'BITCORE\REST\Org_Chart_API',
-        'BITCORE\REST\Budget_API',
-        'BITCORE\REST\Goals_API',
-        'BITCORE\REST\Approvals_API',
+        'BITCORE\Rest\Checkout_API',
+        'BITCORE\Rest\Org_Chart_API',
+        'BITCORE\Rest\Budget_API',
+        'BITCORE\Rest\Goals_API',
+        'BITCORE\Rest\Approvals_API',
     ];
     foreach ($apis as $api_class) {
         if (class_exists($api_class)) {
