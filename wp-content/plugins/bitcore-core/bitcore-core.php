@@ -339,3 +339,6 @@ add_action('rest_api_init', function() {
         }
     }
 });
+
+// === FROM HYPERION: Admin Menu Registration ===
+require_once BITCORE_PLUGIN_DIR . 'admin/menu-registration.php';

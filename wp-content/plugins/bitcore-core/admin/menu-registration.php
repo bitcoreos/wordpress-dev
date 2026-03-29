@@ -18,7 +18,7 @@ add_action('admin_menu', function() {
         25
     );
     
-    // Submenu pages
+    // Submenu pages - Core
     add_submenu_page(
         'bitcore',
         'Dashboard',
@@ -57,11 +57,69 @@ add_action('admin_menu', function() {
     
     add_submenu_page(
         'bitcore',
+        'Agents',
+        'Agents',
+        'manage_options',
+        'bitcore-agents',
+        function() { require_once BITCORE_PATH . 'admin/agents.php'; }
+    );
+    
+    add_submenu_page(
+        'bitcore',
         'Internal Agents',
         'Internal Agents',
         'manage_options',
         'bitcore-internal',
         function() { require_once BITCORE_PATH . 'admin/internal-agents.php'; }
+    );
+    
+    add_submenu_page(
+        'bitcore',
+        'MCP',
+        'MCP',
+        'manage_options',
+        'bitcore-mcp',
+        function() { require_once BITCORE_PATH . 'admin/mcp.php'; }
+    );
+    
+    // Paperclip Integration - Org Chart
+    add_submenu_page(
+        'bitcore',
+        'Org Chart',
+        'Org Chart',
+        'manage_options',
+        'bitcore-org-chart',
+        function() { require_once BITCORE_PATH . 'admin/org-chart.php'; }
+    );
+    
+    // Paperclip Integration - Budget
+    add_submenu_page(
+        'bitcore',
+        'Budget',
+        'Budget',
+        'manage_options',
+        'bitcore-budget',
+        function() { require_once BITCORE_PATH . 'admin/budget.php'; }
+    );
+    
+    // Paperclip Integration - Goals
+    add_submenu_page(
+        'bitcore',
+        'Goals',
+        'Goals',
+        'manage_options',
+        'bitcore-goals',
+        function() { require_once BITCORE_PATH . 'admin/goals.php'; }
+    );
+    
+    // Paperclip Integration - Approvals
+    add_submenu_page(
+        'bitcore',
+        'Approvals',
+        'Approvals',
+        'manage_options',
+        'bitcore-approvals',
+        function() { require_once BITCORE_PATH . 'admin/approvals.php'; }
     );
 });
 
