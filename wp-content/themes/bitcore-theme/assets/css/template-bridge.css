@@ -721,3 +721,87 @@
     background: var(--bf-bg-tertiary, #1a1a25);
     border-radius: 8px;
 }
+
+/* ============================================
+   BITFLUX AVATAR ANIMATION KEYFRAMES
+   ============================================ */
+
+@keyframes gentle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes attentive-lean {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(3deg); }
+    75% { transform: rotate(-3deg); }
+}
+
+@keyframes portal-wave {
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 0.7; transform: scale(1); }
+}
+
+@keyframes shield-pulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(0, 212, 170, 0.3); }
+    50% { box-shadow: 0 0 25px rgba(0, 212, 170, 0.6); }
+}
+
+@keyframes chase-lights {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes dash-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes symmetric-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes elevated {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-15px) scale(1.05); }
+    100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes portal-open {
+    0% { clip-path: circle(0% at 50% 50%); }
+    100% { clip-path: circle(100% at 50% 50%); }
+}
+
+@keyframes shiver-flash {
+    0%, 90%, 100% { transform: translateX(0); filter: brightness(1); }
+    92%, 96% { transform: translateX(-3px); }
+    94%, 98% { transform: translateX(3px); }
+    95% { filter: brightness(1.3); }
+}
+
+/* Animation class mappings */
+.animation-gentle-float { animation: gentle-float 3s ease-in-out infinite; }
+.animation-attentive-lean { animation: attentive-lean 4s ease-in-out infinite; }
+.animation-portal-wave { animation: portal-wave 2s ease-in-out infinite; }
+.animation-shield-pulse { animation: shield-pulse 2s ease-in-out infinite; }
+.animation-chase-lights { animation: chase-lights 3s linear infinite; background-size: 200% 200%; }
+.animation-dash-rotate { animation: dash-rotate 8s linear infinite; }
+.animation-symmetric-pulse { animation: symmetric-pulse 2s ease-in-out infinite; }
+.animation-elevated { animation: elevated 4s ease-in-out infinite; }
+.animation-portal-open { animation: portal-open 0.6s ease-out forwards; }
+.animation-shiver-flash { animation: shiver-flash 0.5s ease-in-out; }
+
+/* BitFlux container states */
+.bitflux-avatar-container[data-state="welcome"] .bitflux-core { animation: gentle-float 3s ease-in-out infinite; }
+.bitflux-avatar-container[data-state="listen"] .bitflux-core { animation: attentive-lean 4s ease-in-out infinite; }
+.bitflux-avatar-container[data-state="chat-ready"] .bitflux-core { animation: symmetric-pulse 2s ease-in-out infinite; }
+.bitflux-avatar-container[data-state="focused-shield"] .bitflux-core { animation: shield-pulse 2s ease-in-out infinite; }
+.bitflux-avatar-container[data-state="agent-task"] .bitflux-core { animation: dash-rotate 8s linear infinite; }
+.bitflux-avatar-container[data-state="process"] .bitflux-core { animation: chase-lights 3s linear infinite; }
+.bitflux-avatar-container[data-state="swarm-guard"] .bitflux-core { animation: elevated 4s ease-in-out infinite; }
+.bitflux-avatar-container[data-state="crown-mode"] .bitflux-core { animation: portal-wave 2s ease-in-out infinite; }
+.bitflux-avatar-container[data-state="portal-enter"] .bitflux-core { animation: portal-open 0.6s ease-out forwards; }
+.bitflux-avatar-container[data-state="error-404"] .bitflux-core { animation: shiver-flash 0.5s ease-in-out; }

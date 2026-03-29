@@ -401,3 +401,44 @@ function bitcore_enqueue_librarian_css() {
     wp_enqueue_style('bitcore-librarian-css', get_template_directory_uri() . '/assets/css/librarian-expanded.css', array(), '1.0.0');
 }
 add_action('wp_enqueue_scripts', 'bitcore_enqueue_librarian_css');
+
+/**
+ * Enqueue page-specific scripts for BITCORE pages
+ */
+function bitcore_enqueue_page_scripts() {
+    $nonce = wp_create_nonce('wp_rest');
+    $bitcore_data = array(
+        'restUrl' => rest_url('bitcore/v1/'),
+        'nonce' => $nonce,
+        'userId' => get_current_user_id(),
+    );
+
+    // Get current page slug
+    $slug = get_post_field('post_name', get_queried_object_id());
+    
+    $page_scripts = array(
+        'tasks' => 'tasks.js',
+        'workspaces' => 'workspaces.js',
+        'identities' => 'identities.js',
+        'knowledge-graph' => 'knowledge-graph.js',
+        'webhooks' => 'webhooks.js',
+        'abilities' => 'abilities.js',
+        'events' => 'events.js',
+        'mcp-tools' => 'mcp-tools.js',
+        'accelerate' => 'mcp-tools.js', // shares same JS
+        'office-suite' => 'office-suite.js',
+    );
+    
+    if (isset($page_scripts[$slug])) {
+        $handle = 'bitcore-' . $slug . '-js';
+        wp_enqueue_script(
+            $handle,
+            get_template_directory_uri() . '/assets/js/' . $page_scripts[$slug],
+            array('bitcore-theme-js'),
+            filemtime(get_template_directory() . '/assets/js/' . $page_scripts[$slug]),
+            true
+        );
+        wp_localize_script($handle, 'bitcoreData', $bitcore_data);
+    }
+}
+add_action('wp_enqueue_scripts', 'bitcore_enqueue_page_scripts', 15);
