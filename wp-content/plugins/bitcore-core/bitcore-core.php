@@ -320,3 +320,10 @@ function bitcore_log(string $message, array $context = []): void {
         ));
     }
 }
+
+// Paperclip Integration REST API Routes
+add_action('rest_api_init', ['BITCORE\REST\Checkout_API', 'register_routes']);
+add_action('rest_api_init', ['BITCORE\REST\Org_Chart_API', 'register_routes']);
+add_action('rest_api_init', ['BITCORE\REST\Budget_API', 'register_routes']);
+add_action('rest_api_init', ['BITCORE\REST\Goals_API', 'register_routes']);
+add_action('rest_api_init', ['BITCORE\REST\Approvals_API', 'register_routes']);
