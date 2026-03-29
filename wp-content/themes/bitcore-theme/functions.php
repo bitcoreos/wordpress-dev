@@ -442,3 +442,31 @@ function bitcore_enqueue_page_scripts() {
     }
 }
 add_action('wp_enqueue_scripts', 'bitcore_enqueue_page_scripts', 15);
+
+// Paperclip Integration Pages - JS Enqueue
+add_action('wp_enqueue_scripts', function() {
+    $paperclip_pages = array(
+        'org-chart' => 'org-chart.js',
+        'budget' => 'budget.js',
+        'goals' => 'goals.js',
+        'approvals' => 'approvals.js',
+        'checkout' => 'checkout.js',
+        'sessions' => 'sessions.js'
+    );
+    
+    foreach ($paperclip_pages as $slug => $js_file) {
+        if (is_page($slug)) {
+            wp_enqueue_script(
+                'bitcore-' . str_replace('-', '', $slug),
+                get_template_directory_uri() . '/assets/js/' . $js_file,
+                array(),
+                file_exists(get_template_directory() . '/assets/js/' . $js_file) ? filemtime(get_template_directory() . '/assets/js/' . $js_file) : '1.0.0',
+                true
+            );
+            wp_localize_script('bitcore-' . str_replace('-', '', $slug), 'bitcoreData', array(
+                'restUrl' => rest_url('bitcore/v1/'),
+                'nonce' => wp_create_nonce('wp_rest')
+            ));
+        }
+    }
+});
