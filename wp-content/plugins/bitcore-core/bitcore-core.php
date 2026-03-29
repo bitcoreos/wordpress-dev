@@ -80,6 +80,8 @@ function bitcore_load_patterns(): void {
 add_action('plugins_loaded', 'bitcore_load_patterns', 5);
 
 // === FROM HYPERION: Initialize Infrastructure ===
+    // PSR-4 Autoloader for Paperclip Integration Modules
+    require_once BITCORE_PLUGIN_DIR . 'classes/psr4-autoloader.php';
 function bitcore_init_infrastructure(): void {
     if (!isset($GLOBALS['bitcore'])) {
         require_once BITCORE_PLUGIN_DIR . 'classes/core.php';
