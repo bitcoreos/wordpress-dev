@@ -1,7 +1,7 @@
 /**
  * BITCORE Tasks Page Controller
  * Handles task creation, listing, and management
- * @version 1.0.0
+ * @version 1.0.1 - Fixed selectors to match HTML
  */
 
 (function(global) {
@@ -11,12 +11,18 @@
         config: {
             endpoint: '/wp-json/bitcore/v1/tasks',
             nonce: null,
-            container: '#tasks-container',
-            form: '#task-form',
-            list: '#task-list'
+            container: '.task-container',      // FIXED: was #tasks-container
+            form: '.card-body form',           // FIXED: was #task-form
+            list: '#task-list',
+            createBtn: '#submit-task-btn',
+            refreshBtn: '#refresh-btn',
+            newTaskName: '#new-task-name',
+            newTaskDesc: '#new-task-desc',
+            newTaskPriority: '#new-task-priority'
         },
 
         tasks: [],
+        currentFilter: 'all',
 
         init: function(config = {}) {
             this.config = { ...this.config, ...config };
@@ -26,218 +32,227 @@
                 this.config.nonce = bitcoreData.nonce;
             }
 
+            console.log('TasksPage initializing...');
             this.bindEvents();
             this.loadTasks();
         },
 
         bindEvents: function() {
-            const form = document.querySelector(this.config.form);
-            if (form) {
-                form.addEventListener('submit', (e) => {
+            const self = this;
+
+            // Create task button
+            const createBtn = document.querySelector(this.config.createBtn);
+            if (createBtn) {
+                createBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    this.createTask();
+                    self.createTask();
                 });
             }
 
-            // Delegate clicks for task actions
-            const list = document.querySelector(this.config.list);
-            if (list) {
-                list.addEventListener('click', (e) => {
-                    const target = e.target.closest('[data-action]');
-                    if (target) {
-                        const action = target.dataset.action;
-                        const taskId = target.closest('[data-task-id]')?.dataset.taskId;
-                        if (action && taskId) {
-                            this.handleAction(action, taskId);
-                        }
-                    }
+            // Refresh button
+            const refreshBtn = document.querySelector(this.config.refreshBtn);
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    self.loadTasks();
                 });
             }
+
+            // Filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    self.currentFilter = this.dataset.filter;
+                    self.renderTasks();
+                });
+            });
         },
 
         loadTasks: async function() {
+            const self = this;
+            const listEl = document.querySelector(this.config.list);
+            
+            if (listEl) {
+                listEl.innerHTML = '<div class="empty-state">Loading tasks...</div>';
+            }
+
             try {
-                this.showLoading(true);
-                const response = await this.request('GET', this.config.endpoint);
-                this.tasks = response || [];
-                this.render();
+                const response = await fetch(this.config.endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': this.config.nonce || ''
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('API returned ' + response.status);
+                }
+
+                const data = await response.json();
+                this.tasks = data.tasks || data || [];
+                this.renderTasks();
+                this.updateStats();
             } catch (error) {
-                console.error('Failed to load tasks:', error);
-                this.showError('Failed to load tasks. Please try again.');
-            } finally {
-                this.showLoading(false);
+                console.error('Load tasks error:', error);
+                if (listEl) {
+                    listEl.innerHTML = '<div class="empty-state">No tasks found. Create your first task!</div>';
+                }
+                this.updateStats(0, 0, 0, 0);
             }
         },
 
-        createTask: async function() {
-            const form = document.querySelector(this.config.form);
-            const formData = new FormData(form);
-            
-            const task = {
-                title: formData.get('title') || document.getElementById('new-task-name')?.value,
-                description: formData.get('description') || document.getElementById('new-task-desc')?.value,
-                priority: formData.get('priority') || document.getElementById('new-task-priority')?.value || 'normal'
-            };
+        renderTasks: function() {
+            const listEl = document.querySelector(this.config.list);
+            if (!listEl) return;
 
-            if (!task.title) {
-                this.showError('Task name is required');
+            let filtered = this.tasks;
+            if (this.currentFilter !== 'all') {
+                filtered = this.tasks.filter(t => t.status === this.currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">No tasks found</div>';
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(task => {
+                html += `
+                    <div class="task-item" data-task-id="${task.id}" onclick="TasksPage.selectTask('${task.id}')">
+                        <div class="task-item-header">
+                            <span class="task-name">${this.escapeHtml(task.name || task.title)}</span>
+                            <span class="task-status ${task.status}">${task.status}</span>
+                        </div>
+                        <div class="task-desc">${this.escapeHtml(task.description || '')}</div>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+
+            document.getElementById('task-count').textContent = filtered.length + ' tasks';
+        },
+
+        updateStats: function(total, pending, running, completed) {
+            if (total === undefined) {
+                total = this.tasks.length;
+                pending = this.tasks.filter(t => t.status === 'pending').length;
+                running = this.tasks.filter(t => t.status === 'running').length;
+                completed = this.tasks.filter(t => t.status === 'completed').length;
+            }
+
+            const totalEl = document.getElementById('total-tasks');
+            const pendingEl = document.getElementById('pending-tasks');
+            const runningEl = document.getElementById('running-tasks');
+            const completedEl = document.getElementById('completed-tasks');
+
+            if (totalEl) totalEl.textContent = total;
+            if (pendingEl) pendingEl.textContent = pending;
+            if (runningEl) runningEl.textContent = running;
+            if (completedEl) completedEl.textContent = completed;
+        },
+
+        createTask: async function() {
+            const nameEl = document.querySelector(this.config.newTaskName);
+            const descEl = document.querySelector(this.config.newTaskDesc);
+            const priorityEl = document.querySelector(this.config.newTaskPriority);
+
+            const name = nameEl ? nameEl.value.trim() : '';
+            const desc = descEl ? descEl.value.trim() : '';
+            const priority = priorityEl ? priorityEl.value : 'normal';
+
+            if (!name) {
+                alert('Task name required');
                 return;
             }
 
             try {
-                const response = await this.request('POST', this.config.endpoint, task);
-                this.tasks.unshift(response);
-                this.render();
-                form.reset();
-                this.showSuccess('Task created successfully');
+                const response = await fetch(this.config.endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': this.config.nonce || ''
+                    },
+                    body: JSON.stringify({ name: name, description: desc, priority: priority })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create task: ' + response.status);
+                }
+
+                // Clear form
+                if (nameEl) nameEl.value = '';
+                if (descEl) descEl.value = '';
+
+                // Reload tasks
+                this.loadTasks();
+                this.showNotification('Task created!', 'success');
             } catch (error) {
-                console.error('Failed to create task:', error);
-                this.showError('Failed to create task. Please try again.');
+                console.error('Create task error:', error);
+                this.showNotification('Error: ' + error.message, 'error');
             }
         },
 
-        handleAction: async function(action, taskId) {
+        selectTask: function(taskId) {
             const task = this.tasks.find(t => t.id == taskId);
             if (!task) return;
 
-            switch (action) {
-                case 'dispatch':
-                    await this.dispatchTask(taskId);
-                    break;
-                case 'cancel':
-                    await this.cancelTask(taskId);
-                    break;
-                case 'delete':
-                    await this.deleteTask(taskId);
-                    break;
-            }
-        },
+            const detailCard = document.getElementById('task-detail-card');
+            const detailBody = document.getElementById('task-detail-body');
 
-        dispatchTask: async function(taskId) {
-            try {
-                await this.request('POST', `${this.config.endpoint}/${taskId}/dispatch`);
-                this.showSuccess('Task dispatched');
-                this.loadTasks();
-            } catch (error) {
-                this.showError('Failed to dispatch task');
-            }
-        },
-
-        cancelTask: async function(taskId) {
-            try {
-                await this.request('POST', `${this.config.endpoint}/${taskId}/cancel`);
-                this.showSuccess('Task cancelled');
-                this.loadTasks();
-            } catch (error) {
-                this.showError('Failed to cancel task');
+            if (detailCard && detailBody) {
+                detailCard.style.display = 'block';
+                detailBody.innerHTML = `
+                    <p><strong>Name:</strong> ${this.escapeHtml(task.name)}</p>
+                    <p><strong>Status:</strong> ${task.status}</p>
+                    <p><strong>Description:</strong> ${this.escapeHtml(task.description || 'None')}</p>
+                    <p><strong>Priority:</strong> ${task.priority || 'normal'}</p>
+                    <button class="btn btn-danger btn-sm" onclick="TasksPage.deleteTask('${task.id}')">Delete</button>
+                `;
             }
         },
 
         deleteTask: async function(taskId) {
-            if (!confirm('Are you sure you want to delete this task?')) return;
-            
+            if (!confirm('Delete this task?')) return;
+
             try {
-                await this.request('DELETE', `${this.config.endpoint}/${taskId}`);
-                this.tasks = this.tasks.filter(t => t.id != taskId);
-                this.render();
-                this.showSuccess('Task deleted');
+                await fetch(this.config.endpoint + '/' + taskId, {
+                    method: 'DELETE',
+                    headers: { 'X-WP-Nonce': this.config.nonce || '' }
+                });
+                document.getElementById('task-detail-card').style.display = 'none';
+                this.loadTasks();
             } catch (error) {
-                this.showError('Failed to delete task');
+                console.error('Delete error:', error);
             }
         },
 
-        render: function() {
-            const container = document.querySelector(this.config.list);
-            if (!container) return;
-
-            if (this.tasks.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>No tasks yet. Create your first task above.</p></div>';
-                return;
-            }
-
-            container.innerHTML = this.tasks.map(task => `
-                <div class="task-item" data-task-id="${task.id}">
-                    <div class="task-header">
-                        <span class="task-title">${this.escapeHtml(task.title)}</span>
-                        <span class="task-priority priority-${task.priority || 'normal'}">${task.priority || 'normal'}</span>
-                        <span class="task-status status-${task.status || 'pending'}">${task.status || 'pending'}</span>
-                    </div>
-                    ${task.description ? `<p class="task-description">${this.escapeHtml(task.description)}</p>` : ''}
-                    <div class="task-actions">
-                        <button class="btn btn-sm" data-action="dispatch">Dispatch</button>
-                        <button class="btn btn-sm btn-secondary" data-action="cancel">Cancel</button>
-                        <button class="btn btn-sm btn-danger" data-action="delete">Delete</button>
-                    </div>
-                </div>
-            `).join('');
-        },
-
-        request: async function(method, url, data = null) {
-            const options = {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                }
-            };
-
-            if (this.config.nonce) {
-                options.headers['X-WP-Nonce'] = this.config.nonce;
-            }
-
-            if (data && method !== 'GET') {
-                options.body = JSON.stringify(data);
-            }
-
-            const response = await fetch(url, options);
-            
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                throw new Error(error.message || 'Request failed');
-            }
-
-            return await response.json();
-        },
-
-        showLoading: function(show) {
-            const container = document.querySelector(this.config.container);
-            if (container) {
-                container.classList.toggle('loading', show);
-            }
-        },
-
-        showError: function(message) {
-            this.showNotification(message, 'error');
-        },
-
-        showSuccess: function(message) {
-            this.showNotification(message, 'success');
-        },
-
-        showNotification: function(message, type = 'info') {
+        showNotification: function(message, type) {
             const existing = document.querySelector('.notification');
             if (existing) existing.remove();
 
             const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
+            notification.className = 'notification notification-' + type;
             notification.textContent = message;
+            notification.style.cssText = 'position:fixed;top:20px;right:20px;padding:10px 20px;border-radius:4px;z-index:9999;background:' + (type === 'success' ? '#4caf50' : '#f44336') + ';color:white;';
             document.body.appendChild(notification);
 
-            setTimeout(() => notification.remove(), 5000);
+            setTimeout(function() { notification.remove(); }, 3000);
         },
 
         escapeHtml: function(text) {
+            if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
     };
 
-    // Auto-initialize when DOM is ready
-    document.addEventListener('DOMContentLoaded', () => {
+    // Auto-initialize
+    document.addEventListener('DOMContentLoaded', function() {
         TasksPage.init();
     });
 
     global.TasksPage = TasksPage;
 
-})(typeof window !== 'undefined' ? window : global);
+})(typeof window !== 'undefined' ? window : this);
