@@ -60,7 +60,7 @@ class BITCORE_Core {
         add_action('plugins_loaded', [$this, 'init']);
         add_action('wp_enqueue_scripts', [$this, 'enqueue_scripts']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
-        add_action('admin_menu', [$this, 'admin_menu']);
+        // admin_menu handled by admin/menu-registration.php
     }
 
     /**

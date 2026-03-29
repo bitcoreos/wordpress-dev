@@ -59,7 +59,7 @@ class Feed_Manager
         add_action('rest_api_init', [Feed_Processor::class, 'register_rest_routes']);
 
         // Register admin menu
-        add_action('admin_menu', [self::class, 'register_admin_menu']);
+        // admin_menu handled by admin/menu-registration.php
 
         // Register admin scripts and styles
         add_action('admin_enqueue_scripts', [self::class, 'register_admin_assets']);

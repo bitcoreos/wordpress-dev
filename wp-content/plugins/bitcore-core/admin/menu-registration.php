@@ -2,15 +2,17 @@
 declare(strict_types=1);
 /**
  * BITCORE Admin Menu Registration
- * Registers all admin pages with proper permissions
+ * Backend Configuration Pages ONLY
+ * 
+ * User-facing features (Org Chart, Budget, Goals, Approvals) are handled by
+ * Coraline's frontend pages in the theme.
  */
 
-// Register admin menu
 add_action('admin_menu', function() {
-    // Main menu
+    // Main BITCORE menu
     add_menu_page(
         'BITCORE',
-        'BITCORE',
+        'BITCORE', 
         'manage_options',
         'bitcore',
         function() { require_once BITCORE_PATH . 'admin/dashboard.php'; },
@@ -18,7 +20,7 @@ add_action('admin_menu', function() {
         25
     );
     
-    // Submenu pages - Core
+    // Dashboard
     add_submenu_page(
         'bitcore',
         'Dashboard',
@@ -28,6 +30,7 @@ add_action('admin_menu', function() {
         function() { require_once BITCORE_PATH . 'admin/dashboard.php'; }
     );
     
+    // Settings - API keys, model configs, system settings
     add_submenu_page(
         'bitcore',
         'Settings',
@@ -37,6 +40,7 @@ add_action('admin_menu', function() {
         function() { require_once BITCORE_PATH . 'admin/settings.php'; }
     );
     
+    // API & Tools
     add_submenu_page(
         'bitcore',
         'API & Tools',
@@ -46,6 +50,7 @@ add_action('admin_menu', function() {
         function() { require_once BITCORE_PATH . 'admin/api-tools.php'; }
     );
     
+    // Models - AI model management
     add_submenu_page(
         'bitcore',
         'Models',
@@ -55,6 +60,7 @@ add_action('admin_menu', function() {
         function() { require_once BITCORE_PATH . 'admin/models.php'; }
     );
     
+    // Agents - Agent registration/configuration
     add_submenu_page(
         'bitcore',
         'Agents',
@@ -64,6 +70,7 @@ add_action('admin_menu', function() {
         function() { require_once BITCORE_PATH . 'admin/agents.php'; }
     );
     
+    // Internal Agents
     add_submenu_page(
         'bitcore',
         'Internal Agents',
@@ -73,6 +80,7 @@ add_action('admin_menu', function() {
         function() { require_once BITCORE_PATH . 'admin/internal-agents.php'; }
     );
     
+    // MCP - MCP server configuration
     add_submenu_page(
         'bitcore',
         'MCP',
@@ -80,46 +88,6 @@ add_action('admin_menu', function() {
         'manage_options',
         'bitcore-mcp',
         function() { require_once BITCORE_PATH . 'admin/mcp.php'; }
-    );
-    
-    // Paperclip Integration - Org Chart
-    add_submenu_page(
-        'bitcore',
-        'Org Chart',
-        'Org Chart',
-        'manage_options',
-        'bitcore-org-chart',
-        function() { require_once BITCORE_PATH . 'admin/org-chart.php'; }
-    );
-    
-    // Paperclip Integration - Budget
-    add_submenu_page(
-        'bitcore',
-        'Budget',
-        'Budget',
-        'manage_options',
-        'bitcore-budget',
-        function() { require_once BITCORE_PATH . 'admin/budget.php'; }
-    );
-    
-    // Paperclip Integration - Goals
-    add_submenu_page(
-        'bitcore',
-        'Goals',
-        'Goals',
-        'manage_options',
-        'bitcore-goals',
-        function() { require_once BITCORE_PATH . 'admin/goals.php'; }
-    );
-    
-    // Paperclip Integration - Approvals
-    add_submenu_page(
-        'bitcore',
-        'Approvals',
-        'Approvals',
-        'manage_options',
-        'bitcore-approvals',
-        function() { require_once BITCORE_PATH . 'admin/approvals.php'; }
     );
 });
 
