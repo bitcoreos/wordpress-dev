@@ -1,0 +1,45 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - classes/
+        - rest/
+        - domain/
+        - validation/
+        - realtime/
+        - config/
+        - database/
+        - templates/
+        - widgets/
+        - infrastructure/auth/
+        - infrastructure/cache/
+        - infrastructure/cli/
+        - infrastructure/logging/
+        - infrastructure/multitenancy/
+        - infrastructure/queue/
+        - infrastructure/ratelimit/
+        - infrastructure/security/
+        - infrastructure/webhooks/
+        - infrastructure/swarm/
+
+    excludePaths:
+        - vendor/
+        - tests/
+        - node_modules/
+
+    scanDirectories:
+        - classes/
+        - infrastructure/
+
+    treatPhpDocTypesAsCertain: false
+
+    bootstrapFiles:
+        - vendor/autoload.php
+
+    ignoreErrors:
+        - '#Function add_action not found#'
+        - '#Function add_filter not found#'
+        - '#Function register_activation_hook not found#'
+        - '#Function register_deactivation_hook not found#'

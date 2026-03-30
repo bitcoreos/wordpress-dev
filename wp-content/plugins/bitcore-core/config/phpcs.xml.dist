@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<ruleset name="BITCORE Coding Standards">
+<description>Sniffs for BITCORE WordPress plugin</description>
+
+<!-- PHP Compatibility -->
+<rule ref="PHPCompatibility"/>
+<config name="testVersion" value="7.4-"/>
+
+<!-- WordPress Standards -->
+<rule ref="WordPress-Docs">
+>tests/*</exclude-pattern>
+</rule>
+<rule ref="WordPress-Extra">
+name="Generic.CodeAnalysis.UselessOverridingMethod"/>
+name="WordPress.Files.FileName"/>
+name="Universal.CodeAnalysis.ConstructorDestructorReturn.ReturnTypeFound"/>
+name="Universal.CodeAnalysis.ConstructorDestructorReturn.ReturnValueFound"/>
+name="Universal.NamingConventions.NoReservedKeywordParameterNames.defaultFound"/>
+>tests/*</exclude-pattern>
+</rule>
+<rule ref="WordPress.WP.I18n"/>
+<config name="text_domain" value="bitcore-core"/>
+
+<!-- PSR-12 Namespace and Use Statement Rules -->
+<rule ref="SlevomatCodingStandard.Namespaces.DisallowGroupUse" />
+<rule ref="SlevomatCodingStandard.Namespaces.UseDoesNotStartWithBackslash" />
+<rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses" />
+<rule ref="SlevomatCodingStandard.Namespaces.UseFromSameNamespace" />
+<rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
+ name="searchAnnotations" value="true" />
+value="ps"/>
+<arg name="extensions" value="php"/>
+
+<!-- Files to check -->
+<file>../patterns</file>
+<file>../database</file>
+<file>../domain</file>
+<file>../validation</file>
+<file>../realtime</file>
+<file>../classes</file>
+<file>../templates</file>
+<file>../widgets</file>
+<file>../bitcore-core.php
+</file>
+
+<exclude-pattern>../vendor/*</exclude-pattern>
+
+<ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED" />
+</ruleset>

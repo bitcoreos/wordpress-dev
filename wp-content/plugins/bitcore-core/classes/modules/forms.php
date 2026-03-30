@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Forms Module
  * AI-powered forms with intent detection

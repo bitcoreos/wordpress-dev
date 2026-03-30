@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Usage Stats Service
  * Tracks API usage and credits

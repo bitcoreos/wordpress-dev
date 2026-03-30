@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Discussions Module
  * Integration with BIThub discussions

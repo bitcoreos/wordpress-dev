@@ -1,0 +1,20 @@
+# Composer generated
+wp-content/plugins/bitcore-core/vendor/
+wp-content/plugins/bitcore-core/composer.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+wp-content/debug.log
+
+# Cache
+wp-content/cache/
+wp-content/upgrade/

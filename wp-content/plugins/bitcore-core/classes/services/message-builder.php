@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 /**
  * BITCORE Message Builder Service
  * Constructs messages for agents with proper context
