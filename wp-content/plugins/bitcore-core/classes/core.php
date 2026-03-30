@@ -171,6 +171,11 @@ class BITCORE_Core {
             require_once BITCORE_PATH . 'rest/class-approvals-api.php';
             $approvals_api = new \BITCORE\Rest\Approvals_Api();
             $approvals_api->register_routes();
+
+            // Sessions API - Hyperion 2026-03-30
+            require_once BITCORE_PATH . 'rest/class-sessions-api.php';
+            $sessions_api = new \BITCORE\Rest\Sessions_Api();
+            $sessions_api->register_routes();
         });
     }
 
