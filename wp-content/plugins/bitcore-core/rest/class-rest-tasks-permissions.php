@@ -17,6 +17,14 @@ if (!defined('ABSPATH')) {
 class BITCORE_REST_Tasks_Permissions {
 
     public function get_items_permissions_check($request) {
+        $nonce = $request->get_header('X-WP-Nonce');
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __('Invalid or missing nonce.', 'bitcore-tasks'),
+                array('status' => 403)
+            );
+        }
         return current_user_can('bitcore_read_tasks');
     }
 
@@ -28,6 +36,14 @@ class BITCORE_REST_Tasks_Permissions {
      * @return bool|\WP_Error True if allowed, error otherwise
      */
     public function get_item_permissions_check($request) {
+        $nonce = $request->get_header('X-WP-Nonce');
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __('Invalid or missing nonce.', 'bitcore-tasks'),
+                array('status' => 403)
+            );
+        }
         return current_user_can('bitcore_read_tasks');
     }
 
@@ -39,6 +55,14 @@ class BITCORE_REST_Tasks_Permissions {
      * @return bool|\WP_Error True if allowed, error otherwise
      */
     public function create_item_permissions_check($request) {
+        $nonce = $request->get_header('X-WP-Nonce');
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __('Invalid or missing nonce.', 'bitcore-tasks'),
+                array('status' => 403)
+            );
+        }
         return current_user_can('bitcore_create_tasks');
     }
 
@@ -50,6 +74,14 @@ class BITCORE_REST_Tasks_Permissions {
      * @return bool|\WP_Error True if allowed, error otherwise
      */
     public function update_item_permissions_check($request) {
+        $nonce = $request->get_header('X-WP-Nonce');
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __('Invalid or missing nonce.', 'bitcore-tasks'),
+                array('status' => 403)
+            );
+        }
         return current_user_can('bitcore_edit_tasks');
     }
 
@@ -61,6 +93,14 @@ class BITCORE_REST_Tasks_Permissions {
      * @return bool|\WP_Error True if allowed, error otherwise
      */
     public function delete_item_permissions_check($request) {
+        $nonce = $request->get_header('X-WP-Nonce');
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __('Invalid or missing nonce.', 'bitcore-tasks'),
+                array('status' => 403)
+            );
+        }
         return current_user_can('bitcore_delete_tasks');
     }
 
@@ -72,6 +112,14 @@ class BITCORE_REST_Tasks_Permissions {
      * @return bool|\WP_Error True if allowed, error otherwise
      */
     public function dispatch_item_permissions_check($request) {
+        $nonce = $request->get_header('X-WP-Nonce');
+        if (!$nonce || !wp_verify_nonce($nonce, 'wp_rest')) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __('Invalid or missing nonce.', 'bitcore-tasks'),
+                array('status' => 403)
+            );
+        }
         return current_user_can('bitcore_dispatch_tasks');
     }
 

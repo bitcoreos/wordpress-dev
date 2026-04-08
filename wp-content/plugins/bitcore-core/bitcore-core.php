@@ -275,10 +275,6 @@ function bitcore_activate(): void {
 
     // Flush rewrite rules
     flush_rewrite_rules();
-
-    // Register custom capabilities (Hyperion)
-    require_once BITCORE_PLUGIN_DIR . 'classes/class-capabilities.php';
-    BitcoreTasksCapabilities::register();
 }
 register_activation_hook(__FILE__, 'bitcore_activate');
 

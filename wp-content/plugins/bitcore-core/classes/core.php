@@ -143,40 +143,11 @@ class BITCORE_Core {
      * Early REST API initialization (runs before plugins_loaded)
      */
     public function init_rest(): void {
-        // Core connectors and Hermes API
         require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
         require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
         require_once BITCORE_PATH . 'rest/Hermes_Api.php';
         $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
-
-        // Paperclip Integration APIs - Hyperion Fix 2026-03-29
-        add_action('rest_api_init', function() {
-            require_once BITCORE_PATH . 'rest/class-org-chart-api.php';
-            $org_chart_api = new \BITCORE\Rest\Org_Chart_Api();
-            $org_chart_api->register_routes();
-
-            require_once BITCORE_PATH . 'rest/class-budget-api.php';
-            $budget_api = new \BITCORE\Rest\Budget_Api();
-            $budget_api->register_routes();
-
-            require_once BITCORE_PATH . 'rest/class-checkout-api.php';
-            $checkout_api = new \BITCORE\Rest\Checkout_Api();
-            $checkout_api->register_routes();
-
-            require_once BITCORE_PATH . 'rest/class-goals-api.php';
-            $goals_api = new \BITCORE\Rest\Goals_Api();
-            $goals_api->register_routes();
-
-            require_once BITCORE_PATH . 'rest/class-approvals-api.php';
-            $approvals_api = new \BITCORE\Rest\Approvals_Api();
-            $approvals_api->register_routes();
-
-            // Sessions API - Hyperion 2026-03-30
-            require_once BITCORE_PATH . 'rest/class-sessions-api.php';
-            $sessions_api = new \BITCORE\Rest\Sessions_Api();
-            $sessions_api->register_routes();
-        });
     }
 
     public function init(): void {

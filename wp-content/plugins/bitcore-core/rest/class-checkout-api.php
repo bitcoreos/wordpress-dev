@@ -34,13 +34,7 @@ class Checkout_Api {
      * Register routes
      */
     public function register_routes(): void {
-        // List all checkouts (GET)
         register_rest_route($this->namespace, '/checkout', [
-            [
-                'methods' => 'GET',
-                'callback' => [$this, 'list_all_checkouts'],
-                'permission_callback' => [$this, 'check_permission']
-            ],
             [
                 'methods' => 'POST',
                 'callback' => [$this, 'checkout_issue'],
@@ -91,20 +85,6 @@ class Checkout_Api {
                 ]
             ]
         ]);
-    }
-
-    /**
-     * List all active checkouts
-     */
-    public function list_all_checkouts(\WP_REST_Request $request): \WP_REST_Response {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'bitcore_checkouts';
-        
-        $checkouts = $wpdb->get_results(
-            "SELECT * FROM {$table_name} WHERE status = 'active' ORDER BY checkout_at DESC"
-        );
-        
-        return rest_ensure_response(['checkouts' => $checkouts]);
     }
 
     /**
@@ -170,11 +150,6 @@ class Checkout_Api {
      * Permission check
      */
     public function check_permission(): bool {
-        // Allow public read access for GET requests
-        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            return true;
-        }
-        // Require auth for POST/PUT/DELETE
         return current_user_can('manage_options') || current_user_can('bitcore_agent');
     }
 }

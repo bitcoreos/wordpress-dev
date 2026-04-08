@@ -74,50 +74,6 @@ function bitcore_register_scripts(): void {
         $version,
         true
     );
-    
-    // Paperclip Integration scripts
-    wp_register_script(
-        'bitcore-org-chart',
-        get_template_directory_uri() . '/assets/js/org-chart.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    wp_register_script(
-        'bitcore-budget',
-        get_template_directory_uri() . '/assets/js/budget.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    wp_register_script(
-        'bitcore-goals',
-        get_template_directory_uri() . '/assets/js/goals.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    wp_register_script(
-        'bitcore-approvals',
-        get_template_directory_uri() . '/assets/js/approvals.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    wp_register_script(
-        'bitcore-checkout',
-        get_template_directory_uri() . '/assets/js/checkout.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    wp_register_script(
-        'bitcore-sessions',
-        get_template_directory_uri() . '/assets/js/sessions.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
 }
 add_action( 'wp_enqueue_scripts', 'bitcore_register_scripts', 5 );
 
@@ -471,11 +427,6 @@ function bitcore_enqueue_page_scripts() {
         'mcp-tools' => 'mcp-tools.js',
         'accelerate' => 'mcp-tools.js', // shares same JS
         'office-suite' => 'office-suite.js',
-        'artifact-builder' => 'artifact-builder.js',
-        'artifact-library' => 'artifact-library.js',
-        'artifact-marketplace' => 'artifact-marketplace.js',
-        'artifact-pricing' => 'artifact-pricing.js',
-        'artifact-editor' => 'artifact-editor.js',
     );
     
     if (isset($page_scripts[$slug])) {
@@ -492,62 +443,30 @@ function bitcore_enqueue_page_scripts() {
 }
 add_action('wp_enqueue_scripts', 'bitcore_enqueue_page_scripts', 15);
 
-/**
- * Enqueue Paperclip scripts based on page template
- */
-function bitcore_enqueue_paperclip_scripts(): void {
-    // Org Chart
-    if ( is_page_template( 'page-org-chart.php' ) ) {
-        wp_enqueue_script( 'bitcore-org-chart' );
-        wp_localize_script( 'bitcore-org-chart', 'bitcoreData', array(
-            'restUrl' => rest_url('bitcore/v1/'),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-        ) );
+// Paperclip Integration Pages - JS Enqueue
+add_action('wp_enqueue_scripts', function() {
+    $paperclip_pages = array(
+        'org-chart' => 'org-chart.js',
+        'budget' => 'budget.js',
+        'goals' => 'goals.js',
+        'approvals' => 'approvals.js',
+        'checkout' => 'checkout.js',
+        'sessions' => 'sessions.js'
+    );
+    
+    foreach ($paperclip_pages as $slug => $js_file) {
+        if (is_page($slug)) {
+            wp_enqueue_script(
+                'bitcore-' . str_replace('-', '', $slug),
+                get_template_directory_uri() . '/assets/js/' . $js_file,
+                array(),
+                file_exists(get_template_directory() . '/assets/js/' . $js_file) ? filemtime(get_template_directory() . '/assets/js/' . $js_file) : '1.0.0',
+                true
+            );
+            wp_localize_script('bitcore-' . str_replace('-', '', $slug), 'bitcoreData', array(
+                'restUrl' => rest_url('bitcore/v1/'),
+                'nonce' => wp_create_nonce('wp_rest')
+            ));
+        }
     }
-
-    // Budget
-    if ( is_page_template( 'page-budget.php' ) ) {
-        wp_enqueue_script( 'bitcore-budget' );
-        wp_localize_script( 'bitcore-budget', 'bitcoreData', array(
-            'restUrl' => rest_url('bitcore/v1/'),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-        ) );
-    }
-
-    // Goals
-    if ( is_page_template( 'page-goals.php' ) ) {
-        wp_enqueue_script( 'bitcore-goals' );
-        wp_localize_script( 'bitcore-goals', 'bitcoreData', array(
-            'restUrl' => rest_url('bitcore/v1/'),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-        ) );
-    }
-
-    // Approvals
-    if ( is_page_template( 'page-approvals.php' ) ) {
-        wp_enqueue_script( 'bitcore-approvals' );
-        wp_localize_script( 'bitcore-approvals', 'bitcoreData', array(
-            'restUrl' => rest_url('bitcore/v1/'),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-        ) );
-    }
-
-    // Checkout
-    if ( is_page_template( 'page-checkout.php' ) ) {
-        wp_enqueue_script( 'bitcore-checkout' );
-        wp_localize_script( 'bitcore-checkout', 'bitcoreData', array(
-            'restUrl' => rest_url('bitcore/v1/'),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-        ) );
-    }
-
-    // Sessions
-    if ( is_page_template( 'page-sessions.php' ) ) {
-        wp_enqueue_script( 'bitcore-sessions' );
-        wp_localize_script( 'bitcore-sessions', 'bitcoreData', array(
-            'restUrl' => rest_url('bitcore/v1/'),
-            'nonce'   => wp_create_nonce( 'wp_rest' ),
-        ) );
-    }
-}
-add_action( 'wp_enqueue_scripts', 'bitcore_enqueue_paperclip_scripts', 15 );
+});

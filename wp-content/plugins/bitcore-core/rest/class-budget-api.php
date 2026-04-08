@@ -111,11 +111,6 @@ class Budget_Api {
     }
 
     public function check_permission(): bool {
-        // Allow public read access for GET requests
-        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            return true;
-        }
-        // Require auth for POST/PUT/DELETE
         return current_user_can('manage_options') || current_user_can('bitcore_agent');
     }
 }
