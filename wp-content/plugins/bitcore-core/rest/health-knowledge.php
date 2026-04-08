@@ -19,9 +19,12 @@ class BITCORE_Rest_Health_Knowledge {
     /**
      * Register REST routes
      */
-    public static function register_routes() {
-        // NOTE: /health route is registered by BITCORE_Core::register_health_endpoint()
-        // to avoid duplicate registration conflict
+        // Health check endpoint
+        register_rest_route(self::NAMESPACE, '/health', [
+            'methods' => 'GET',
+            'callback' => [__CLASS__, 'get_health'],
+            'permission_callback' => '__return_true',
+        ]);
         
         // Health refresh endpoint
         register_rest_route(self::NAMESPACE, '/health/refresh', [
