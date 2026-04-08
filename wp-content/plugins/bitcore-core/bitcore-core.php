@@ -275,6 +275,10 @@ function bitcore_activate(): void {
 
     // Flush rewrite rules
     flush_rewrite_rules();
+
+    // Register custom capabilities (from origin/main fix dc0776b/c3c0f5c)
+    require_once BITCORE_PLUGIN_DIR . 'classes/class-capabilities.php';
+    \Bitcore\Tasks\Capabilities::register();
 }
 register_activation_hook(__FILE__, 'bitcore_activate');
 
@@ -331,6 +335,7 @@ add_action('rest_api_init', function() {
         'BITCORE\Rest\Budget_API',
         'BITCORE\Rest\Goals_API',
         'BITCORE\Rest\Approvals_API',
+        'BITCORE\Rest\Sessions_Api',
     ];
     foreach ($apis as $api_class) {
         if (class_exists($api_class)) {
