@@ -1,0 +1,87 @@
+=================================================================
+REPOSITORY SYNCHRONIZATION VERIFICATION REPORT
+Generated: 2026-02-27 15:20:26
+=================================================================
+
+TASK: Determine if all local WordPress pattern directories in 
+/a0/usr/projects/coraline/wordpress/ exist in GitHub branch 
+https://github.com/bitcoreos/wordpress-dev/tree/coraline
+
+=================================================================
+SUMMARY
+=================================================================
+Local directories found: 23
+Remote directories in coraline branch: 3
+Missing from coraline: 23 (100%)
+
+=================================================================
+COMPLETE LOCAL DIRECTORIES (/a0/usr/projects/coraline/wordpress/)
+=================================================================
+ 1. bitcore-wordpress
+ 2. claw
+ 3. clawd-control
+ 4. DashClaw
+ 5. flux
+ 6. mission-control
+ 7. OpenClaw-OPS-Suite
+ 8. research
+ 9. tenacitOS
+10. wordpress-github
+11. wp-ability-toolkit-template
+12. wp-ai-client-template
+13. wp-ai-engine-template
+14. wp-ai-services-template
+15. wp-ai-template
+16. wp-chat-template
+17. wp-kanban-template
+18. wp-mcp-adapter-template
+19. wp-members-template
+20. wp-orchestrator-template
+21. wp-privatewebsite-template
+22. wp-site-secrets-template
+23. wp-userswp-template
+
+=================================================================
+COMPLETE REMOTE DIRECTORIES (coraline branch)
+=================================================================
+1. wp-content/plugins/bitcore-core
+2. wp-content/plugins/bitcore-librarian
+3. wp-content/themes/bitcore-librarian-theme
+
+=================================================================
+DIRECTORIES MISSING FROM CORALINE BRANCH
+=================================================================
+ 1. DashClaw
+ 2. OpenClaw-OPS-Suite
+ 3. bitcore-wordpress
+ 4. claw
+ 5. clawd-control
+ 6. flux
+ 7. mission-control
+ 8. research
+ 9. tenacitOS
+10. wordpress-github
+11. wp-ability-toolkit-template
+12. wp-ai-client-template
+13. wp-ai-engine-template
+14. wp-ai-services-template
+15. wp-ai-template
+16. wp-chat-template
+17. wp-kanban-template
+18. wp-mcp-adapter-template
+19. wp-members-template
+20. wp-orchestrator-template
+21. wp-privatewebsite-template
+22. wp-site-secrets-template
+23. wp-userswp-template
+
+=================================================================
+FINAL ANSWER
+=================================================================
+NO - 23 local directories are MISSING from coraline branch
+
+All template directories (wp-*-template) and project directories
+(bitcore-wordpress, claw, clawd-control, etc.) exist locally
+but are NOT present in the coraline branch of the GitHub repository.
+
+=================================================================
