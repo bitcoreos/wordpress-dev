@@ -45,7 +45,11 @@ spl_autoload_register(function ($class) {
     } elseif (strpos($class, 'BITCORE_Services') !== false) {
         $filename = str_replace('BITCORE_Services_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
+        // Try without class- prefix first, then with prefix
         $file = BITCORE_PATH . '/classes/services/' . $filename . '.php';
+        if (!file_exists($file)) {
+            $file = BITCORE_PATH . '/classes/services/class-' . $filename . '.php';
+        }
     } elseif (strpos($class, 'BITCORE_Engines') !== false) {
         $filename = str_replace('BITCORE_Engines_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
@@ -61,7 +65,11 @@ spl_autoload_register(function ($class) {
     } elseif (strpos($class, 'BITCORE') !== false) {
         $filename = str_replace('BITCORE_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
-        $file = BITCORE_PATH . '/classes/' . $filename . '.php';
+        // Try class- prefixed path first (WordPress coding standard), then fallback
+        $file = BITCORE_PATH . '/classes/class-' . $filename . '.php';
+        if (!file_exists($file)) {
+            $file = BITCORE_PATH . '/classes/' . $filename . '.php';
+        }
     }
 
     if ($file && file_exists($file)) {

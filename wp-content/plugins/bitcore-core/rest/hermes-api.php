@@ -90,7 +90,8 @@ class BITCORE_Rest_Hermes_Api {
             return new WP_Error( 'no_message', 'Message is required', [ 'status' => 400 ] );
         }
 
-        $response = $this->core->connector_hermes->chat( $message, $session_id, get_current_user_id() );
+        $toolsets = $params['toolsets'] ?? ['terminal', 'file'];
+        $response = $this->core->connector_hermes->chat( $message, $session_id, $toolsets );
 
         if ( is_wp_error( $response ) ) {
             return $response;
@@ -104,17 +105,30 @@ class BITCORE_Rest_Hermes_Api {
      */
     public function submit_task( $request ) {
         $params = $request->get_json_params();
-        $task = [
-            'type' => sanitize_text_field( $params['type'] ?? 'general' ),
-            'prompt' => $params['prompt'] ?? '',
-            'context' => $params['context'] ?? [],
-        ];
+        $prompt = sanitize_textarea_field( $params['prompt'] ?? '' );
+        $toolsets = $params['toolsets'] ?? ['terminal', 'file'];
 
-        if ( empty( $task['prompt'] ) ) {
+        if ( empty( $prompt ) ) {
             return new WP_Error( 'no_prompt', 'Task prompt is required', [ 'status' => 400 ] );
         }
 
-        $response = $this->core->connector_hermes->submit_task( $task, get_current_user_id() );
+        // Create a task post and get the WP task ID
+        $task_data = [
+            'prompt' => $prompt,
+            'context' => $params['context'] ?? [],
+            'type' => sanitize_text_field( $params['type'] ?? 'general' ),
+        ];
+
+        // Attempt to find or create a WP task; fall back to 0 for non-task submissions
+        $wp_task_id = 0;
+        if ( class_exists( 'BITCORE_Modules_Tasks' ) && isset( $this->core->tasks ) ) {
+            $result = $this->core->tasks->create_task( $task_data );
+            if ( ! is_wp_error( $result ) && is_numeric( $result ) ) {
+                $wp_task_id = (int) $result;
+            }
+        }
+
+        $response = $this->core->connector_hermes->submit_task( $wp_task_id, $prompt, $toolsets );
 
         if ( is_wp_error( $response ) ) {
             return $response;
@@ -127,7 +141,7 @@ class BITCORE_Rest_Hermes_Api {
      * Get task status
      */
     public function get_task_status( $request ) {
-        $task_id = sanitize_text_field( $request['id'] );
+        $task_id = sanitize_text_field( $request->get_param( 'id' ) );
 
         $response = $this->core->connector_hermes->get_task_status( $task_id );
 
@@ -142,7 +156,7 @@ class BITCORE_Rest_Hermes_Api {
      * Cancel task
      */
     public function cancel_task( $request ) {
-        $task_id = sanitize_text_field( $request['id'] );
+        $task_id = sanitize_text_field( $request->get_param( 'id' ) );
 
         $response = $this->core->connector_hermes->cancel_task( $task_id );
 
@@ -157,7 +171,7 @@ class BITCORE_Rest_Hermes_Api {
      * Get available skills
      */
     public function get_skills( $request ) {
-        $response = $this->core->connector_hermes->get_skills();
+        $response = $this->core->connector_hermes->list_skills();
 
         if ( is_wp_error( $response ) ) {
             return $response;
@@ -170,10 +184,10 @@ class BITCORE_Rest_Hermes_Api {
      * Execute a skill
      */
     public function run_skill( $request ) {
-        $skill_name = sanitize_text_field( $request['name'] );
+        $skill_name = sanitize_text_field( $request->get_param( 'name' ) );
         $params = $request->get_json_params();
 
-        $response = $this->core->connector_hermes->run_skill( $skill_name, $params );
+        $response = $this->core->connector_hermes->run_skill( $skill_name, $params ?? [] );
 
         if ( is_wp_error( $response ) ) {
             return $response;
@@ -207,10 +221,17 @@ class BITCORE_Rest_Hermes_Api {
             return new WP_Error( 'no_task_id', 'Task ID is required', [ 'status' => 400 ] );
         }
 
-        // Update task in database
-        $response = $this->core->connector_hermes->handle_callback( $task_id, $status, $result );
+        // Store callback result - connector doesn't have handle_callback,
+        // so we update task post directly
+        $updated = false;
+        if ( class_exists( 'BITCORE_Modules_Tasks' ) && isset( $this->core->tasks ) ) {
+            $updated = $this->core->tasks->update_task_from_callback( $task_id, $status, $result );
+        }
 
-        return rest_ensure_response( [ 'received' => true ] );
+        return rest_ensure_response( [
+            'received' => true,
+            'updated' => $updated,
+        ] );
     }
 
     /**
