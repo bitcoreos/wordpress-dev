@@ -19,6 +19,7 @@ class BITCORE_Rest_Health_Knowledge {
     /**
      * Register REST routes
      */
+    public static function register_routes(): void {
         // Health check endpoint
         register_rest_route(self::NAMESPACE, '/health', [
             'methods' => 'GET',
