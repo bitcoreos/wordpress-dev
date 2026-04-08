@@ -51,7 +51,7 @@ class Checkout_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_status'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'DELETE',

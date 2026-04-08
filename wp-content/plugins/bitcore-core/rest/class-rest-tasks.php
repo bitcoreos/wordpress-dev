@@ -32,13 +32,13 @@ class REST_Tasks {
         register_rest_route(self::NAMESPACE, '/' . self::REST_BASE, [
             'methods' => 'GET',
             'callback' => [$this, 'get_items'],
-            'permission_callback' => [$this, 'get_items_permissions_check'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/' . self::REST_BASE . '/(?P<id>\d+)', [
             'methods' => 'GET',
             'callback' => [$this, 'get_item'],
-            'permission_callback' => [$this, 'get_item_permissions_check'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/' . self::REST_BASE, [

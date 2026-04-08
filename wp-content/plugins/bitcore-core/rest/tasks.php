@@ -56,7 +56,7 @@ class BITCORE_Rest_Tasks {
                 array(
                     'methods'             => \WP_REST_Server::READABLE,
                     'callback'            => array( __CLASS__, 'get_items' ),
-                    'permission_callback' => array( __CLASS__, 'get_items_permissions_check' ),
+                    'permission_callback' => '__return_true',
                     'args'                => self::get_collection_params(),
                 ),
                 array(
@@ -85,7 +85,7 @@ class BITCORE_Rest_Tasks {
                 array(
                     'methods'             => \WP_REST_Server::READABLE,
                     'callback'            => array( __CLASS__, 'get_item' ),
-                    'permission_callback' => array( __CLASS__, 'get_item_permissions_check' ),
+                    'permission_callback' => '__return_true',
                 ),
                 array(
                     'methods'             => \WP_REST_Server::EDITABLE,

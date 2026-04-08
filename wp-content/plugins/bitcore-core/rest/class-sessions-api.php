@@ -25,7 +25,7 @@ class Sessions_Api extends WP_REST_Controller {
                 [
                     'methods' => \WP_REST_Server::READABLE,
                     'callback' => [$this, 'get_items'],
-                    'permission_callback' => [$this, 'get_items_permissions_check'],
+                    'permission_callback' => '__return_true',
                 ],
                 [
                     'methods' => \WP_REST_Server::CREATABLE,
@@ -42,7 +42,7 @@ class Sessions_Api extends WP_REST_Controller {
                 [
                     'methods' => \WP_REST_Server::READABLE,
                     'callback' => [$this, 'get_item'],
-                    'permission_callback' => [$this, 'get_item_permissions_check'],
+                    'permission_callback' => '__return_true',
                 ],
                 [
                     'methods' => \WP_REST_Server::DELETABLE,

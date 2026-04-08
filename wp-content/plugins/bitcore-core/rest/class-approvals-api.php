@@ -32,7 +32,7 @@ class Approvals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_pending'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'POST',
@@ -50,7 +50,7 @@ class Approvals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'check_approval'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
 
@@ -81,7 +81,7 @@ class Approvals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'list_workflows'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
 

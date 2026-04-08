@@ -29,7 +29,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_roots'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'POST',
@@ -47,7 +47,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_goal'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'POST',
@@ -65,7 +65,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_children'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
 
@@ -73,7 +73,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_ancestry'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
 
@@ -81,7 +81,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_assigned'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
     }

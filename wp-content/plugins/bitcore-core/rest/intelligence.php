@@ -28,7 +28,7 @@ class BITCORE_Rest_Intelligence {
         register_rest_route(self::NAMESPACE, '/learning/episodes', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_episodes'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/learning/episodes', [
@@ -40,7 +40,7 @@ class BITCORE_Rest_Intelligence {
         register_rest_route(self::NAMESPACE, '/learning/episodes/(?P<id>[a-zA-Z0-9_-]+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_episode'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/learning/score', [
@@ -52,7 +52,7 @@ class BITCORE_Rest_Intelligence {
         register_rest_route(self::NAMESPACE, '/learning/retention', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_retention'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         // ==================== ACTIVITY FEED ENDPOINTS ====================
@@ -60,13 +60,13 @@ class BITCORE_Rest_Intelligence {
         register_rest_route(self::NAMESPACE, '/activity/feed', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_activity_feed'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/activity/digest', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_digest'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/activity/aggregate', [
@@ -78,7 +78,7 @@ class BITCORE_Rest_Intelligence {
         register_rest_route(self::NAMESPACE, '/activity/stats', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_activity_stats'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
     }
     
