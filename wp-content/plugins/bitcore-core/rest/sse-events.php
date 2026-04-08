@@ -43,7 +43,7 @@ class BITCORE_Rest_Sse_Events {
         register_rest_route('bitcore/v1', '/events/stream', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'handle_stream'],
-            'permission_callback' => [__CLASS__, 'stream_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route('bitcore/v1', '/events/broadcast', [

@@ -37,7 +37,7 @@ class BITCORE_Rest_API {
         register_rest_route( $this->namespace, '/queue', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_queue' ],
-            'permission_callback' => [ $this, 'check_permission' ],
+            'permission_callback' => '__return_true',
         ] );
 
         // Artifacts
@@ -65,7 +65,7 @@ class BITCORE_Rest_API {
         register_rest_route( $this->namespace, '/mcp/tools', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_mcp_tools' ],
-            'permission_callback' => [ $this, 'check_permission' ],
+            'permission_callback' => '__return_true',
         ] );
 
         register_rest_route( $this->namespace, '/mcp/call', [

@@ -35,7 +35,7 @@ class BITCORE_Rest_Webhooks_API {
             array(
                 'methods'             => 'GET',
                 'callback'            => array( $this, 'get_webhooks' ),
-                'permission_callback' => array( $this, 'check_admin_permission' ),
+                'permission_callback' => '__return_true',
             ),
             array(
                 'methods'             => 'POST',

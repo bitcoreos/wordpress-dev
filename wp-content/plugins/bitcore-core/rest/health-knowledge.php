@@ -24,7 +24,7 @@ class BITCORE_Rest_Health_Knowledge {
         register_rest_route(self::NAMESPACE, '/health', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_health'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/health/refresh', [
@@ -37,7 +37,7 @@ class BITCORE_Rest_Health_Knowledge {
         register_rest_route(self::NAMESPACE, '/knowledge-graph', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_graph'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/knowledge-graph/nodes', [
@@ -49,7 +49,7 @@ class BITCORE_Rest_Health_Knowledge {
         register_rest_route(self::NAMESPACE, '/knowledge-graph/nodes/(?P<id>[a-zA-Z0-9_-]+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_node'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/knowledge-graph/nodes/(?P<id>[a-zA-Z0-9_-]+)', [
@@ -67,14 +67,14 @@ class BITCORE_Rest_Health_Knowledge {
         register_rest_route(self::NAMESPACE, '/knowledge-graph/search', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'search_nodes'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         // Agent Identity endpoints
         register_rest_route(self::NAMESPACE, '/identities', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_identities'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/identities', [

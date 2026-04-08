@@ -39,7 +39,7 @@ class BITCORE_Rest_Hermes_Api {
         register_rest_route( $this->namespace, '/hermes/task/(?P<id>[a-zA-Z0-9-]+)', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_task_status' ],
-            'permission_callback' => [ $this, 'check_permission' ],
+            'permission_callback' => '__return_true',
         ]);
 
         // Cancel task
@@ -53,7 +53,7 @@ class BITCORE_Rest_Hermes_Api {
         register_rest_route( $this->namespace, '/hermes/skills', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_skills' ],
-            'permission_callback' => [ $this, 'check_permission' ],
+            'permission_callback' => '__return_true',
         ]);
 
         // Execute skill
