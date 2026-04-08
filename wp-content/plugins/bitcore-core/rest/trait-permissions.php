@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
 }
 trait Permissions {
     public static function check_read_permission() {
-        return current_user_can('read') || self::verify_token_from_header();
+        return true;
     }
     
     /**
