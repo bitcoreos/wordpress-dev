@@ -7,10 +7,13 @@
  */
 
 // Get current user info for PHP-side rendering
+// Redirect to home page if not logged in (home page handles login)
+if (!is_user_logged_in()) {
+    wp_redirect(home_url());
+    exit;
+}
 $current_user = wp_get_current_user();
-$is_logged_in = is_user_logged_in();
-$user_display_name = $is_logged_in ? $current_user->display_name : '';
-$current_datetime = current_time('l, F j, Y - g:i A');
+$user_display_name = $current_user->display_name;
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -91,21 +94,6 @@ $current_datetime = current_time('l, F j, Y - g:i A');
         }
         .btn-refresh:hover { border-color: var(--accent-primary); background: var(--bg-elevated); }
 
-        /* ====== LOGIN PROMPT ====== */
-        .login-prompt {
-            text-align: center; padding: var(--space-xl);
-            background: var(--bg-secondary); border: 1px solid var(--border-default);
-            border-radius: var(--radius-lg); margin-bottom: var(--space-lg);
-        }
-        .login-prompt h2 { margin-bottom: var(--space-sm); }
-        .login-prompt p { color: var(--text-secondary); margin-bottom: var(--space-md); }
-        .login-btn {
-            display: inline-block; padding: 10px 28px;
-            background: var(--accent-primary); color: #000;
-            border-radius: var(--radius-sm); text-decoration: none;
-            font-weight: 600; transition: all 0.2s;
-        }
-        .login-btn:hover { opacity: 0.9; }
 
         /* ====== 2. STATS ROW ====== */
         .stats-row {
@@ -404,18 +392,8 @@ $current_datetime = current_time('l, F j, Y - g:i A');
         </div>
     </div>
 
-    <?php else: ?>
-    <!-- ====== NOT LOGGED IN ====== -->
-    <div class="login-prompt">
-        <h2>Welcome to BITCORE</h2>
-        <p>Sign in to access your dashboard, tasks, goals, and agent status.</p>
-        <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>" class="login-btn">Sign In</a>
-    </div>
-    <?php endif; ?>
 </div>
-
 <?php wp_footer(); ?>
-<?php if ($is_logged_in): ?>
 <script>
 var bitcoreData = {
     ajaxUrl: <?php echo json_encode(admin_url('admin-ajax.php')); ?>,
@@ -425,6 +403,5 @@ var bitcoreData = {
 };
 </script>
 <script src="<?php echo esc_url(get_template_directory_uri() . '/assets/js/dashboard.js'); ?>"></script>
-<?php endif; ?>
 </body>
 </html>
