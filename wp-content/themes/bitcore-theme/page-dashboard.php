@@ -178,6 +178,7 @@
     </style>
 </head>
 <body>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
     <div class="dash-container">
         <header class="dash-header">
             <div class="dash-title">

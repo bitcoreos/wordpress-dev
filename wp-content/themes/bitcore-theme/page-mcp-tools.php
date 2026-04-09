@@ -13,6 +13,7 @@ if (!defined('ABSPATH')) {
 
 get_header();
 ?>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
 
 <div class="bitcore-dashboard" id="mcp-tools-dashboard">
     <!-- Dashboard Header -->

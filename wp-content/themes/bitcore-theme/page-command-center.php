@@ -238,6 +238,7 @@
     </style>
 </head>
 <body>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
     <div class="command-center">
         <header class="cc-header">
             <div class="cc-title">

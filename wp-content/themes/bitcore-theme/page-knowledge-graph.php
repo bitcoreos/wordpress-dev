@@ -172,6 +172,7 @@
     </style>
 </head>
 <body>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
     <div class="kg-container">
         <header class="kg-header">
             <div class="kg-title">

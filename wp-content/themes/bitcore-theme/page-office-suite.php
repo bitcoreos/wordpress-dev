@@ -6,6 +6,7 @@
 
 get_header();
 ?>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
 
 <div class="bf-office-suite">
 

@@ -159,6 +159,7 @@
     </style>
 </head>
 <body>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
     <div class="ws-container">
         <header class="ws-header">
             <div class="ws-title">

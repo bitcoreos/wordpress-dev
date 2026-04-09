@@ -159,6 +159,7 @@
     </style>
 </head>
 <body>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
     <div class="task-container">
         <header class="task-header">
             <div class="task-title">
