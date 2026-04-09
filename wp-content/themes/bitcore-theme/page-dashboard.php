@@ -6,14 +6,10 @@
  * @since 2.0.0
  */
 
-// Get current user info for PHP-side rendering
-// Redirect to home page if not logged in (home page handles login)
-if (!is_user_logged_in()) {
-    wp_redirect(home_url());
-    exit;
-}
+// Get current user info
 $current_user = wp_get_current_user();
-$user_display_name = $current_user->display_name;
+$logged_in = is_user_logged_in();
+$user_display_name = $logged_in ? $current_user->display_name : '';
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
@@ -275,7 +271,7 @@ $user_display_name = $current_user->display_name;
 <?php include(get_template_directory() . "/nav-header.php"); ?>
 
 <div class="saas-container">
-    <?php if ($is_logged_in): ?>
+    <?php if ($logged_in): ?>
     <!-- ====== 1. WELCOME SECTION ====== -->
     <section class="welcome-section">
         <div class="welcome-left">
@@ -391,7 +387,7 @@ $user_display_name = $current_user->display_name;
             <span class="agent-time" id="coraline-time">Checking...</span>
         </div>
     </div>
-
+    <?php endif; ?>
 </div>
 <?php wp_footer(); ?>
 <script>
