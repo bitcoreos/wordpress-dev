@@ -1,46 +1,56 @@
 /**
- * BITCORE Dashboard - Live Stats & System Health
- * @package BITCORE_Theme
- * @version 2.0.0
+ * BITCORE SaaS Dashboard - User Home Page
+ * Fetches from /tasks, /goals, /sessions, /approvals, /dashboard, /ping
+ * Uses nonce auth via bitcoreData for authenticated requests
+ * @version 3.0.0
  */
 
 (function() {
     'use strict';
 
-    var Dashboard = {
+    var SaaSDashboard = {
 
         config: {
-            dashboardEndpoint: '/wp-json/bitcore/v1/dashboard',
-            healthEndpoint: '/wp-json/bitcore/v1/health',
-            pingEndpoint: '/wp-json/bitcore/v1/ping',
-            refreshInterval: 30000
+            restBase: '/wp-json/bitcore/v1/',
+            refreshInterval: 30000,
+            maxTasks: 5,
+            maxGoals: 5,
+            maxActivities: 10
         },
 
         state: {
-            data: null,
-            loading: false,
-            error: null,
-            lastUpdate: null
+            tasks: [],
+            goals: [],
+            sessions: [],
+            approvals: [],
+            dashboard: null,
+            systemHealth: null,
+            lastUpdate: null,
+            loading: false
         },
 
         init: function() {
-            if (!document.querySelector('.dash-container')) return;
+            if (!document.querySelector('.saas-container')) return;
 
-            this.loadDashboard();
+            // Build endpoints from bitcoreData if available
+            if (typeof bitcoreData !== 'undefined' && bitcoreData.restUrl) {
+                this.config.restBase = bitcoreData.restUrl;
+            }
+
             this.bindEvents();
+            this.loadAll();
             this.initAutoRefresh();
+            this.startClock();
         },
 
         bindEvents: function() {
             var self = this;
-
-            // Refresh button
             var refreshBtn = document.getElementById('refresh-btn');
             if (refreshBtn) {
                 refreshBtn.addEventListener('click', function() {
                     refreshBtn.disabled = true;
                     refreshBtn.textContent = '⟳ Loading...';
-                    self.loadDashboard().then(function() {
+                    self.loadAll().then(function() {
                         refreshBtn.disabled = false;
                         refreshBtn.textContent = '⟳ Refresh';
                     }).catch(function() {
@@ -49,294 +59,457 @@
                     });
                 });
             }
-
-            // Clear log button
-            var clearBtn = document.getElementById('clear-log');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
-                    self.clearLog();
-                });
-            }
-
-            // Quick action buttons
-            var actionBtns = document.querySelectorAll('.action-btn');
-            actionBtns.forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var action = btn.getAttribute('onclick');
-                    if (action) {
-                        // Extract action name from onclick attribute
-                        var match = action.match(/runAction\(['"]([^'"]+)['"]\)/);
-                        if (match) {
-                            self.runAction(match[1], btn);
-                        }
-                    }
-                });
-            });
         },
 
-        loadDashboard: function() {
+        // ====== AUTH HELPERS ======
+
+        getHeaders: function() {
+            var headers = { 'Content-Type': 'application/json' };
+            if (typeof bitcoreData !== 'undefined' && bitcoreData.nonce) {
+                headers['X-WP-Nonce'] = bitcoreData.nonce;
+            }
+            return headers;
+        },
+
+        // ====== API FETCHES ======
+
+        fetchJSON: function(endpoint) {
+            var url = this.config.restBase + endpoint;
+            var options = {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: this.getHeaders()
+            };
+            return fetch(url, options)
+                .then(function(response) {
+                    if (!response.ok) {
+                        console.warn('[SaaSDashboard] ' + endpoint + ' returned ' + response.status);
+                        return null;
+                    }
+                    return response.json();
+                })
+                .catch(function(error) {
+                    console.warn('[SaaSDashboard] Fetch error for ' + endpoint + ':', error.message);
+                    return null;
+                });
+        },
+
+        loadAll: function() {
             var self = this;
             this.state.loading = true;
 
-            return fetch(this.config.dashboardEndpoint)
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Dashboard API returned ' + response.status);
-                    return response.json();
+            var promises = [
+                this.fetchJSON('tasks').then(function(data) { self.state.tasks = data || []; }),
+                this.fetchJSON('goals').then(function(data) {
+                    // Handle {goals: []} wrapper
+                    if (data && data.goals && Array.isArray(data.goals)) {
+                        self.state.goals = data.goals;
+                    } else if (Array.isArray(data)) {
+                        self.state.goals = data;
+                    } else {
+                        self.state.goals = [];
+                    }
+                }),
+                this.fetchJSON('sessions').then(function(data) {
+                    // Handle {sessions: []} wrapper
+                    if (data && data.sessions && Array.isArray(data.sessions)) {
+                        self.state.sessions = data.sessions;
+                    } else if (Array.isArray(data)) {
+                        self.state.sessions = data;
+                    } else {
+                        self.state.sessions = [];
+                    }
+                }),
+                this.fetchJSON('approvals').then(function(data) {
+                    if (Array.isArray(data)) {
+                        self.state.approvals = data;
+                    } else if (data && data.approvals && Array.isArray(data.approvals)) {
+                        self.state.approvals = data.approvals;
+                    } else {
+                        self.state.approvals = [];
+                    }
+                }),
+                this.fetchJSON('dashboard').then(function(data) {
+                    self.state.dashboard = data;
+                    if (data && data.system) {
+                        self.state.systemHealth = data.system;
+                    }
+                }),
+                this.fetchJSON('ping').then(function(data) {
+                    self.state.ping = data;
                 })
-                .then(function(result) {
-                    if (!result.success) throw new Error('Dashboard API error');
-                    self.state.data = result;
-                    self.state.lastUpdate = new Date();
-                    self.state.loading = false;
-                    self.state.error = null;
-                    self.updateUI();
-                })
-                .catch(function(error) {
-                    self.state.loading = false;
-                    self.state.error = error.message;
-                    console.error('[Dashboard] Load error:', error);
-                    self.showError(error.message);
-                });
+            ];
+
+            return Promise.all(promises).then(function() {
+                self.state.loading = false;
+                self.state.lastUpdate = new Date();
+                self.renderAll();
+            });
         },
 
-        updateUI: function() {
-            if (!this.state.data) return;
+        // ====== RENDERING ======
 
-            var data = this.state.data;
+        renderAll: function() {
+            this.renderHealthIndicator();
+            this.renderStatsRow();
+            this.renderTasks();
+            this.renderGoals();
+            this.renderActivity();
+            this.renderAgentStatus();
+            this.updateTimestamp();
+        },
 
-            // System badge
-            this.updateSystemBadge(data.system);
+        // ====== 1. HEALTH INDICATOR ======
 
-            // Health cards
-            this.updateHealthCard('db-health', data.database);
-            this.updateHealthCard('cache-health', data.cache);
-            this.updateHealthCard('queue-health', data.queue);
+        renderHealthIndicator: function() {
+            var indicator = document.getElementById('health-indicator');
+            var label = document.getElementById('health-label');
+            if (!indicator || !label) return;
 
-            // Database metrics
-            this.updateMetric('db-connections', data.database.connections);
-            this.updateMetric('db-latency', data.database.latency);
-
-            // Cache metrics
-            this.updateMetric('cache-hit', data.cache.hit_rate);
-            this.updateMetric('cache-keys', data.cache.keys);
-
-            // Queue metrics
-            this.updateMetric('queue-pending', data.queue.pending);
-            this.updateMetric('queue-workers', data.queue.workers);
-
-            // Queue list
-            this.updateQueueList(data.queue.items || []);
-
-            // System stats
-            if (data.system) {
-                this.updateElement('sys-version', data.system.version);
-                this.updateElement('sys-uptime', data.system.uptime);
-                this.updateElement('sys-memory', data.system.memory);
-                this.updateElement('sys-php', data.system.php);
+            var health = this.state.systemHealth;
+            if (!health) {
+                label.textContent = 'Unknown';
+                return;
             }
 
-            // System log
-            this.updateLog(data.logs || []);
-        },
+            var status = (health.status || 'healthy').toLowerCase();
+            var statusText = health.status_label || status;
 
-        updateSystemBadge: function(system) {
-            var badge = document.getElementById('system-badge');
-            if (!badge) return;
-
-            var label = (system && system.status) || 'HEALTHY';
-            var cls = (system && system.status_class) || 'healthy';
-
-            badge.textContent = label;
-            badge.className = 'system-badge ' + cls;
-        },
-
-        updateHealthCard: function(cardId, data) {
-            var card = document.getElementById(cardId);
-            if (!card || !data) return;
-
-            var status = data.status || 'ok';
-
-            // Update card border class
-            card.className = 'health-card ' + status;
-
-            // Update status span inside card header
-            var statusSpan = card.querySelector('.health-status');
-            if (statusSpan) {
-                statusSpan.textContent = status.toUpperCase();
-                statusSpan.className = 'health-status ' + status;
+            // Map system status to classes
+            if (status === 'healthy' || status === 'excellent' || health.health_score >= 80) {
+                indicator.className = 'health-indicator';
+                statusText = 'System Healthy';
+            } else if (status === 'degraded' || health.health_score >= 50) {
+                indicator.className = 'health-indicator degraded';
+                statusText = 'System Degraded';
+            } else {
+                indicator.className = 'health-indicator critical';
+                statusText = 'System Critical';
             }
 
-            // Update status dot if exists
-            var dot = card.querySelector('.status-dot');
-            if (dot) {
-                dot.className = 'status-dot ' + status;
-            }
+            label.textContent = statusText;
         },
 
-        updateMetric: function(id, value) {
+        // ====== 2. STATS ROW ======
+
+        renderStatsRow: function() {
+            // Active tasks count
+            var tasks = this.state.tasks;
+            var activeTasks = Array.isArray(tasks) ? tasks.length : 0;
+            this.updateStatCount('stat-tasks-count', activeTasks);
+
+            // Active goals count
+            var goals = this.state.goals;
+            var activeGoals = Array.isArray(goals) ? goals.length : 0;
+            this.updateStatCount('stat-goals-count', activeGoals);
+
+            // Sessions count
+            var sessions = this.state.sessions;
+            var sessionCount = Array.isArray(sessions) ? sessions.length : 0;
+            this.updateStatCount('stat-sessions-count', sessionCount);
+
+            // Approvals pending count
+            var approvals = this.state.approvals;
+            var approvalCount = Array.isArray(approvals) ? approvals.length : 0;
+            this.updateStatCount('stat-approvals-count', approvalCount);
+        },
+
+        updateStatCount: function(id, count) {
             var el = document.getElementById(id);
             if (!el) return;
-
-            var formatted = (typeof value === 'number') ? value.toLocaleString() : String(value);
-
+            var formatted = (typeof count === 'number') ? count.toLocaleString() : '0';
             if (el.textContent !== formatted) {
-                el.style.transform = 'scale(1.1)';
+                el.style.transform = 'scale(1.15)';
                 el.textContent = formatted;
-                setTimeout(function() { el.style.transform = 'scale(1)'; }, 200);
+                setTimeout(function() { el.style.transform = 'scale(1)'; }, 250);
             }
         },
 
-        updateQueueList: function(items) {
-            var container = document.getElementById('queue-list');
+        // ====== 3. TASKS WIDGET ======
+
+        renderTasks: function() {
+            var container = document.getElementById('tasks-list');
             if (!container) return;
 
-            if (!items || items.length === 0) {
-                container.innerHTML = '<div class="queue-item"><span class="queue-name" style="color: var(--text-muted);">No pending tasks</span></div>';
+            var tasks = this.state.tasks;
+            if (!Array.isArray(tasks) || tasks.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No tasks yet. <a href="/tasks/">Create your first task!</a></p></div>';
                 return;
             }
 
+            var display = tasks.slice(0, this.config.maxTasks);
             var html = '';
-            items.forEach(function(item) {
-                var statusDot = '<span class="status-dot ' + (item.status === 'active' ? 'ok' : 'warn') + '"></span>';
-                html += '<div class="queue-item">';
-                html += '  <span class="queue-name">' + statusDot + ' ' + this.escapeHtml(item.name) + '</span>';
-                html += '  <span class="queue-count">' + item.count + '</span>';
+
+            for (var i = 0; i < display.length; i++) {
+                var task = display[i];
+                var status = (task.status || 'draft').toLowerCase();
+                var title = this.escapeHtml(task.title || 'Untitled Task');
+                var date = task.date ? this.formatDate(task.date) : '';
+
+                html += '<div class="task-item">';
+                html += '  <div class="task-info">';
+                html += '    <span class="task-status-dot ' + status + '"></span>';
+                html += '    <span class="task-title">' + title + '</span>';
+                html += '  </div>';
+                html += '  <span class="task-meta">' + date + '</span>';
                 html += '</div>';
-            }.bind(this));
+            }
 
             container.innerHTML = html;
         },
 
-        updateLog: function(logs) {
-            var container = document.getElementById('system-log');
+        // ====== 4. GOALS WIDGET ======
+
+        renderGoals: function() {
+            var container = document.getElementById('goals-list');
             if (!container) return;
 
-            if (!logs || logs.length === 0) {
-                container.innerHTML = '<div class="log-entry"><span class="log-time">--:--:--</span><span class="log-level info">INFO</span><span>No recent logs</span></div>';
+            var goals = this.state.goals;
+            if (!Array.isArray(goals) || goals.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No goals defined. <a href="/goals/">Set your first goal!</a></p></div>';
                 return;
             }
 
+            var display = goals.slice(0, this.config.maxGoals);
             var html = '';
-            logs.forEach(function(entry) {
-                var level = entry.level || 'info';
-                html += '<div class="log-entry">';
-                html += '  <span class="log-time">' + this.escapeHtml(entry.time || '--:--:--') + '</span>';
-                html += '  <span class="log-level ' + level + '">' + level.toUpperCase() + '</span>';
-                html += '  <span>' + this.escapeHtml(entry.message || '') + '</span>';
-                html += '</div>';
-            }.bind(this));
 
-            container.innerHTML = html;
-        },
+            for (var i = 0; i < display.length; i++) {
+                var goal = display[i];
+                var name = this.escapeHtml(goal.title || goal.name || 'Unnamed Goal');
+                var progress = parseInt(goal.progress || 0, 10);
+                var priority = (goal.priority || 'medium').toLowerCase();
 
-        clearLog: function() {
-            var container = document.getElementById('system-log');
-            if (container) {
-                container.innerHTML = '<div class="log-entry"><span class="log-time">' + this.formatTime(new Date()) + '</span><span class="log-level info">INFO</span><span>Log cleared</span></div>';
-            }
-        },
+                // Progress bar class
+                var progressClass = progress >= 75 ? 'high' : (progress >= 40 ? 'mid' : 'low');
 
-        runAction: function(action, btn) {
-            if (!btn) return;
-
-            var originalText = btn.querySelector('.action-label');
-            var labelEl = originalText;
-
-            if (labelEl) {
-                labelEl.textContent = 'Running...';
-            }
-
-            // Log the action
-            this.addLogEntry('info', 'Action: ' + action);
-
-            // Simulate action completion after delay
-            setTimeout(function() {
-                if (labelEl) {
-                    labelEl.textContent = action === 'flush-cache' ? 'Flush Cache' :
-                                         action === 'restart-workers' ? 'Restart Workers' :
-                                         action === 'clear-queue' ? 'Clear Queue' :
-                                         action === 'export-logs' ? 'Export Logs' : action;
+                html += '<div class="goal-item">';
+                html += '  <div class="goal-name">' + name;
+                if (goal.priority) {
+                    html += ' <span class="goal-priority priority-' + priority + '">' + priority + '</span>';
                 }
-                this.addLogEntry('info', 'Completed: ' + action);
-            }.bind(this), 1500);
+                html += '  </div>';
+                html += '  <div class="progress-bar"><div class="progress-fill ' + progressClass + '" style="width:' + progress + '%"></div></div>';
+                html += '  <span class="progress-text">' + progress + '% complete</span>';
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
         },
 
-        addLogEntry: function(level, message) {
-            var container = document.getElementById('system-log');
+        // ====== 5. ACTIVITY FEED ======
+
+        renderActivity: function() {
+            var container = document.getElementById('activity-list');
             if (!container) return;
 
-            var entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = '<span class="log-time">' + this.formatTime(new Date()) + '</span>' +
-                '<span class="log-level ' + level + '">' + level.toUpperCase() + '</span>' +
-                '<span>' + this.escapeHtml(message) + '</span>';
+            var activities = this.buildActivityFeed();
 
-            container.insertBefore(entry, container.firstChild);
+            if (activities.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No recent activity</p></div>';
+                return;
+            }
 
-            // Limit log entries to 50
-            while (container.children.length > 50) {
-                container.removeChild(container.lastChild);
+            var display = activities.slice(0, this.config.maxActivities);
+            var html = '';
+
+            for (var i = 0; i < display.length; i++) {
+                var act = display[i];
+                html += '<div class="activity-item">';
+                html += '  <div class="activity-icon">' + act.icon + '</div>';
+                html += '  <div class="activity-content">';
+                html += '    <div class="activity-text">' + this.escapeHtml(act.text) + '</div>';
+                html += '    <div class="activity-time">' + this.escapeHtml(act.time) + '</div>';
+                html += '  </div>';
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+        },
+
+        buildActivityFeed: function() {
+            var activities = [];
+
+            // Add task activities
+            var tasks = this.state.tasks;
+            if (Array.isArray(tasks)) {
+                for (var i = 0; i < tasks.length && i < 5; i++) {
+                    var task = tasks[i];
+                    var statusLabel = task.status === 'publish' ? 'completed' : (task.status || 'created');
+                    activities.push({
+                        icon: '✅',
+                        text: 'Task ' + statusLabel + ': ' + (task.title || 'Untitled'),
+                        time: task.date ? this.formatDate(task.date) : 'Recently',
+                        timestamp: task.date ? new Date(task.date).getTime() : Date.now()
+                    });
+                }
+            }
+
+            // Add goal activities
+            var goals = this.state.goals;
+            if (Array.isArray(goals)) {
+                for (var j = 0; j < goals.length && j < 3; j++) {
+                    var goal = goals[j];
+                    activities.push({
+                        icon: '🎯',
+                        text: 'Goal: ' + (goal.title || goal.name || 'Unnamed') + ' — ' + (goal.progress || 0) + '%',
+                        time: 'Updated recently',
+                        timestamp: Date.now() - (j * 60000)
+                    });
+                }
+            }
+
+            // Add session activities
+            var sessions = this.state.sessions;
+            if (Array.isArray(sessions)) {
+                for (var k = 0; k < sessions.length && k < 3; k++) {
+                    var session = sessions[k];
+                    activities.push({
+                        icon: '💬',
+                        text: 'Session with ' + (session.agent_id || 'Agent') + ' — ' + (session.status || 'unknown'),
+                        time: session.started_at ? this.formatDate(session.started_at) : 'Recently',
+                        timestamp: session.started_at ? new Date(session.started_at).getTime() : Date.now()
+                    });
+                }
+            }
+
+            // Add system log entries from /dashboard
+            var logs = this.state.dashboard && this.state.dashboard.logs;
+            if (Array.isArray(logs)) {
+                for (var l = 0; l < logs.length && l < 5; l++) {
+                    var log = logs[l];
+                    activities.push({
+                        icon: '⚙️',
+                        text: log.message || 'System event',
+                        time: log.time || 'Recently',
+                        timestamp: Date.now() - (l * 60000)
+                    });
+                }
+            }
+
+            // Sort by timestamp descending
+            activities.sort(function(a, b) { return b.timestamp - a.timestamp; });
+
+            return activities;
+        },
+
+        // ====== 7. AGENT STATUS ======
+
+        renderAgentStatus: function() {
+            // Check Hyperion (local ping)
+            var ping = this.state.ping;
+            var hyperionDot = document.getElementById('hyperion-dot');
+            var hyperionTime = document.getElementById('hyperion-time');
+
+            if (hyperionDot && hyperionTime) {
+                if (ping && ping.pong === true) {
+                    hyperionDot.className = 'agent-dot online';
+                    hyperionTime.textContent = 'Online';
+                } else {
+                    hyperionDot.className = 'agent-dot offline';
+                    hyperionTime.textContent = 'Offline';
+                }
+            }
+
+            // Check Coraline (try to reach its endpoint)
+            var coralineDot = document.getElementById('coraline-dot');
+            var coralineTime = document.getElementById('coraline-time');
+
+            if (coralineDot && coralineTime) {
+                this.checkCoraline(coralineDot, coralineTime);
             }
         },
 
-        showError: function(message) {
-            var badge = document.getElementById('system-badge');
-            if (badge) {
-                badge.textContent = 'ERROR';
-                badge.className = 'system-badge critical';
-            }
+        checkCoraline: function(dotEl, timeEl) {
+            // Try fetching Coraline's ping endpoint
+            var controller = new AbortController();
+            var timeoutId = setTimeout(function() { controller.abort(); }, 5000);
 
-            this.addLogEntry('error', 'Failed to load dashboard: ' + message);
+            fetch('https://64.23.131.221/a2a/t-fg_hqFPshR7-IwRM/p-coraline/sse', {
+                method: 'GET',
+                signal: controller.signal,
+                mode: 'no-cors'
+            }).then(function() {
+                // no-cors means we can't read response but if no error, connection succeeded
+                clearTimeout(timeoutId);
+                dotEl.className = 'agent-dot online';
+                timeEl.textContent = 'Online';
+            }).catch(function() {
+                clearTimeout(timeoutId);
+                dotEl.className = 'agent-dot offline';
+                timeEl.textContent = 'Offline';
+            });
+        },
+
+        // ====== UTILITIES ======
+
+        updateTimestamp: function() {
+            var el = document.getElementById('activity-updated');
+            if (el) {
+                var now = new Date();
+                var h = String(now.getHours()).padStart(2, '0');
+                var m = String(now.getMinutes()).padStart(2, '0');
+                el.textContent = 'Updated ' + h + ':' + m;
+            }
+        },
+
+        formatDate: function(dateStr) {
+            if (!dateStr) return 'N/A';
+            try {
+                var d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+            } catch (e) {
+                return dateStr;
+            }
+        },
+
+        escapeHtml: function(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(String(str)));
+            return div.innerHTML;
+        },
+
+        startClock: function() {
+            var self = this;
+            var datetimeEl = document.getElementById('current-datetime');
+            if (!datetimeEl) return;
+
+            setInterval(function() {
+                var now = new Date();
+                var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                var h = now.getHours();
+                var ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12;
+                var m = String(now.getMinutes()).padStart(2, '0');
+                datetimeEl.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear() + ' - ' + h + ':' + m + ' ' + ampm;
+            }, 30000);
         },
 
         initAutoRefresh: function() {
             var self = this;
-
             setInterval(function() {
-                self.loadDashboard();
+                self.loadAll();
             }, this.config.refreshInterval);
 
             document.addEventListener('visibilitychange', function() {
                 if (!document.hidden) {
-                    self.loadDashboard();
+                    self.loadAll();
                 }
             });
-        },
-
-        formatTime: function(date) {
-            var h = String(date.getHours()).padStart(2, '0');
-            var m = String(date.getMinutes()).padStart(2, '0');
-            var s = String(date.getSeconds()).padStart(2, '0');
-            return h + ':' + m + ':' + s;
-        },
-
-        escapeHtml: function(str) {
-            var div = document.createElement('div');
-            div.appendChild(document.createTextNode(str));
-            return div.innerHTML;
-        },
-
-        updateElement: function(id, value) {
-            var el = document.getElementById(id);
-            if (el && value !== undefined && value !== null) {
-                el.textContent = String(value);
-            }
         }
     };
 
-    // Make globally accessible
-    window.BITCORE_Dashboard = Dashboard;
-
-    // Remove inline onclick handlers and use event delegation
-    window.runAction = function(action) {
-        Dashboard.runAction(action, null);
-    };
+    // Expose globally
+    window.SaaSDashboard = SaaSDashboard;
 
     // Initialize on DOM ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() { Dashboard.init(); });
+        document.addEventListener('DOMContentLoaded', function() { SaaSDashboard.init(); });
     } else {
-        Dashboard.init();
+        SaaSDashboard.init();
     }
 
 })();

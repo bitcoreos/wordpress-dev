@@ -1,17 +1,23 @@
 <?php
 /**
- * Template Name: System Dashboard
- * Description: System health monitoring and status overview
- * @package bitcore-librarian-theme
- * @since 1.0.0
+ * Template Name: SaaS Dashboard
+ * Description: User-centric SaaS home page showing personal data, tasks, goals, and activity.
+ * @package bitcore-theme
+ * @since 2.0.0
  */
+
+// Get current user info for PHP-side rendering
+$current_user = wp_get_current_user();
+$is_logged_in = is_user_logged_in();
+$user_display_name = $is_logged_in ? $current_user->display_name : '';
+$current_datetime = current_time('l, F j, Y - g:i A');
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php wp_title('|', true, 'right'); ?> - System Dashboard</title>
+    <title><?php wp_title('|', true, 'right'); ?>Dashboard</title>
     <?php wp_head(); ?>
     <style>
         :root {
@@ -28,11 +34,14 @@
             --accent-danger: #ef4444;
             --accent-success: #22c55e;
             --border-default: #2a2a3a;
+            --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 16px;
+            --space-xs: 4px;
             --space-sm: 8px;
             --space-md: 16px;
             --space-lg: 24px;
+            --space-xl: 32px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -41,298 +50,381 @@
             color: var(--text-primary);
             min-height: 100vh;
         }
-        .dash-container { max-width: 1400px; margin: 0 auto; padding: var(--space-lg); }
-        .dash-header {
+        .saas-container { max-width: 1400px; margin: 0 auto; padding: var(--space-lg); }
+
+        /* ====== 1. WELCOME SECTION ====== */
+        .welcome-section {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: var(--space-lg) var(--space-xl);
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-default);
             margin-bottom: var(--space-lg);
-            padding: var(--space-lg);
-            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-default);
         }
-        .dash-title { display: flex; align-items: center; gap: var(--space-md); }
-        .dash-icon {
-            width: 48px; height: 48px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: var(--radius-md);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px;
+        .welcome-left h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: var(--space-xs); }
+        .welcome-left h1 .user-name { color: var(--accent-primary); }
+        .welcome-datetime { color: var(--text-secondary); font-size: 0.9rem; }
+        .welcome-right { display: flex; align-items: center; gap: var(--space-md); }
+        .health-indicator {
+            display: flex; align-items: center; gap: var(--space-xs);
+            padding: 6px 14px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600;
+            background: rgba(34, 197, 94, 0.15); color: var(--accent-success);
         }
-        .system-badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
+        .health-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent-success);
+            animation: pulse 2s ease-in-out infinite;
         }
-        .system-badge.healthy { background: var(--accent-success); color: #000; }
-        .system-badge.degraded { background: var(--accent-warning); color: #000; }
-        .system-badge.critical { background: var(--accent-danger); color: #fff; }
-        .health-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
-        .health-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
+        .health-indicator.degraded { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+        .health-indicator.degraded .health-dot { background: var(--accent-warning); }
+        .health-indicator.critical { background: rgba(239, 68, 68, 0.15); color: var(--accent-danger); }
+        .health-indicator.critical .health-dot { background: var(--accent-danger); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .btn-refresh {
+            padding: 6px 16px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border-default); background: var(--bg-tertiary);
+            color: var(--text-primary); cursor: pointer; font-size: 0.85rem;
+            transition: all 0.2s;
         }
-        .health-card.ok { border-left: 4px solid var(--accent-success); }
-        .health-card.warn { border-left: 4px solid var(--accent-warning); }
-        .health-card.error { border-left: 4px solid var(--accent-danger); }
-        .health-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
-        .health-name { font-weight: 600; }
-        .health-status { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; }
-        .health-status.ok { background: rgba(34, 197, 94, 0.2); color: var(--accent-success); }
-        .health-status.warn { background: rgba(245, 158, 11, 0.2); color: var(--accent-warning); }
-        .health-status.error { background: rgba(239, 68, 68, 0.2); color: var(--accent-danger); }
-        .health-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
-        .metric { text-align: center; padding: var(--space-sm); background: var(--bg-tertiary); border-radius: 6px; }
-        .metric-value { font-size: 1.25rem; font-weight: 700; font-family: 'SF Mono', monospace; }
-        .metric-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
-        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); }
+        .btn-refresh:hover { border-color: var(--accent-primary); background: var(--bg-elevated); }
+
+        /* ====== LOGIN PROMPT ====== */
+        .login-prompt {
+            text-align: center; padding: var(--space-xl);
+            background: var(--bg-secondary); border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg); margin-bottom: var(--space-lg);
+        }
+        .login-prompt h2 { margin-bottom: var(--space-sm); }
+        .login-prompt p { color: var(--text-secondary); margin-bottom: var(--space-md); }
+        .login-btn {
+            display: inline-block; padding: 10px 28px;
+            background: var(--accent-primary); color: #000;
+            border-radius: var(--radius-sm); text-decoration: none;
+            font-weight: 600; transition: all 0.2s;
+        }
+        .login-btn:hover { opacity: 0.9; }
+
+        /* ====== 2. STATS ROW ====== */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md); margin-bottom: var(--space-lg);
+        }
+        .stat-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg); padding: var(--space-lg);
+            cursor: pointer; transition: all 0.2s;
+            text-decoration: none; display: block;
+        }
+        .stat-card:hover { border-color: var(--accent-primary); transform: translateY(-2px); }
+        .stat-card .stat-icon { font-size: 1.5rem; margin-bottom: var(--space-sm); }
+        .stat-card .stat-value {
+            font-size: 2rem; font-weight: 700;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: var(--text-primary); transition: transform 0.2s;
+        }
+        .stat-card .stat-label {
+            font-size: 0.85rem; color: var(--text-secondary); margin-top: var(--space-xs);
+        }
+
+        /* ====== CARD BASE ====== */
         .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
+            background: var(--bg-secondary); border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg); overflow: hidden;
         }
         .card-header {
             padding: var(--space-md) var(--space-lg);
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-default);
+            background: var(--bg-tertiary); border-bottom: 1px solid var(--border-default);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .card-title { font-weight: 600; }
+        .card-title { font-weight: 600; font-size: 1rem; }
         .card-body { padding: var(--space-md); }
-        .queue-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: var(--space-sm) var(--space-md);
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-            margin-bottom: var(--space-sm);
+        .card-link {
+            font-size: 0.8rem; color: var(--accent-primary);
+            text-decoration: none; transition: opacity 0.2s;
         }
-        .queue-name { font-size: 0.9rem; }
-        .queue-count { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: var(--accent-primary); }
-        .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
+        .card-link:hover { opacity: 0.8; }
+
+        /* ====== 3. CONTENT GRID ====== */
+        .content-grid {
+            display: grid; grid-template-columns: 2fr 1fr;
+            gap: var(--space-lg); margin-bottom: var(--space-lg);
+        }
+
+        /* ====== TASKS WIDGET ====== */
+        .task-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary); border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm); transition: background 0.2s;
+        }
+        .task-item:hover { background: var(--bg-elevated); }
+        .task-info { display: flex; align-items: center; gap: var(--space-sm); flex: 1; min-width: 0; }
+        .task-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .task-status-dot.publish, .task-status-dot.completed { background: var(--accent-success); }
+        .task-status-dot.pending, .task-status-dot.in-progress { background: var(--accent-warning); }
+        .task-status-dot.draft, .task-status-dot.paused { background: var(--text-muted); }
+        .task-status-dot.failed { background: var(--accent-danger); }
+        .task-title {
+            font-size: 0.9rem; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+        .task-meta {
+            font-size: 0.75rem; color: var(--text-muted);
+            margin-left: var(--space-sm); flex-shrink: 0;
+        }
+        .btn-create {
+            display: inline-block; padding: 8px 20px;
+            background: var(--accent-primary); color: #000;
+            border: none; border-radius: var(--radius-sm);
+            font-weight: 600; font-size: 0.85rem;
+            cursor: pointer; transition: opacity 0.2s; text-decoration: none;
+        }
+        .btn-create:hover { opacity: 0.9; }
+        .empty-state {
+            text-align: center; padding: var(--space-xl); color: var(--text-muted);
+        }
+        .empty-state p { margin-bottom: var(--space-sm); }
+        .empty-state a { color: var(--accent-primary); text-decoration: none; }
+
+        /* ====== GOALS WIDGET ====== */
+        .goal-item {
+            padding: var(--space-md); background: var(--bg-tertiary);
+            border-radius: var(--radius-sm); margin-bottom: var(--space-sm);
+        }
+        .goal-name { font-size: 0.9rem; font-weight: 600; margin-bottom: var(--space-xs); }
+        .goal-priority {
+            font-size: 0.7rem; padding: 2px 8px; border-radius: 10px;
+            text-transform: uppercase; font-weight: 600; margin-left: var(--space-xs);
+        }
+        .priority-high { background: rgba(239, 68, 68, 0.2); color: var(--accent-danger); }
+        .priority-medium { background: rgba(245, 158, 11, 0.2); color: var(--accent-warning); }
+        .priority-low { background: rgba(34, 197, 94, 0.2); color: var(--accent-success); }
+        .progress-bar {
+            height: 6px; background: var(--bg-elevated);
+            border-radius: 3px; overflow: hidden; margin: var(--space-xs) 0;
+        }
+        .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+        .progress-fill.low { background: var(--accent-danger); }
+        .progress-fill.mid { background: var(--accent-warning); }
+        .progress-fill.high { background: var(--accent-success); }
+        .progress-text { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* ====== 5. ACTIVITY FEED ====== */
+        .activity-feed { margin-bottom: var(--space-lg); }
+        .activity-item {
+            display: flex; align-items: flex-start; gap: var(--space-md);
+            padding: var(--space-sm) var(--space-md);
+            border-bottom: 1px solid var(--border-default);
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-icon {
+            flex-shrink: 0; width: 32px; height: 32px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; background: var(--bg-tertiary);
+        }
+        .activity-content { flex: 1; }
+        .activity-text { font-size: 0.9rem; }
+        .activity-time { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* ====== 6. QUICK ACTIONS ====== */
+        .quick-actions {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: var(--space-md); margin-bottom: var(--space-lg);
+        }
         .action-btn {
-            padding: var(--space-md);
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+            gap: var(--space-sm); padding: var(--space-lg) var(--space-md);
+            background: var(--bg-secondary); border: 1px solid var(--border-default);
+            border-radius: var(--radius-lg); cursor: pointer;
+            text-decoration: none; color: var(--text-primary); transition: all 0.2s;
         }
         .action-btn:hover { border-color: var(--accent-primary); transform: translateY(-2px); }
-        .action-icon { font-size: 1.5rem; margin-bottom: var(--space-xs); }
-        .action-label { font-size: 0.85rem; color: var(--text-secondary); }
-        .log-container {
-            max-height: 300px;
-            overflow-y: auto;
-            font-family: 'SF Mono', monospace;
-            font-size: 0.8rem;
+        .action-icon { font-size: 1.75rem; }
+        .action-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; }
+
+        /* ====== 7. AGENT STATUS ====== */
+        .agent-status {
+            display: flex; justify-content: center; gap: var(--space-xl);
+            padding: var(--space-lg); background: var(--bg-secondary);
+            border: 1px solid var(--border-default); border-radius: var(--radius-lg);
+            margin-bottom: var(--space-lg);
         }
-        .log-entry {
-            padding: var(--space-xs) 0;
-            border-bottom: 1px solid var(--border-default);
-            display: flex;
-            gap: var(--space-sm);
+        .agent-item { display: flex; align-items: center; gap: var(--space-sm); font-size: 0.85rem; }
+        .agent-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .agent-dot.online { background: var(--accent-success); box-shadow: 0 0 6px var(--accent-success); }
+        .agent-dot.offline { background: var(--accent-danger); box-shadow: 0 0 6px var(--accent-danger); }
+        .agent-dot.checking { background: var(--accent-warning); animation: pulse 1s ease-in-out infinite; }
+        .agent-name { font-weight: 600; }
+        .agent-time { color: var(--text-muted); font-size: 0.75rem; }
+
+        /* ====== LOADING SKELETON ====== */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-elevated) 50%, var(--bg-tertiary) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s ease-in-out infinite;
+            border-radius: var(--radius-sm);
         }
-        .log-time { color: var(--text-muted); min-width: 70px; }
-        .log-level { min-width: 50px; font-weight: 600; }
-        .log-level.info { color: var(--accent-primary); }
-        .log-level.warn { color: var(--accent-warning); }
-        .log-level.error { color: var(--accent-danger); }
-        .btn {
-            padding: var(--space-sm) var(--space-md);
-            border-radius: 6px;
-            border: 1px solid var(--border-default);
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-        }
-        .btn:hover { background: var(--bg-elevated); border-color: var(--accent-primary); }
-        .btn-primary { background: var(--accent-primary); border-color: var(--accent-primary); color: #000; }
-        .status-dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: var(--space-xs);
-        }
-        .status-dot.ok { background: var(--accent-success); }
-        .status-dot.warn { background: var(--accent-warning); }
-        .status-dot.error { background: var(--accent-danger); }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        /* ====== RESPONSIVE ====== */
         @media (max-width: 1024px) {
-            .health-grid { grid-template-columns: repeat(2, 1fr); }
-            .main-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
-            .health-grid { grid-template-columns: 1fr; }
-            .quick-actions { grid-template-columns: 1fr; }
+            .welcome-section { flex-direction: column; gap: var(--space-md); text-align: center; }
+            .stats-row { grid-template-columns: 1fr; }
+            .quick-actions { grid-template-columns: repeat(2, 1fr); }
+            .agent-status { flex-direction: column; align-items: center; gap: var(--space-sm); }
         }
     </style>
 </head>
 <body>
 <?php include(get_template_directory() . "/nav-header.php"); ?>
-    <div class="dash-container">
-        <header class="dash-header">
-            <div class="dash-title">
-                <div class="dash-icon">📊</div>
-                <div>
-                    <h1>System Dashboard</h1>
-                    <p style="color: var(--text-muted);">Health & Status Overview</p>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: var(--space-md);">
-                <span class="system-badge healthy" id="system-badge">HEALTHY</span>
-                <button class="btn" id="refresh-btn">⟳ Refresh</button>
-            </div>
-        </header>
 
-        <div class="health-grid">
-            <div class="health-card ok" id="db-health">
-                <div class="health-header">
-                    <span class="health-name">🗄️ Database</span>
-                    <span class="health-status ok">OK</span>
-                </div>
-                <div class="health-metrics">
-                    <div class="metric">
-                        <div class="metric-value" id="db-connections">--</div>
-                        <div class="metric-label">Connections</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="db-latency">--</div>
-                        <div class="metric-label">Latency</div>
-                    </div>
+<div class="saas-container">
+    <?php if ($is_logged_in): ?>
+    <!-- ====== 1. WELCOME SECTION ====== -->
+    <section class="welcome-section">
+        <div class="welcome-left">
+            <h1>Welcome back, <span class="user-name"><?php echo esc_html($user_display_name); ?></span></h1>
+            <div class="welcome-datetime" id="current-datetime"><?php echo esc_html($current_datetime); ?></div>
+        </div>
+        <div class="welcome-right">
+            <div class="health-indicator" id="health-indicator">
+                <span class="health-dot"></span>
+                <span id="health-label">Checking...</span>
+            </div>
+            <button class="btn-refresh" id="refresh-btn">⟳ Refresh</button>
+        </div>
+    </section>
+
+    <!-- ====== 2. STATS ROW ====== -->
+    <div class="stats-row">
+        <a href="<?php echo esc_url(get_permalink(36)); ?>" class="stat-card" id="stat-tasks">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="stat-tasks-count">--</div>
+            <div class="stat-label">Active Tasks</div>
+        </a>
+        <a href="<?php echo esc_url(get_permalink(33)); ?>" class="stat-card" id="stat-goals">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value" id="stat-goals-count">--</div>
+            <div class="stat-label">Active Goals</div>
+        </a>
+        <a href="<?php echo esc_url(get_permalink(63)); ?>" class="stat-card" id="stat-sessions">
+            <div class="stat-icon">💬</div>
+            <div class="stat-value" id="stat-sessions-count">--</div>
+            <div class="stat-label">Sessions</div>
+        </a>
+        <a href="<?php echo esc_url(get_permalink(53)); ?>" class="stat-card" id="stat-approvals">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="stat-approvals-count">--</div>
+            <div class="stat-label">Approvals Pending</div>
+        </a>
+    </div>
+
+    <!-- ====== 3/4. TASKS + GOALS GRID ====== -->
+    <div class="content-grid">
+        <!-- TASKS WIDGET -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">✅ My Tasks</span>
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <a href="<?php echo esc_url(get_permalink(36)); ?>" class="card-link">View All →</a>
                 </div>
             </div>
-
-            <div class="health-card ok" id="cache-health">
-                <div class="health-header">
-                    <span class="health-name">💾 Cache</span>
-                    <span class="health-status ok">OK</span>
+            <div class="card-body">
+                <div id="tasks-list">
+                    <div class="empty-state"><p>Loading tasks...</p></div>
                 </div>
-                <div class="health-metrics">
-                    <div class="metric">
-                        <div class="metric-value" id="cache-hit">--</div>
-                        <div class="metric-label">Hit Rate</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="cache-keys">--</div>
-                        <div class="metric-label">Keys</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="health-card ok" id="queue-health">
-                <div class="health-header">
-                    <span class="health-name">📨 Queue</span>
-                    <span class="health-status ok">OK</span>
-                </div>
-                <div class="health-metrics">
-                    <div class="metric">
-                        <div class="metric-value" id="queue-pending">--</div>
-                        <div class="metric-label">Pending</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="queue-workers">--</div>
-                        <div class="metric-label">Workers</div>
-                    </div>
+                <div style="margin-top:var(--space-md);text-align:center;">
+                    <a href="<?php echo esc_url(get_permalink(36)); ?>" class="btn-create">+ Create Task</a>
                 </div>
             </div>
         </div>
 
-        <div class="main-grid">
-            <div>
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">Queue Monitor</span>
-                    </div>
-                    <div class="card-body" id="queue-list">
-                        <div class="queue-item">
-                            <span class="queue-name">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: var(--space-lg);">
-                    <div class="card-header">
-                        <span class="card-title">System Log</span>
-                        <button class="btn" id="clear-log">Clear</button>
-                    </div>
-                    <div class="card-body">
-                        <div class="log-container" id="system-log">
-                            <div class="log-entry">
-                                <span class="log-time">--:--:--</span>
-                                <span class="log-level info">INFO</span>
-                                <span>Initializing...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- GOALS WIDGET -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">🎯 My Goals</span>
+                <a href="<?php echo esc_url(get_permalink(33)); ?>" class="card-link">View All →</a>
             </div>
-
-            <div>
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">Quick Actions</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="quick-actions">
-                            <div class="action-btn" onclick="runAction('flush-cache')">
-                                <div class="action-icon">🗑️</div>
-                                <div class="action-label">Flush Cache</div>
-                            </div>
-                            <div class="action-btn" onclick="runAction('restart-workers')">
-                                <div class="action-icon">🔄</div>
-                                <div class="action-label">Restart Workers</div>
-                            </div>
-                            <div class="action-btn" onclick="runAction('clear-queue')">
-                                <div class="action-icon">🧹</div>
-                                <div class="action-label">Clear Queue</div>
-                            </div>
-                            <div class="action-btn" onclick="runAction('export-logs')">
-                                <div class="action-icon">📥</div>
-                                <div class="action-label">Export Logs</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: var(--space-lg);">
-                    <div class="card-header">
-                        <span class="card-title">System Stats</span>
-                    </div>
-                    <div class="card-body">
-                        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">Version</span>
-                                <span id="sys-version">1.0.0</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">Uptime</span>
-                                <span id="sys-uptime">--</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">Memory</span>
-                                <span id="sys-memory">--</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">PHP</span>
-                                <span id="sys-php"><?php echo phpversion(); ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="card-body" id="goals-list">
+                <div class="empty-state"><p>Loading goals...</p></div>
             </div>
         </div>
     </div>
-    <?php wp_footer(); ?>
-    <script src="<?php echo get_template_directory_uri(); ?>/assets/js/dashboard.js"></script>
+
+    <!-- ====== 5. ACTIVITY FEED ====== -->
+    <div class="card activity-feed">
+        <div class="card-header">
+            <span class="card-title">📜 Recent Activity</span>
+            <span style="font-size:0.75rem;color:var(--text-muted);" id="activity-updated">Updated just now</span>
+        </div>
+        <div class="card-body" id="activity-list">
+            <div class="empty-state"><p>Loading activity...</p></div>
+        </div>
+    </div>
+
+    <!-- ====== 6. QUICK ACTIONS ====== -->
+    <div class="quick-actions">
+        <a href="<?php echo esc_url(get_permalink(36)); ?>" class="action-btn">
+            <span class="action-icon">✅</span>
+            <span class="action-label">Create Task</span>
+        </a>
+        <a href="<?php echo esc_url(get_permalink(63)); ?>" class="action-btn">
+            <span class="action-icon">💬</span>
+            <span class="action-label">Start Session</span>
+        </a>
+        <a href="<?php echo esc_url(get_permalink(53)); ?>" class="action-btn">
+            <span class="action-icon">📋</span>
+            <span class="action-label">Check Approvals</span>
+        </a>
+        <a href="<?php echo esc_url(get_permalink(54)); ?>" class="action-btn">
+            <span class="action-icon">💰</span>
+            <span class="action-label">View Budget</span>
+        </a>
+    </div>
+
+    <!-- ====== 7. AGENT STATUS ====== -->
+    <div class="agent-status" id="agent-status">
+        <div class="agent-item">
+            <span class="agent-dot checking" id="hyperion-dot"></span>
+            <span class="agent-name">Hyperion</span>
+            <span class="agent-time" id="hyperion-time">Checking...</span>
+        </div>
+        <div class="agent-item">
+            <span class="agent-dot checking" id="coraline-dot"></span>
+            <span class="agent-name">Coraline</span>
+            <span class="agent-time" id="coraline-time">Checking...</span>
+        </div>
+    </div>
+
+    <?php else: ?>
+    <!-- ====== NOT LOGGED IN ====== -->
+    <div class="login-prompt">
+        <h2>Welcome to BITCORE</h2>
+        <p>Sign in to access your dashboard, tasks, goals, and agent status.</p>
+        <a href="<?php echo esc_url(wp_login_url(get_permalink())); ?>" class="login-btn">Sign In</a>
+    </div>
+    <?php endif; ?>
+</div>
+
+<?php wp_footer(); ?>
+<?php if ($is_logged_in): ?>
+<script>
+var bitcoreData = {
+    ajaxUrl: <?php echo json_encode(admin_url('admin-ajax.php')); ?>,
+    nonce: <?php echo json_encode(wp_create_nonce('bitcore_dashboard')); ?>,
+    restUrl: <?php echo json_encode(rest_url('bitcore/v1/')); ?>,
+    userId: <?php echo json_encode(get_current_user_id()); ?>
+};
+</script>
+<script src="<?php echo esc_url(get_template_directory_uri() . '/assets/js/dashboard.js'); ?>"></script>
+<?php endif; ?>
 </body>
 </html>
