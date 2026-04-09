@@ -225,7 +225,7 @@ class BITCORE_MCP_Core {
 
         return [
             'content' => [
-                [ 'type' => 'text', 'text' => $this->format_result( $result ) ],
+                [ 'type' => 'string', 'text' => $this->format_result( $result ) ],
             ],
             'isError' => false,
         ];
@@ -515,7 +515,7 @@ class BITCORE_MCP_Core {
         
         return [
             'content' => [
-                [ 'type' => 'text', 'text' => 'Streaming started. Use stream_id: ' . $stream_id ],
+                [ 'type' => 'string', 'text' => 'Streaming started. Use stream_id: ' . $stream_id ],
             ],
             'stream_id' => $stream_id,
             'isError' => false,
