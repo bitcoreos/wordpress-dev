@@ -277,6 +277,10 @@ function bitcore_activate(): void {
             'previous_expires' => null,
         ]);
     }
+    // Initialize start time for dashboard uptime calculation
+    if (!get_option('bitcore_start_time')) {
+        update_option('bitcore_start_time', time());
+    }
 
     // Schedule initial cron events
     bitcore_schedule_cron();
