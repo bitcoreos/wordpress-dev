@@ -338,7 +338,7 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function get_items_permissions_check( $request ) {
-        return current_user_can( 'bitcore_read_tasks' );
+        return true;
     }
 
     /**
@@ -360,7 +360,7 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function create_item_permissions_check( $request ) {
-        return current_user_can( 'bitcore_create_tasks' );
+        return current_user_can( 'edit_posts' );
     }
 
     /**
@@ -371,7 +371,7 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function update_item_permissions_check( $request ) {
-        return current_user_can( 'bitcore_edit_tasks' );
+        return current_user_can( 'edit_posts' );
     }
 
     /**
@@ -382,7 +382,7 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function delete_item_permissions_check( $request ) {
-        return current_user_can( 'bitcore_delete_tasks' );
+        return current_user_can( 'delete_posts' );
     }
 
     /**
@@ -393,7 +393,7 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function dispatch_item_permissions_check( $request ) {
-        return current_user_can( 'bitcore_dispatch_tasks' );
+        return current_user_can( 'edit_posts' );
     }
 
     /**
