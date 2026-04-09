@@ -194,6 +194,6 @@ class BITCORE_Rest_API {
      * Check permission
      */
     public function check_permission() {
-        return current_user_can( 'read' );
+        return current_user_can('edit_posts');
     }
 }

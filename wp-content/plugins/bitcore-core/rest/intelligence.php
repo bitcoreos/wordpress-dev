@@ -391,7 +391,7 @@ class BITCORE_Rest_Intelligence {
      * Check admin permission
      */
     public static function check_admin_permission() {
-        return current_user_can('manage_options') || self::verify_token_from_header();
+        return current_user_can('edit_posts') || self::verify_token_from_header();
     }
     
     /**

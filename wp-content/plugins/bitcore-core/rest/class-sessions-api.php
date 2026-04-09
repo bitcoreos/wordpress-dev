@@ -62,11 +62,11 @@ class Sessions_Api extends WP_REST_Controller {
     }
 
     public function create_item_permissions_check($request): bool {
-        return current_user_can('manage_options');
+        return current_user_can('edit_posts');
     }
 
     public function delete_item_permissions_check($request): bool {
-        return current_user_can('manage_options');
+        return current_user_can('edit_posts');
     }
 
     public function get_items($request): WP_REST_Response {

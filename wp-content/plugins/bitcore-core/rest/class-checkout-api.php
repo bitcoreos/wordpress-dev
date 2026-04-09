@@ -150,6 +150,6 @@ class Checkout_Api {
      * Permission check
      */
     public function check_permission(): bool {
-        return current_user_can('manage_options') || current_user_can('bitcore_agent');
+        return current_user_can('edit_posts');
     }
 }
