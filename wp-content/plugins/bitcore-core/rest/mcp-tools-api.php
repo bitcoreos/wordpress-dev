@@ -232,7 +232,7 @@ class BITCORE_Rest_MCP_Tools_API {
         return rest_ensure_response( array(
             'content' => array(
                 array(
-                    'type' => 'text',
+                    'type' => 'string',
                     'text' => json_encode( array(
                         'id'     => $post_id,
                         'title'  => $post_data['post_title'],
@@ -267,7 +267,7 @@ class BITCORE_Rest_MCP_Tools_API {
         return rest_ensure_response( array(
             'content' => array(
                 array(
-                    'type' => 'text',
+                    'type' => 'string',
                     'text' => json_encode( array(
                         'posts' => $posts,
                         'total' => $query->found_posts,
@@ -288,7 +288,7 @@ class BITCORE_Rest_MCP_Tools_API {
         return rest_ensure_response( array(
             'content' => array(
                 array(
-                    'type' => 'text',
+                    'type' => 'string',
                     'text' => $response,
                 ),
             ),
@@ -322,7 +322,7 @@ class BITCORE_Rest_MCP_Tools_API {
         return rest_ensure_response( array(
             'content' => array(
                 array(
-                    'type' => 'text',
+                    'type' => 'string',
                     'text' => json_encode( $webhook ),
                 ),
             ),
