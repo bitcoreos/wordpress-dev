@@ -29,7 +29,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_all_agents'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ],
             [
                 'methods' => 'POST',
@@ -47,7 +47,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_agent_info'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ],
             [
                 'methods' => 'DELETE',
@@ -60,7 +60,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_reports'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ]
         ]);
 
@@ -68,7 +68,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_chain_of_command'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ]
         ]);
 
@@ -135,6 +135,6 @@ class Org_Chart_Api {
     }
 
     public function check_permission(): bool {
-        return current_user_can('edit_posts');
+        return current_user_can('manage_options');
     }
 }

@@ -32,7 +32,7 @@ class Approvals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_pending'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ],
             [
                 'methods' => 'POST',
@@ -50,7 +50,7 @@ class Approvals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'check_approval'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ]
         ]);
 
@@ -81,7 +81,7 @@ class Approvals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'list_workflows'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ]
         ]);
 
@@ -156,6 +156,6 @@ class Approvals_Api {
     }
 
     public function check_permission(): bool {
-        return current_user_can('edit_posts');
+        return current_user_can('manage_options');
     }
 }

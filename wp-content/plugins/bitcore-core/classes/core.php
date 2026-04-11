@@ -42,7 +42,8 @@ class BITCORE_Core {
     public ?BITCORE_Rest_API $rest = null;
     public ?BITCORE_Rest_Tasks $rest_tasks = null;
     public ?BITCORE_Rest_Hermes_Api $rest_hermes = null;
-    public ?BITCORE_Services_Connector_Hermes $connector_hermes = null;
+    public $eliza = null;
+    public $eliza_settings = null;
     public ?BITCORE_Modules_Search $search = null;
     public ?BITCORE_Modules_Forms $forms = null;
     public ?BITCORE_Modules_Tasks $tasks = null;
@@ -145,10 +146,14 @@ class BITCORE_Core {
     public function init_rest(): void {
         require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
         require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
-        require_once BITCORE_PATH . 'rest/hermes-api.php';
-        $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
+
+        // ElizaOS Bridge
+        require_once BITCORE_PATH . "rest/class-eliza-api.php";
+        $this->eliza = new BITCORE_Rest_Eliza_Api($this);
     }
+
+    
 
     public function init(): void {
         // Initialize Coraline pattern-based services
@@ -166,10 +171,17 @@ class BITCORE_Core {
             $this->rest_auth_filter = new BITCORE_Rest_Auth_Filter();
             $this->rest = new BITCORE_Rest_API($this);
             $this->rest_tasks = new BITCORE_Rest_Tasks($this);
+        // REST Hermes initialized in init_rest() for early hook timing
+        require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
+        $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         }
 
         // Initialize Wave 4 security middleware
         $this->init_wave4();
+
+        // ElizaOS provisioning hooks (global — registration/login can happen outside admin)
+        add_action('user_register', [$this, 'eliza_user_registered']);
+        add_action('wp_login', [$this, 'eliza_user_login'], 10, 2);
 
         // Admin
         if (is_admin()) {
@@ -282,9 +294,78 @@ class BITCORE_Core {
             $this->tasks = new BITCORE_Modules_Tasks($this);
         }
     }
-
     private function init_admin(): void {
         add_action('admin_init', [$this, 'admin_init']);
+
+        // ElizaOS Settings (admin context only)
+        require_once BITCORE_PATH . 'admin/class-eliza-settings.php';
+        $this->eliza_settings = new BITCORE_Eliza_Settings();
+    }
+
+    /**
+     * Provision new user with default ElizaOS session on registration.
+     *
+     * @param int $user_id WordPress user ID of newly registered user
+     */
+    public function eliza_user_registered(int $user_id): void {
+        // Skip if user has no read capability
+        if (!user_can($user_id, 'read')) {
+            return;
+        }
+
+        // Get default agent (Aria by default)
+        $default_agent = get_option('bitcore_eliza_default_agent', 'aria');
+        $agent_map = [
+            'aria'  => get_option('bitcore_eliza_agent_aria', 'eac677dd-94c4-02ab-bfea-bc554e52b2a3'),
+            'forge' => get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
+            'muse'  => get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
+        ];
+
+        $agent_id = $agent_map[$default_agent] ?? $agent_map['aria'];
+
+        // Set active agent for the new user
+        update_user_meta($user_id, 'bitcore_eliza_active_agent', $agent_id);
+        update_user_meta($user_id, 'bitcore_eliza_active_agent_name', $default_agent);
+
+        // Initialize daily call counter to 0
+        $today = gmdate('Y-m-d');
+        update_user_meta($user_id, 'bitcore_eliza_calls_' . $today, 0);
+    }
+
+    /**
+     * Resume user's active ElizaOS agent session on login.
+     *
+     * @param string $user_login Username
+     * @param WP_User $user User object
+     */
+    public function eliza_user_login(string $user_login, WP_User $user): void {
+        $user_id = $user->ID;
+
+        // Check if user has an active agent
+        $active_agent = get_user_meta($user_id, 'bitcore_eliza_active_agent', true);
+
+        if (empty($active_agent)) {
+            // No active agent — set Aria as default
+            $default_agent = get_option('bitcore_eliza_default_agent', 'aria');
+            $agent_map = [
+                'aria'  => get_option('bitcore_eliza_agent_aria', 'eac677dd-94c4-02ab-bfea-bc554e52b2a3'),
+                'forge' => get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
+                'muse'  => get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
+            ];
+
+            $agent_id = $agent_map[$default_agent] ?? $agent_map['aria'];
+
+            update_user_meta($user_id, 'bitcore_eliza_active_agent', $agent_id);
+            update_user_meta($user_id, 'bitcore_eliza_active_agent_name', $default_agent);
+        }
+
+        // Ensure daily call counter exists
+        $today = gmdate('Y-m-d');
+        $key = 'bitcore_eliza_calls_' . $today;
+        $count = get_user_meta($user_id, $key, true);
+        if ($count === '') {
+            update_user_meta($user_id, $key, 0);
+        }
     }
 
     public function admin_init(): void {}

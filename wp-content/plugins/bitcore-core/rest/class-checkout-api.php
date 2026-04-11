@@ -51,7 +51,7 @@ class Checkout_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_status'],
-                'permission_callback' => '__return_true'
+                'permission_callback' => [$this, 'check_permission']
             ],
             [
                 'methods' => 'DELETE',
@@ -150,6 +150,6 @@ class Checkout_Api {
      * Permission check
      */
     public function check_permission(): bool {
-        return current_user_can('edit_posts');
+        return current_user_can('manage_options');
     }
 }
