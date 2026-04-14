@@ -56,7 +56,7 @@ class BITCORE_Rest_Tasks {
                 array(
                     'methods'             => \WP_REST_Server::READABLE,
                     'callback'            => array( __CLASS__, 'get_items' ),
-                    'permission_callback' => '__return_true',
+                    'permission_callback' => array( __CLASS__, 'get_items_permissions_check' ),
                     'args'                => self::get_collection_params(),
                 ),
                 array(
@@ -85,7 +85,7 @@ class BITCORE_Rest_Tasks {
                 array(
                     'methods'             => \WP_REST_Server::READABLE,
                     'callback'            => array( __CLASS__, 'get_item' ),
-                    'permission_callback' => '__return_true',
+                    'permission_callback' => array( __CLASS__, 'get_item_permissions_check' ),
                 ),
                 array(
                     'methods'             => \WP_REST_Server::EDITABLE,
@@ -153,7 +153,7 @@ class BITCORE_Rest_Tasks {
 
         foreach ( $posts as $post ) {
             $response = self::prepare_item_for_response( $post, $request );
-            $data[]   = $response->get_data();
+            $data[]   = self::prepare_response_for_collection( $response );
         }
 
         $response = rest_ensure_response( $data );
@@ -338,7 +338,15 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function get_items_permissions_check( $request ) {
-        return true;
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __( 'Invalid or missing nonce.', 'bitcore' ),
+                array( 'status' => 403 )
+            );
+        }
+        return current_user_can( 'read' );
     }
 
     /**
@@ -360,6 +368,14 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function create_item_permissions_check( $request ) {
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __( 'Invalid or missing nonce.', 'bitcore' ),
+                array( 'status' => 403 )
+            );
+        }
         return current_user_can( 'edit_posts' );
     }
 
@@ -371,6 +387,14 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function update_item_permissions_check( $request ) {
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __( 'Invalid or missing nonce.', 'bitcore' ),
+                array( 'status' => 403 )
+            );
+        }
         return current_user_can( 'edit_posts' );
     }
 
@@ -382,6 +406,14 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function delete_item_permissions_check( $request ) {
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __( 'Invalid or missing nonce.', 'bitcore' ),
+                array( 'status' => 403 )
+            );
+        }
         return current_user_can( 'delete_posts' );
     }
 
@@ -393,6 +425,14 @@ class BITCORE_Rest_Tasks {
      * @return bool|WP_Error True if allowed, error otherwise
      */
     public static function dispatch_item_permissions_check( $request ) {
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+        if ( ! $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return new \WP_Error(
+                'rest_forbidden',
+                __( 'Invalid or missing nonce.', 'bitcore' ),
+                array( 'status' => 403 )
+            );
+        }
         return current_user_can( 'edit_posts' );
     }
 

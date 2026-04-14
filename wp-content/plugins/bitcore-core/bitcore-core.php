@@ -107,6 +107,12 @@ function bitcore_cli_init(): void {
 }
 add_action('init', 'bitcore_cli_init');
 
+// === FROM HYPERION: Discourse SSO Client Redirect Fix ===
+// Validates redirect_to parameter during SSO flow to ensure
+// return_sso_url is always a WordPress domain URL, not Discourse.
+// Two-layer defense: init priority 3 (before WP-Discourse) + wpdc_sso_client_redirect_url filter.
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/discourse-sso-fix.php';
+
 // === FROM HYPERION: Custom Cron Schedules ===
 function bitcore_cron_schedules(array $schedules): array {
     $schedules['bitcore_queue_1min'] = [
