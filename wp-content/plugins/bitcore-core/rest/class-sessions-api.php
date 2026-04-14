@@ -15,6 +15,7 @@ class Sessions_Api extends WP_REST_Controller {
     public function __construct() {
         $this->namespace = 'bitcore/v1';
         $this->rest_base = 'sessions';
+        $this->register_routes();
     }
 
     public function register_routes(): void {

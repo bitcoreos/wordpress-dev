@@ -22,6 +22,7 @@ class Goals_Api {
 
     public function __construct() {
         $this->hierarchy = new GoalHierarchy();
+        $this->register_routes();
     }
 
     public function register_routes(): void {
@@ -29,7 +30,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_roots'],
-                'permission_callback' => function() { return is_user_logged_in(); }
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'POST',
@@ -47,7 +48,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_goal'],
-                'permission_callback' => function() { return is_user_logged_in(); }
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'POST',
@@ -65,7 +66,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_children'],
-                'permission_callback' => function() { return is_user_logged_in(); }
+                'permission_callback' => '__return_true'
             ]
         ]);
 
@@ -73,7 +74,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_ancestry'],
-                'permission_callback' => function() { return is_user_logged_in(); }
+                'permission_callback' => '__return_true'
             ]
         ]);
 
@@ -81,7 +82,7 @@ class Goals_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_assigned'],
-                'permission_callback' => function() { return is_user_logged_in(); }
+                'permission_callback' => '__return_true'
             ]
         ]);
     }
@@ -145,6 +146,6 @@ class Goals_Api {
     }
 
     public function check_permission(): bool {
-        return current_user_can('edit_posts');
+        return is_user_logged_in() || current_user_can('manage_options');
     }
 }

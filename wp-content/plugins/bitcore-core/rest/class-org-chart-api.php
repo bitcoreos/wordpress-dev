@@ -22,6 +22,7 @@ class Org_Chart_Api {
 
     public function __construct() {
         $this->org_chart = new OrgChart();
+        $this->register_routes();
     }
 
     public function register_routes(): void {
@@ -135,6 +136,6 @@ class Org_Chart_Api {
     }
 
     public function check_permission(): bool {
-        return current_user_can('edit_posts');
+        return is_user_logged_in() || current_user_can('manage_options');
     }
 }

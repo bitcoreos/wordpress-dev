@@ -1,8 +1,8 @@
 <?php
 /**
  * Navigation Header for BITCORE WordPress Surface
- * Comprehensive navigation linking all 26 pages organized by category.
- * Include this in all page templates: <?php include(get_template_directory() . '/nav-header.php'); ?>
+ * Core SaaS navigation — 9 pages only.
+ * Include in page templates: <?php include(get_template_directory() . '/nav-header.php'); ?>
  */
 ?>
 <nav class="bitcore-nav">
@@ -15,175 +15,51 @@
     </div>
 
     <div class="nav-links">
-        <!-- Primary Links -->
         <a href="<?php echo esc_url(home_url('/')); ?>" class="nav-link <?php echo is_front_page() ? 'active' : ''; ?>">
             <span class="nav-icon">🏠</span>
             <span class="nav-label">Home</span>
         </a>
-        <a href="<?php echo esc_url(get_permalink(29)); ?>" class="nav-link <?php echo is_page(29) ? 'active' : ''; ?>">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Dashboard</span>
+        <a href="<?php echo esc_url(get_permalink(75)); ?>" class="nav-link <?php echo is_page(75) ? 'active' : ''; ?>">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Work</span>
         </a>
-        <a href="<?php echo esc_url(get_permalink(31)); ?>" class="nav-link <?php echo is_page(31) ? 'active' : ''; ?>">
-            <span class="nav-icon">📡</span>
-            <span class="nav-label">Feed</span>
+        <a href="<?php echo esc_url(get_permalink(76)); ?>" class="nav-link <?php echo is_page(76) ? 'active' : ''; ?>">
+            <span class="nav-icon">🤖</span>
+            <span class="nav-label">Agents</span>
         </a>
-
-        <!-- Operations Dropdown -->
-        <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-trigger <?php echo (is_page(36) || is_page(63) || is_page(38)) ? 'active' : ''; ?>">
-                <span class="nav-icon">⚙️</span>
-                <span class="nav-label">Operations</span>
-                <span class="nav-caret">▾</span>
-            </button>
-            <div class="nav-dropdown-menu">
-                <a href="<?php echo esc_url(get_permalink(36)); ?>" class="nav-dropdown-item <?php echo is_page(36) ? 'active' : ''; ?>">
-                    <span class="nav-icon">✅</span> Tasks
-                </a>
-                <a href="<?php echo esc_url(get_permalink(63)); ?>" class="nav-dropdown-item <?php echo is_page(63) ? 'active' : ''; ?>">
-                    <span class="nav-icon">💬</span> Sessions
-                </a>
-                <a href="<?php echo esc_url(get_permalink(38)); ?>" class="nav-dropdown-item <?php echo is_page(38) ? 'active' : ''; ?>">
-                    <span class="nav-icon">📁</span> Workspaces
-                </a>
-            </div>
-        </div>
-
-        <!-- Intelligence Dropdown -->
-        <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-trigger <?php echo (is_page(33) || is_page(32) || is_page(25)) ? 'active' : ''; ?>">
-                <span class="nav-icon">🧠</span>
-                <span class="nav-label">Intelligence</span>
-                <span class="nav-caret">▾</span>
-            </button>
-            <div class="nav-dropdown-menu">
-                <a href="<?php echo esc_url(get_permalink(33)); ?>" class="nav-dropdown-item <?php echo is_page(33) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🕸️</span> Knowledge Graph
-                </a>
-                <a href="<?php echo esc_url(get_permalink(32)); ?>" class="nav-dropdown-item <?php echo is_page(32) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🤖</span> Identities
-                </a>
-                <a href="<?php echo esc_url(get_permalink(25)); ?>" class="nav-dropdown-item <?php echo is_page(25) ? 'active' : ''; ?>">
-                    <span class="nav-icon">⚡</span> Abilities
-                </a>
-            </div>
-        </div>
+        <a href="<?php echo esc_url(get_permalink(77)); ?>" class="nav-link <?php echo is_page(77) ? 'active' : ''; ?>">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Chat</span>
+        </a>
 
         <!-- Management Dropdown -->
         <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-trigger <?php echo (is_page(53) || is_page(54) || is_page(55) || is_page(56) || is_page(57)) ? 'active' : ''; ?>">
+            <button class="nav-link nav-dropdown-trigger <?php echo (is_page(63) || is_page(56) || is_page(55) || is_page(54) || is_page(53)) ? 'active' : ''; ?>">
                 <span class="nav-icon">📋</span>
-                <span class="nav-label">Management</span>
+                <span class="nav-label">Manage</span>
                 <span class="nav-caret">▾</span>
             </button>
             <div class="nav-dropdown-menu">
-                <a href="<?php echo esc_url(get_permalink(53)); ?>" class="nav-dropdown-item <?php echo is_page(53) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🏛️</span> Org Chart
-                </a>
-                <a href="<?php echo esc_url(get_permalink(54)); ?>" class="nav-dropdown-item <?php echo is_page(54) ? 'active' : ''; ?>">
-                    <span class="nav-icon">💰</span> Budget
-                </a>
-                <a href="<?php echo esc_url(get_permalink(55)); ?>" class="nav-dropdown-item <?php echo is_page(55) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🎯</span> Goals
+                <a href="<?php echo esc_url(get_permalink(63)); ?>" class="nav-dropdown-item <?php echo is_page(63) ? 'active' : ''; ?>">
+                    <span class="nav-icon">💬</span> Sessions
                 </a>
                 <a href="<?php echo esc_url(get_permalink(56)); ?>" class="nav-dropdown-item <?php echo is_page(56) ? 'active' : ''; ?>">
                     <span class="nav-icon">✅</span> Approvals
                 </a>
-                <a href="<?php echo esc_url(get_permalink(57)); ?>" class="nav-dropdown-item <?php echo is_page(57) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🛒</span> Checkout
+                <a href="<?php echo esc_url(get_permalink(55)); ?>" class="nav-dropdown-item <?php echo is_page(55) ? 'active' : ''; ?>">
+                    <span class="nav-icon">🎯</span> Goals
+                </a>
+                <a href="<?php echo esc_url(get_permalink(54)); ?>" class="nav-dropdown-item <?php echo is_page(54) ? 'active' : ''; ?>">
+                    <span class="nav-icon">💰</span> Budget
+                </a>
+                <a href="<?php echo esc_url(get_permalink(53)); ?>" class="nav-dropdown-item <?php echo is_page(53) ? 'active' : ''; ?>">
+                    <span class="nav-icon">🏛️</span> Org Chart
                 </a>
             </div>
         </div>
-
-        <!-- Artifacts Dropdown -->
-        <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-trigger <?php echo (is_page(27) || is_page(58) || is_page(62) || is_page(59) || is_page(60) || is_page(61)) ? 'active' : ''; ?>">
-                <span class="nav-icon">📦</span>
-                <span class="nav-label">Artifacts</span>
-                <span class="nav-caret">▾</span>
-            </button>
-            <div class="nav-dropdown-menu">
-                <a href="<?php echo esc_url(get_permalink(27)); ?>" class="nav-dropdown-item <?php echo is_page(27) ? 'active' : ''; ?>">
-                    <span class="nav-icon">📦</span> Artifacts
-                </a>
-                <a href="<?php echo esc_url(get_permalink(58)); ?>" class="nav-dropdown-item <?php echo is_page(58) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🔨</span> Builder
-                </a>
-                <a href="<?php echo esc_url(get_permalink(62)); ?>" class="nav-dropdown-item <?php echo is_page(62) ? 'active' : ''; ?>">
-                    <span class="nav-icon">✏️</span> Editor
-                </a>
-                <a href="<?php echo esc_url(get_permalink(59)); ?>" class="nav-dropdown-item <?php echo is_page(59) ? 'active' : ''; ?>">
-                    <span class="nav-icon">📚</span> Library
-                </a>
-                <a href="<?php echo esc_url(get_permalink(60)); ?>" class="nav-dropdown-item <?php echo is_page(60) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🛍️</span> Marketplace
-                </a>
-                <a href="<?php echo esc_url(get_permalink(61)); ?>" class="nav-dropdown-item <?php echo is_page(61) ? 'active' : ''; ?>">
-                    <span class="nav-icon">💲</span> Pricing
-                </a>
-            </div>
-        </div>
-
-        <!-- Tools Dropdown -->
-        <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-trigger <?php echo (is_page(34) || is_page(37) || is_page(30) || is_page(35) || is_page(28)) ? 'active' : ''; ?>">
-                <span class="nav-icon">🔧</span>
-                <span class="nav-label">Tools</span>
-                <span class="nav-caret">▾</span>
-            </button>
-            <div class="nav-dropdown-menu">
-                <a href="<?php echo esc_url(get_permalink(34)); ?>" class="nav-dropdown-item <?php echo is_page(34) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🔧</span> MCP Tools
-                </a>
-                <a href="<?php echo esc_url(get_permalink(37)); ?>" class="nav-dropdown-item <?php echo is_page(37) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🔗</span> Webhooks
-                </a>
-                <a href="<?php echo esc_url(get_permalink(30)); ?>" class="nav-dropdown-item <?php echo is_page(30) ? 'active' : ''; ?>">
-                    <span class="nav-icon">📡</span> Events
-                </a>
-                <a href="<?php echo esc_url(get_permalink(35)); ?>" class="nav-dropdown-item <?php echo is_page(35) ? 'active' : ''; ?>">
-                    <span class="nav-icon">📝</span> Office Suite
-                </a>
-                <a href="<?php echo esc_url(get_permalink(28)); ?>" class="nav-dropdown-item <?php echo is_page(28) ? 'active' : ''; ?>">
-                    <span class="nav-icon">🖥️</span> Command Center
-                </a>
-            </div>
-        </div>
-
-        <!-- Accelerate (standalone) -->
-        <a href="<?php echo esc_url(get_permalink(26)); ?>" class="nav-link <?php echo is_page(26) ? 'active' : ''; ?>">
-            <span class="nav-icon">⚡</span>
-            <span class="nav-label">Accelerate</span>
-        </a>
     </div>
 
     <div class="nav-actions">
-        <div class="artifact-selector">
-            <select id="artifact-dropdown" class="artifact-dropdown">
-                <option value="">⚡ Load Artifact...</option>
-                <optgroup label="Decision Frameworks">
-                    <option value="binary.json" data-type="decision">Binary Logic</option>
-                    <option value="ternary.json" data-type="decision">Ternary Logic</option>
-                    <option value="quaternary.json" data-type="decision">Quaternary Analysis</option>
-                </optgroup>
-                <optgroup label="Cognitive Patterns">
-                    <option value="biological.json" data-type="pattern">Biological Patterns</option>
-                    <option value="cognitive_biases.json" data-type="pattern">Cognitive Biases</option>
-                    <option value="heuristic_faults.json" data-type="pattern">Heuristic Faults</option>
-                    <option value="rational_failures.json" data-type="pattern">Rational Failures</option>
-                </optgroup>
-                <optgroup label="Optimization">
-                    <option value="decision_optimization.json" data-type="optimization">Decision Optimization</option>
-                    <option value="circumpunct_context.json" data-type="context">Circumpunct Context</option>
-                </optgroup>
-                <optgroup label="Agent Resources">
-                    <option value="agents-reference" data-type="reference">Agents Reference</option>
-                    <option value="llms-personas" data-type="directory">LLMs & Personas</option>
-                </optgroup>
-            </select>
-            <button id="inject-artifact" class="nav-btn">Inject</button>
-        </div>
-
         <?php if (is_user_logged_in()): ?>
         <div class="nav-user">
             <span class="nav-user-icon">👤</span>
@@ -340,32 +216,6 @@
     flex-shrink: 0;
 }
 
-.artifact-selector {
-    display: flex;
-    gap: 8px;
-}
-
-.artifact-dropdown {
-    padding: 10px 14px;
-    background: #1a1a2e;
-    border: 1px solid #2a2a3e;
-    border-radius: 6px;
-    color: #e0e0e0;
-    font-size: 0.85rem;
-    min-width: 180px;
-    cursor: pointer;
-}
-
-.artifact-dropdown optgroup {
-    color: #666;
-    font-weight: 600;
-}
-
-.artifact-dropdown option {
-    color: #e0e0e0;
-    padding: 4px;
-}
-
 .nav-user {
     display: flex;
     align-items: center;
@@ -455,9 +305,6 @@
     .nav-caret {
         display: none;
     }
-    .artifact-selector {
-        display: none;
-    }
     .nav-user-name {
         display: none;
     }
@@ -470,7 +317,6 @@
 <script>
 /* Dropdown keyboard accessibility and click-outside close */
 document.addEventListener('DOMContentLoaded', function() {
-    // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.nav-dropdown')) {
             document.querySelectorAll('.nav-dropdown-menu').forEach(function(menu) {
@@ -479,12 +325,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Toggle dropdown on click for mobile
     document.querySelectorAll('.nav-dropdown-trigger').forEach(function(trigger) {
         trigger.addEventListener('click', function(e) {
             var menu = this.nextElementSibling;
             var isOpen = menu.style.display === 'block';
-            // Close all dropdowns first
             document.querySelectorAll('.nav-dropdown-menu').forEach(function(m) {
                 m.style.display = '';
             });

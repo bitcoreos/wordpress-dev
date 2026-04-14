@@ -5,9 +5,12 @@
 (function(global) {
     'use strict';
     const BudgetPage = {
-        config: { endpoint: '/wp-json/bitcore/v1/budget', nonce: null },
+        config: { endpoint: '/wp-json/bitcore/v1/budget', nonce: null, agentId: null },
         init: function() {
-            if (typeof bitcoreData !== 'undefined') this.config.nonce = bitcoreData.nonce;
+            if (typeof bitcoreData !== 'undefined') {
+                this.config.nonce = bitcoreData.nonce;
+                this.config.agentId = bitcoreData.userId || bitcoreData.agentId || null;
+            }
             console.log('BudgetPage initializing...');
             this.bindEvents();
             this.loadData();
@@ -18,7 +21,10 @@
         },
         loadData: async function() {
             try {
-                var response = await fetch(this.config.endpoint, { headers: { 'X-WP-Nonce': this.config.nonce || '' } });
+                var url = this.config.agentId
+                    ? this.config.endpoint + '/' + this.config.agentId
+                    : this.config.endpoint;
+                var response = await fetch(url, { headers: { 'X-WP-Nonce': this.config.nonce || '' } });
                 var data = await response.json();
                 this.render(data);
             } catch (error) {
