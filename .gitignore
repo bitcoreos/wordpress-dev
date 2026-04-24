@@ -27,3 +27,5 @@ Thumbs.db
 
 # Cache
 *.cache
+.playwright-cli/
+MASTER-DOC.md

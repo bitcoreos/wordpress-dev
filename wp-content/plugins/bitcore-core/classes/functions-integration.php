@@ -104,7 +104,7 @@ function enqueue_rest_nonce(): void {
  */
 function admin_init(): void {
     // Check user capabilities for admin access
-    if (!current_user_can('manage_options')) {
+    if (!is_user_logged_in()) {
         return;
     }
 

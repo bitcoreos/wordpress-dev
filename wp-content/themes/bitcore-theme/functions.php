@@ -166,7 +166,7 @@ function bitcore_shortcode_dashboard( $atts = array() ): string {
     wp_enqueue_script( 'bitcore-dashboard-js' );
     wp_localize_script( 'bitcore-dashboard-js', 'bitcoreData', array(
         'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-        'nonce'   => wp_create_nonce( 'bitcore_dashboard' ),
+        'nonce'   => wp_create_nonce( 'wp_rest' ),
         'restUrl' => rest_url( 'bitcore/v1/' ),
     ) );
     
@@ -418,15 +418,6 @@ function bitcore_enqueue_page_scripts() {
     
     $page_scripts = array(
         'tasks' => 'tasks.js',
-        'workspaces' => 'workspaces.js',
-        'identities' => 'identities.js',
-        'knowledge-graph' => 'knowledge-graph.js',
-        'webhooks' => 'webhooks.js',
-        'abilities' => 'abilities.js',
-        'events' => 'events.js',
-        'mcp-tools' => 'mcp-tools.js',
-        'accelerate' => 'mcp-tools.js', // shares same JS
-        'office-suite' => 'office-suite.js',
     );
     
     if (isset($page_scripts[$slug])) {

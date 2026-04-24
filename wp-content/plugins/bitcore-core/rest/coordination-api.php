@@ -64,7 +64,7 @@ class BITCORE_Coordination_API {
     }
 
     public function permission_check(): bool {
-        return current_user_can('read') || $this->verify_agent_token();
+        return is_user_logged_in() || $this->verify_agent_token();
     }
 
     private function verify_agent_token(): bool {

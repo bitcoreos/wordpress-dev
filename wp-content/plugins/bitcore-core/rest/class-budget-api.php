@@ -111,6 +111,6 @@ class Budget_Api {
     }
 
     public function check_permission(): bool {
-        return current_user_can('manage_options');
+        return is_user_logged_in();
     }
 }

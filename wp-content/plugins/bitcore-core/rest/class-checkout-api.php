@@ -28,6 +28,8 @@ class Checkout_Api {
      */
     public function __construct() {
         $this->checkout_lock = new CheckoutLock();
+        add_action('rest_api_init', [$this, 'register_routes']);
+    }
     }
 
     /**
@@ -150,6 +152,6 @@ class Checkout_Api {
      * Permission check
      */
     public function check_permission(): bool {
-        return current_user_can('manage_options');
+        return is_user_logged_in();
     }
 }

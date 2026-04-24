@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /**
  * BITCORE Admin Menu Registration
- * Backend Configuration Pages ONLY
+ * Consolidated: Dashboard, Settings, API & Tools, Agents & Models, MCP, ElizaOS
  */
 
 add_action('admin_menu', function() {

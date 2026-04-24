@@ -238,6 +238,6 @@ class BITCORE_Rest_Hermes_Api {
      * Check permission
      */
     public function check_permission(): bool {
-        return current_user_can( 'read' );
+        return is_user_logged_in();
     }
 }

@@ -89,7 +89,13 @@ class BITCORE_Core {
         $this->container->register('tenant.resolver', function() { return new \BITCORE\Infrastructure\MultiTenancy\TenantResolver(); });
         $this->container->register('cache.manager', function() { return new \BITCORE\Infrastructure\Cache\CacheManager(); });
         require_once BITCORE_PATH . 'infrastructure/queue/QueueWorker.php';
-        $this->container->register('queue.worker', function() { return new \BITCORE\Infrastructure\Queue\QueueWorker(); });
+        $this->container->register('queue.worker', function($c) {
+            require_once BITCORE_PATH . 'infrastructure/queue/JobRepository.php';
+            return new \BITCORE\Infrastructure\Queue\QueueWorker(
+                $c->get('job.repository'),
+                $c->get('logger')
+            );
+        });
         $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
         $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
         require_once BITCORE_PATH . 'infrastructure/webhooks/WebhookManager.php';
@@ -150,7 +156,11 @@ class BITCORE_Core {
 
         // ElizaOS Bridge
         require_once BITCORE_PATH . "rest/class-eliza-api.php";
-        $this->eliza = new BITCORE_Rest_Eliza_Api($this);
+
+        // Sessions API
+        require_once BITCORE_PATH . 'rest/class-sessions-api.php';
+        $sessions_api = new \BITCORE\Rest\Sessions_Api();
+        $sessions_api->register_routes();
     }
 
     

@@ -34,60 +34,6 @@ class BITCORE_Rest_Health_Knowledge {
             'permission_callback' => [__CLASS__, 'check_admin_permission'],
         ]);
         // Knowledge Graph endpoints
-        register_rest_route(self::NAMESPACE, '/knowledge-graph', [
-            'methods' => 'GET',
-            'callback' => [__CLASS__, 'get_graph'],
-            'permission_callback' => '__return_true',
-        ]);
-        
-        register_rest_route(self::NAMESPACE, '/knowledge-graph/nodes', [
-            'methods' => 'POST',
-            'callback' => [__CLASS__, 'add_node'],
-            'permission_callback' => [__CLASS__, 'check_write_permission'],
-        ]);
-        
-        register_rest_route(self::NAMESPACE, '/knowledge-graph/nodes/(?P<id>[a-zA-Z0-9_-]+)', [
-            'methods' => 'GET',
-            'callback' => [__CLASS__, 'get_node'],
-            'permission_callback' => '__return_true',
-        ]);
-        
-        register_rest_route(self::NAMESPACE, '/knowledge-graph/nodes/(?P<id>[a-zA-Z0-9_-]+)', [
-            'methods' => 'DELETE',
-            'callback' => [__CLASS__, 'delete_node'],
-            'permission_callback' => [__CLASS__, 'check_admin_permission'],
-        ]);
-        
-        register_rest_route(self::NAMESPACE, '/knowledge-graph/edges', [
-            'methods' => 'POST',
-            'callback' => [__CLASS__, 'add_edge'],
-            'permission_callback' => [__CLASS__, 'check_write_permission'],
-        ]);
-        
-        register_rest_route(self::NAMESPACE, '/knowledge-graph/search', [
-            'methods' => 'GET',
-            'callback' => [__CLASS__, 'search_nodes'],
-            'permission_callback' => '__return_true',
-        ]);
-        
-        // Agent Identity endpoints
-        register_rest_route(self::NAMESPACE, '/identities', [
-            'methods' => 'GET',
-            'callback' => [__CLASS__, 'list_identities'],
-            'permission_callback' => '__return_true',
-        ]);
-        
-        register_rest_route(self::NAMESPACE, '/identities', [
-            'methods' => 'POST',
-            'callback' => [__CLASS__, 'register_identity'],
-            'permission_callback' => [__CLASS__, 'check_admin_permission'],
-        ]);
-        
-        register_rest_route(self::NAMESPACE, '/identities/(?P<id>[a-zA-Z0-9_-]+)', [
-            'methods' => 'DELETE',
-            'callback' => [__CLASS__, 'revoke_identity'],
-            'permission_callback' => [__CLASS__, 'check_admin_permission'],
-        ]);
         
         // Token management endpoints
         register_rest_route(self::NAMESPACE, '/token/rotate', [
@@ -487,21 +433,21 @@ class BITCORE_Rest_Health_Knowledge {
      * Check read permission
      */
     public static function check_read_permission() {
-        return current_user_can('read') || self::verify_token_from_header();
+        return is_user_logged_in() || self::verify_token_from_header();
     }
     
     /**
      * Check write permission
      */
     public static function check_write_permission() {
-        return current_user_can('edit_posts') || self::verify_token_from_header();
+        return is_user_logged_in() || self::verify_token_from_header();
     }
     
     /**
      * Check admin permission
      */
     public static function check_admin_permission() {
-        return current_user_can('edit_posts') || self::verify_token_from_header();
+        return is_user_logged_in() || self::verify_token_from_header();
     }
     
     /**
