@@ -22,6 +22,7 @@ class Org_Chart_Api {
 
     public function __construct() {
         $this->org_chart = new OrgChart();
+        $this->register_routes();
     }
 
     public function register_routes(): void {
@@ -29,7 +30,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_all_agents'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'POST',
@@ -47,7 +48,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_agent_info'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ],
             [
                 'methods' => 'DELETE',
@@ -60,7 +61,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_reports'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
 
@@ -68,7 +69,7 @@ class Org_Chart_Api {
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_chain_of_command'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
 

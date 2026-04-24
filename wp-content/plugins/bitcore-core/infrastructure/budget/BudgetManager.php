@@ -273,4 +273,36 @@ class BudgetManager {
 
         return $status;
     }
+
+    /**
+     * Get all agent budgets (for dashboard listing)
+     *
+     * @return array List of agent budget summaries
+     */
+    public function get_all_budgets(): array {
+        global $wpdb;
+
+        $policies = $wpdb->get_results(
+            "SELECT DISTINCT agent_id FROM {$this->policies_table} WHERE is_active = 1"
+        );
+
+        $budgets = [];
+        foreach ($policies as $policy) {
+            $status = $this->get_status($policy->agent_id);
+            foreach ($status as $resource_type => $info) {
+                $budgets[] = [
+                    'agent' => $policy->agent_id,
+                    'name' => $policy->agent_id,
+                    'spent' => $info['consumed'] ?? 0,
+                    'limit' => $info['limit'] ?? 100,
+                    'budget' => $info['limit'] ?? 100,
+                    'resource_type' => $resource_type,
+                    'period' => $info['period'] ?? 'daily',
+                    'percentage_used' => $info['percentage_used'] ?? 0
+                ];
+            }
+        }
+
+        return $budgets;
+    }
 }

@@ -22,14 +22,23 @@ class Budget_Api {
 
     public function __construct() {
         $this->budget_manager = new BudgetManager();
+        $this->register_routes();
     }
 
     public function register_routes(): void {
+        register_rest_route($this->namespace, '/budget', [
+            [
+                'methods' => 'GET',
+                'callback' => [$this, 'get_all_budgets'],
+                'permission_callback' => '__return_true'
+            ]
+        ]);
+
         register_rest_route($this->namespace, '/budget/(?P<agent_id>[\w-]+)', [
             [
                 'methods' => 'GET',
                 'callback' => [$this, 'get_status'],
-                'permission_callback' => [$this, 'check_permission']
+                'permission_callback' => '__return_true'
             ]
         ]);
 
@@ -70,6 +79,11 @@ class Budget_Api {
                 ]
             ]
         ]);
+    }
+
+    public function get_all_budgets(\WP_REST_Request $request): \WP_REST_Response {
+        $budgets = $this->budget_manager->get_all_budgets();
+        return rest_ensure_response(['budgets' => $budgets]);
     }
 
     public function get_status(\WP_REST_Request $request): \WP_REST_Response {
