@@ -121,6 +121,12 @@ class BITCORE_Core {
         require_once BITCORE_PATH . 'infrastructure/swarm/health-monitor.php';
         $this->container->register('health.monitor', function() { return new \BITCORE\Infrastructure\Swarm\HealthMonitor(); });
 
+        // x402 Payment Verification
+        require_once BITCORE_PATH . 'infrastructure/class-x402.php';
+        $this->container->register('x402.verifier', function() {
+            return new \BITCORE\Infrastructure\X402_Verifier();
+        });
+
         // Initialize Wave 4 Services
         add_action('bitcore_init', [$this, 'init_wave4_services']);
     }
@@ -215,6 +221,8 @@ class BITCORE_Core {
         $this->connector_n8n = $this->container->get('connector_n8n');
         $this->connector_bithub = $this->container->get('connector_bithub');
         $this->connector_bitwiki = $this->container->get('connector_bitwiki');
+        // x402 Payment Verification — instantiate to register filter hook
+        $this->container->get('x402.verifier');
     }
 
     /**
