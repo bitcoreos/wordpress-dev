@@ -30,7 +30,6 @@ class Checkout_Api {
         $this->checkout_lock = new CheckoutLock();
         add_action('rest_api_init', [$this, 'register_routes']);
     }
-    }
 
     /**
      * Register routes
