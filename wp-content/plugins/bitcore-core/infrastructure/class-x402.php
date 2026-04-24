@@ -15,9 +15,9 @@
 
 declare(strict_types=1);
 
-if (!defined('ABSPATH')) exit;
-
 namespace BITCORE\Infrastructure;
+
+if (!defined('ABSPATH')) exit;
 
 class X402_Verifier {
 
