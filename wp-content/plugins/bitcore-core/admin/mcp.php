@@ -101,7 +101,7 @@ jQuery(document).ready(function($) {
                     
                     // Extract MCP-like tools from routes
                     tools = endpoints.filter(function(e) {
-                        return e.path.includes('hermes') || e.path.includes('mcp') || e.path.includes('knowledge') || e.path.includes('context');
+                        return e.path.includes('eliza') || e.path.includes('mcp') || e.path.includes('knowledge') || e.path.includes('context');
                     }).map(function(e) {
                         return {
                             name: e.path.replace('/bitcore/v1/', '').replace(/\//g, '_'),

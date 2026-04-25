@@ -31,9 +31,9 @@ if (isset($_POST['bitcore_action']) && check_admin_referer('bitcore_agents_model
     }
 }
 
-$hermes_url = get_option('bitcore_hermes_url', 'http://172.17.0.1:8787');
-$hermes_health = wp_remote_get($hermes_url . '/health', ['timeout' => 3]);
-$hermes_data = !is_wp_error($hermes_health) ? json_decode(wp_remote_retrieve_body($hermes_health), true) : null;
+$eliza_url = get_option('bitcore_eliza_url', 'http://127.0.0.1:3000');
+$eliza_health = wp_remote_get($eliza_url . '/api/server/health', ['timeout' => 3]);
+$eliza_data = !is_wp_error($eliza_health) ? json_decode(wp_remote_retrieve_body($eliza_health), true) : null;
 $coraline_url = 'http://64.23.131.221:50081/';
 $coraline_health = wp_remote_get($coraline_url, ['timeout' => 3]);
 $hyperion_url = 'http://64.227.106.173:8081/';
@@ -69,11 +69,11 @@ $models = get_option('bitcore_models', []);
             <div class="agent-card" style="background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 20px;">
                 <div style="display: flex; align-items: center; margin-bottom: 15px;">
                     <div style="width: 50px; height: 50px; background: #9b59b6; border-radius: 50%; margin-right: 15px;"></div>
-                    <div><h3 style="margin: 0;">Hermes</h3><span style="color: #666;">Guardian / Coordinator</span></div>
+                    <div><h3 style="margin: 0;">ElizaOS</h3><span style="color: #666;">Agent Runtime</span></div>
                 </div>
                 <table style="width: 100%; font-size: 13px;">
-                    <tr><td style="padding: 4px 0; color: #666;">Status:</td><td><?php echo $hermes_data ? '<span style="color: green;">Active</span>' : '<span style="color: red;">Offline</span>'; ?></td></tr>
-                    <tr><td style="padding: 4px 0; color: #666;">Endpoint:</td><td><code style="font-size: 11px;"><?php echo esc_html($hermes_url); ?></code></td></tr>
+                    <tr><td style="padding: 4px 0; color: #666;">Status:</td><td><?php echo $eliza_data ? '<span style="color: green;">Active</span>' : '<span style="color: red;">Offline</span>'; ?></td></tr>
+                    <tr><td style="padding: 4px 0; color: #666;">Endpoint:</td><td><code style="font-size: 11px;"><?php echo esc_html($eliza_url); ?></code></td></tr>
                 </table>
             </div>
             <div class="agent-card" style="background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 20px;">

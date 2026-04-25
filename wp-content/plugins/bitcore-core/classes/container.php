@@ -131,9 +131,5 @@ class BITCORE_Container {
             new BITCORE_Services_Connector_BITwiki($c->get('core'))
         );
 
-        // Hermes Connector
-        $this->set('connector_hermes', fn($c) =>
-            new BITCORE_Services_Connector_Hermes($c->get('core'))
-        );
     }
 }

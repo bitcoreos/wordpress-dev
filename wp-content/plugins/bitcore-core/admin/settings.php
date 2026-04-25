@@ -8,7 +8,7 @@ declare(strict_types=1);
 // Handle form submission
 if (isset($_POST['bitcore_settings_save']) && check_admin_referer('bitcore_settings_nonce')) {
     $settings_fields = [
-        'bitcore_hermes_url', 'bitcore_callback_secret',
+        'bitcore_eliza_url', 'bitcore_callback_secret',
         'bitcore_n8n_webhook_url', 'bitcore_n8n_api_key',
         'bitcore_bithub_api_url', 'bitcore_bithub_api_key',
         'bitcore_bitwiki_api_url', 'bitcore_bitwiki_api_key',
@@ -24,7 +24,7 @@ if (isset($_POST['bitcore_settings_save']) && check_admin_referer('bitcore_setti
     echo '<div class="notice notice-success"><p>Settings saved.</p></div>';
 }
 
-$hermes_url = get_option('bitcore_hermes_url', 'http://172.17.0.1:8787');
+$eliza_url = get_option('bitcore_eliza_url', 'http://127.0.0.1:3000');
 ?>
 <div class="wrap bitcore-admin">
     <h1>⚙️ BITCORE Settings</h1>
@@ -33,23 +33,23 @@ $hermes_url = get_option('bitcore_hermes_url', 'http://172.17.0.1:8787');
         <?php wp_nonce_field('bitcore_settings_nonce'); ?>
         
         <div class="settings-grid">
-            <!-- Hermes (Local Docker) -->
+            <!-- ElizaOS Agent -->
             <div class="settings-card">
-                <h2>🔌 Hermes Agent (Local Docker)</h2>
-                <p class="description">Hermes runs as a local Docker container. Use internal Docker network URL.</p>
+                <h2>🤖 ElizaOS Agent</h2>
+                <p class="description">ElizaOS runs as the agent runtime. Configure the server URL.</p>
                 <table class="form-table">
                     <tr>
-                        <th>Internal URL</th>
+                        <th>Server URL</th>
                         <td>
-                            <input type="url" name="bitcore_hermes_url" value="<?php echo esc_attr($hermes_url); ?>" class="regular-text">
-                            <p class="description">Default: <code>http://172.17.0.1:8787</code> (Docker host gateway)</p>
+                            <input type="url" name="bitcore_eliza_url" value="<?php echo esc_attr($eliza_url); ?>" class="regular-text">
+                            <p class="description">Default: <code>http://127.0.0.1:3000</code></p>
                         </td>
                     </tr>
                     <tr>
                         <th>Callback Secret</th>
                         <td>
                             <input type="text" name="bitcore_callback_secret" value="<?php echo esc_attr(get_option('bitcore_callback_secret')); ?>" class="regular-text">
-                            <p class="description">Shared secret for Hermes callback authentication</p>
+                            <p class="description">Shared secret for ElizaOS callback authentication</p>
                         </td>
                     </tr>
                 </table>
@@ -134,7 +134,7 @@ $hermes_url = get_option('bitcore_hermes_url', 'http://172.17.0.1:8787');
                 <table class="form-table">
                     <tr>
                         <th>Chat API</th>
-                        <td><label><input type="checkbox" name="bitcore_enable_chat" value="1" <?php checked(get_option('bitcore_enable_chat', 1)); ?>> Enable /hermes/chat endpoint</label></td>
+                        <td><label><input type="checkbox" name="bitcore_enable_chat" value="1" <?php checked(get_option('bitcore_enable_chat', 1)); ?>> Enable /eliza/chat endpoint</label></td>
                     </tr>
                     <tr>
                         <th>Knowledge Graph</th>

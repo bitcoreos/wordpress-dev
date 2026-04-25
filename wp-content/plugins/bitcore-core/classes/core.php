@@ -41,7 +41,6 @@ class BITCORE_Core {
     public ?BITCORE_MCP_Core $mcp = null;
     public ?BITCORE_Rest_API $rest = null;
     public ?BITCORE_Rest_Tasks $rest_tasks = null;
-    public ?BITCORE_Rest_Hermes_Api $rest_hermes = null;
     public $eliza = null;
     public $eliza_settings = null;
     public ?BITCORE_Modules_Search $search = null;
@@ -159,8 +158,6 @@ class BITCORE_Core {
         require_once BITCORE_PATH . 'rest/class-sessions-api.php';
         new \BITCORE\Rest\Sessions_Api();
         require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
-        require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
-        $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
 
         // ElizaOS Bridge
         require_once BITCORE_PATH . "rest/class-eliza-api.php";
@@ -189,9 +186,6 @@ class BITCORE_Core {
             $this->rest_auth_filter = new BITCORE_Rest_Auth_Filter();
             $this->rest = new BITCORE_Rest_API($this);
             $this->rest_tasks = new BITCORE_Rest_Tasks($this);
-        // REST Hermes initialized in init_rest() for early hook timing
-        require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
-        $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         }
 
         // Initialize Wave 4 security middleware
