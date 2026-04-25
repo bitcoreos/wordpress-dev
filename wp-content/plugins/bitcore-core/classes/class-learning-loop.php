@@ -402,6 +402,7 @@ class BITCORE_Learning_Loop {
         }
 
         return $rows;
+    }
 
     /**
      * Compute deterministic intelligence score for an action
