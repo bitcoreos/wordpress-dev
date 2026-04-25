@@ -224,16 +224,8 @@ class BITCORE_Rest_Eliza_Api {
             );
         }
 
-        if (!is_user_logged_in()) {
-            return new \WP_Error(
-                'rest_forbidden',
-                __('You do not have permission to use this endpoint.'),
-                ['status' => 403]
-            );
-        }
-
         // Admins bypass rate limiting
-        if (is_user_logged_in()) {
+        if (current_user_can('manage_options')) {
             return true;
         }
 
@@ -286,21 +278,12 @@ class BITCORE_Rest_Eliza_Api {
             return true;
         }
 
-        // Case 2: Logged-in user — check capabilities
-        if (!is_user_logged_in()) {
-            return new \WP_Error(
-                'rest_forbidden',
-                __('You do not have permission to use this endpoint.'),
-                ['status' => 403]
-            );
-        }
-
-        // Admins bypass rate limiting
-        if (is_user_logged_in()) {
+        // Case 2: Logged-in user — admins bypass rate limiting
+        if (current_user_can('manage_options')) {
             return true;
         }
 
-        // Check rate limit with x402 bypass option
+        // Non-admin logged-in user — check rate limit with x402 bypass option
         return $this->check_rate_limit_with_x402();
     }
 
@@ -393,7 +376,7 @@ class BITCORE_Rest_Eliza_Api {
             'limit'      => $this->daily_limit,
             'remaining'  => max(0, $this->daily_limit - $count),
             'reset'      => $tomorrow,
-            'plan'       => is_user_logged_in() ? 'admin' : 'standard',
+            'plan'       => current_user_can('manage_options') ? 'admin' : 'standard',
         ];
     }
 
@@ -464,7 +447,7 @@ class BITCORE_Rest_Eliza_Api {
         }
 
         // Add rate limit headers for logged-in users (non-admins)
-        if (is_user_logged_in() && !is_user_logged_in()) {
+        if (is_user_logged_in() && !current_user_can('manage_options')) {
             $user_id = get_current_user_id();
             $info = $this->get_rate_limit_info($user_id);
 
