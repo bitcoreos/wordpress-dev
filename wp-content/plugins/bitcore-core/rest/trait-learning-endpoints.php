@@ -23,13 +23,15 @@ trait LearningEndpoints {
             ], 400);
         }
         
-        // Score computation logic
+        $learning = new BITCORE_Learning_Loop();
         $scores = [];
         foreach ($action_ids as $action_id) {
+            $result = $learning->compute_action_score($action_id, $org_id);
             $scores[$action_id] = [
                 'action_id' => sanitize_text_field($action_id),
-                'computed_score' => rand(0, 100) / 100, // Placeholder - implement actual scoring logic
-                'computed_at' => current_time('mysql'),
+                'computed_score' => $result['score'],
+                'score_breakdown' => $result['breakdown'],
+                'computed_at' => $result['computed_at'],
             ];
         }
         
