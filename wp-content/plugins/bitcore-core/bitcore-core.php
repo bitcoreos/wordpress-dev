@@ -150,15 +150,16 @@ function bitcore_schedule_cron(): void {
 add_action('wp', 'bitcore_schedule_cron');
 
 // === FROM HYPERION: Queue Worker Cron ===
-function bitcore_queue_worker_cron(): void {
-    if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
-        $worker = $GLOBALS['bitcore']->container->get('queue.worker');
-        if ($worker) {
-            $worker->process(10);
-        }
-    }
-}
-add_action('bitcore_queue_worker', 'bitcore_queue_worker_cron');
+// DISABLED: queue.worker depends on job.repository and logger — both missing.
+// function bitcore_queue_worker_cron(): void {
+//     if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
+//         $worker = $GLOBALS['bitcore']->container->get('queue.worker');
+//         if ($worker) {
+//             $worker->process(10);
+//         }
+//     }
+// }
+// add_action('bitcore_queue_worker', 'bitcore_queue_worker_cron');
 
 // === FROM HYPERION: Webhooks Retry Cron ===
 function bitcore_webhooks_retry_cron(): void {
@@ -172,21 +173,22 @@ function bitcore_webhooks_retry_cron(): void {
 add_action('bitcore_webhooks_retry', 'bitcore_webhooks_retry_cron');
 
 // === FROM HYPERION: Health Check Cron ===
-function bitcore_health_check_cron(): void {
-    if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
-        $logger = $GLOBALS['bitcore']->container->get('logger');
-        if ($logger) {
-            $health = [
-                'timestamp' => time(),
-                'memory'    => memory_get_usage(true),
-                'peak'      => memory_get_peak_usage(true),
-                'queue'     => $GLOBALS['wpdb']->get_var("SELECT COUNT(*) FROM {$GLOBALS['wpdb']->prefix}bitcore_jobs WHERE status = 'pending'"),
-            ];
-            $logger->info('Health check completed', $health);
-        }
-    }
-}
-add_action('bitcore_health_check', 'bitcore_health_check_cron');
+// DISABLED: logger service references missing infrastructure/Logging/Logger.php
+// function bitcore_health_check_cron(): void {
+//     if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
+//         $logger = $GLOBALS['bitcore']->container->get('logger');
+//         if ($logger) {
+//             $health = [
+//                 'timestamp' => time(),
+//                 'memory'    => memory_get_usage(true),
+//                 'peak'      => memory_get_peak_usage(true),
+//                 'queue'     => $GLOBALS['wpdb']->get_var("SELECT COUNT(*) FROM {$GLOBALS['wpdb']->prefix}bitcore_jobs WHERE status = 'pending'"),
+//             ];
+//             $logger->info('Health check completed', $health);
+//         }
+//     }
+// }
+// add_action('bitcore_health_check', 'bitcore_health_check_cron');
 
 // === FROM CORALINE: Token Rotation Schedule ===
 function bitcore_schedule_token_check(): void {

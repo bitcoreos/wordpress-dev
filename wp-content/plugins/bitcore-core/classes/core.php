@@ -83,20 +83,24 @@ class BITCORE_Core {
         });
 
         // === Hyperion: Infrastructure Services ===
-        $this->container->register('auth.manager', function() { return new \BITCORE\Infrastructure\Auth\AuthManager(); });
-        $this->container->register('auth.capability', function() { return new \BITCORE\Infrastructure\Auth\CapabilityManager(); });
-        $this->container->register('tenant.resolver', function() { return new \BITCORE\Infrastructure\MultiTenancy\TenantResolver(); });
-        $this->container->register('cache.manager', function() { return new \BITCORE\Infrastructure\Cache\CacheManager(); });
-        require_once BITCORE_PATH . 'infrastructure/queue/QueueWorker.php';
-        $this->container->register('queue.worker', function($c) {
-            require_once BITCORE_PATH . 'infrastructure/queue/JobRepository.php';
-            return new \BITCORE\Infrastructure\Queue\QueueWorker(
-                $c->get('job.repository'),
-                $c->get('logger')
-            );
-        });
-        $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
-        $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
+        // NOTE: Six infrastructure files are MISSING - commented out until built.
+        // Missing: Auth/AuthManager.php, Auth/CapabilityManager.php, MultiTenancy/TenantResolver.php,
+        //          Cache/CacheManager.php, Logging/Logger.php, RateLimit/RateLimitManager.php
+        // $this->container->register('auth.manager', function() { return new \BITCORE\Infrastructure\Auth\AuthManager(); });
+        // $this->container->register('auth.capability', function() { return new \BITCORE\Infrastructure\Auth\CapabilityManager(); });
+        // $this->container->register('tenant.resolver', function() { return new \BITCORE\Infrastructure\MultiTenancy\TenantResolver(); });
+        // $this->container->register('cache.manager', function() { return new \BITCORE\Infrastructure\Cache\CacheManager(); });
+        // QueueWorker requires Logger which is missing — commented out until built.
+        // require_once BITCORE_PATH . 'infrastructure/queue/QueueWorker.php';
+        // $this->container->register('queue.worker', function($c) {
+        //     require_once BITCORE_PATH . 'infrastructure/queue/JobRepository.php';
+        //     return new \BITCORE\Infrastructure\Queue\QueueWorker(
+        //         $c->get('job.repository'),
+        //         $c->get('logger')
+        //     );
+        // });
+        // $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
+        // $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
         require_once BITCORE_PATH . 'infrastructure/webhooks/WebhookManager.php';
         $this->container->register('webhooks.manager', function() { return new \BITCORE\Infrastructure\Webhooks\WebhookManager(); });
 
