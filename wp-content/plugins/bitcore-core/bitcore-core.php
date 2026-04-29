@@ -228,10 +228,15 @@ add_action('rest_api_init', ['BITCORE_Rest_Health_Knowledge', 'register_routes']
 add_action('rest_api_init', ['BITCORE_Rest_Research_Intelligence', 'register_routes']);
 add_action('rest_api_init', ['BITCORE_Rest_Sse_Events', 'register_routes']);
 
-// === RESTORED: Route registrations from April 23 repair (lost via server-side-only deploys) ===
-add_action('rest_api_init', ['BITCORE_Rest_Mcp_Tools', 'register_routes']);
-add_action('rest_api_init', ['BITCORE_Rest_Coordination', 'register_routes']);
-add_action('rest_api_init', ['BITCORE\Rest\Missions_Api', 'register_routes']);
+// === RESTORED (April 29): Route registrations from April 23 repair (verified class names) ===
+add_action('rest_api_init', function() {
+    if (class_exists('BITCORE_Rest_MCP_Tools_API')) {
+        (new BITCORE_Rest_MCP_Tools_API())->register_routes();
+    }
+    if (class_exists('BITCORE_Coordination_API')) {
+        (new BITCORE_Coordination_API())->register_routes();
+    }
+});
 // === FROM CORALINE: Admin Scripts ===
 add_action('admin_enqueue_scripts', ['BITCORE_Integration', 'enqueue_rest_nonce']);
 
