@@ -177,7 +177,7 @@ class BITCORE_Rest_Auth_Filter {
      * @param string $api_key API key to validate
      * @return array|false Key data or false
      */
-    private function validate_api_key( $api_key ) {
+    public static function validate_api_key( $api_key ) {
         $api_keys = get_option( self::API_KEYS_OPTION, [] );
 
         if ( ! isset( $api_keys[ $api_key ] ) ) {

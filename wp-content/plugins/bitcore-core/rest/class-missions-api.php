@@ -65,7 +65,7 @@ class Missions_Api {
         ]);
     }
 
-    public function get_missions(\WP_REST_Request $request): \WP_REST_Response {
+    public function get_missions(\WP_REST_Request $request) {
         $status_filter = $request->get_param('status');
         $search = $request->get_param('search');
 
@@ -97,7 +97,7 @@ class Missions_Api {
         return rest_ensure_response(['missions' => $missions]);
     }
 
-    public function get_mission(\WP_REST_Request $request): \WP_REST_Response {
+    public function get_mission(\WP_REST_Request $request) {
         $post = get_post($request->get_param('id'));
         if (!$post || $post->post_type !== $this->post_type) {
             return new \WP_Error('not_found', 'Mission not found', ['status' => 404]);
@@ -105,7 +105,7 @@ class Missions_Api {
         return rest_ensure_response($this->format_mission($post));
     }
 
-    public function create_mission(\WP_REST_Request $request): \WP_REST_Response {
+    public function create_mission(\WP_REST_Request $request) {
         $title = sanitize_text_field($request->get_param('title'));
         if (empty($title)) {
             return new \WP_Error('missing_title', 'Title is required', ['status' => 400]);
@@ -142,7 +142,7 @@ class Missions_Api {
         return rest_ensure_response($this->format_mission($post));
     }
 
-    public function update_mission(\WP_REST_Request $request): \WP_REST_Response {
+    public function update_mission(\WP_REST_Request $request) {
         $post_id = $request->get_param('id');
         $post = get_post($post_id);
         if (!$post || $post->post_type !== $this->post_type) {
@@ -180,7 +180,7 @@ class Missions_Api {
         return rest_ensure_response($this->format_mission($post));
     }
 
-    public function delete_mission(\WP_REST_Request $request): \WP_REST_Response {
+    public function delete_mission(\WP_REST_Request $request) {
         $post_id = $request->get_param('id');
         $post = get_post($post_id);
         if (!$post || $post->post_type !== $this->post_type) {
@@ -191,7 +191,7 @@ class Missions_Api {
         return rest_ensure_response(['success' => $result !== false, 'id' => $post_id]);
     }
 
-    public function get_statuses(\WP_REST_Request $request): \WP_REST_Response {
+    public function get_statuses(\WP_REST_Request $request) {
         $terms = get_terms([
             'taxonomy' => $this->tax_status,
             'hide_empty' => false,

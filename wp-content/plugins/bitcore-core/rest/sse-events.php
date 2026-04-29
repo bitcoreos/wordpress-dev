@@ -74,7 +74,7 @@ class BITCORE_Rest_Sse_Events {
         $headers = getallheaders();
         $api_key = $headers['X-BitCore-API-Key'] ?? $headers['Authorization'] ?? '';
         $api_key = str_replace('Bearer ', '', $api_key);
-        return BitCore_Auth_Filter::validate_api_key($api_key);
+        return BITCORE_Rest_Auth_Filter::validate_api_key($api_key);
     }
     
     /**
