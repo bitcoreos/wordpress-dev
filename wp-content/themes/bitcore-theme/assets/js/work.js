@@ -188,7 +188,7 @@
             if (this.state.taskFilter !== 'all') {
                 filtered = filtered.filter(function(t) {
                     return (t.task_status || t.status || 'pending') === self.state.taskFilter;
-                }.bind(null)); // bind fix for self reference
+                }.bind(this)); // bind fix for self reference
             }
             // Re-filter using proper closure
             var filter = this.state.taskFilter;
