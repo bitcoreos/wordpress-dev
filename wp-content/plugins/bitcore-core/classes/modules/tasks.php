@@ -26,6 +26,16 @@ class BITCORE_Modules_Tasks {
     const TAX_STATUS = 'task_status';
 
     /**
+     * Channel taxonomy
+     */
+    const TAX_CHANNEL = 'bitcore_channel';
+
+    /**
+     * Task type taxonomy
+     */
+    const TAX_TYPE = 'task_type';
+
+    /**
      * Core instance
      */
     private $core;
@@ -104,6 +114,32 @@ class BITCORE_Modules_Tasks {
         ];
 
         register_taxonomy(self::TAX_STATUS, self::POST_TYPE, $args);
+
+        // Channel taxonomy
+        $channel_labels = [
+            'name'          => _x('Channels', 'taxonomy general name', 'bitcore'),
+            'singular_name' => _x('Channel', 'taxonomy singular name', 'bitcore'),
+        ];
+        register_taxonomy(self::TAX_CHANNEL, [self::POST_TYPE, 'post'], [
+            'labels'       => $channel_labels,
+            'public'       => false,
+            'hierarchical' => true,
+            'show_ui'      => true,
+            'show_in_rest' => true,
+        ]);
+
+        // Task type taxonomy
+        $type_labels = [
+            'name'          => _x('Task Types', 'taxonomy general name', 'bitcore'),
+            'singular_name' => _x('Task Type', 'taxonomy singular name', 'bitcore'),
+        ];
+        register_taxonomy(self::TAX_TYPE, self::POST_TYPE, [
+            'labels'       => $type_labels,
+            'public'       => false,
+            'hierarchical' => true,
+            'show_ui'      => true,
+            'show_in_rest' => true,
+        ]);
     }
 
     /**
@@ -111,10 +147,18 @@ class BITCORE_Modules_Tasks {
      */
     public function register_default_statuses(): void {
         $statuses = [
+            // Legacy statuses
             'pending'   => 'Pending',
             'active'    => 'Active',
             'completed' => 'Completed',
             'failed'    => 'Failed',
+            // Kanban statuses
+            'inbox'     => 'Inbox',
+            'backlog'   => 'Backlog',
+            'doing'     => 'Doing',
+            'review'    => 'Review',
+            'done'      => 'Done',
+            'archived'  => 'Archived',
         ];
 
         foreach ($statuses as $slug => $name) {

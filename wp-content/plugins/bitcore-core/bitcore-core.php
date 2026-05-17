@@ -365,6 +365,8 @@ add_action('rest_api_init', function() {
         'BITCORE\Rest\Goals_API',
         'BITCORE\Rest\Approvals_API',
         'BITCORE\Rest\Sessions_Api',
+        'BITCORE\Rest\Kanban_API',
+        'BITCORE\Rest\My_Posts_API',
     ];
     foreach ($apis as $api_class) {
         if (class_exists($api_class)) {
@@ -374,5 +376,74 @@ add_action('rest_api_init', function() {
     }
 });
 
-// === FROM HYPERION: Admin Menu Registration ===
-require_once BITCORE_PLUGIN_DIR . 'admin/menu-registration.php';
+// === ASHI: Post Types and Taxonomies ===
+function bitcore_register_post_types(): void {
+    register_post_type('bitcore_prompt', [
+        'labels'             => [
+            'name'          => __('Prompts', 'bitcore-core'),
+            'singular_name' => __('Prompt', 'bitcore-core'),
+        ],
+        'public'             => false,
+        'publicly_queryable' => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'map_meta_cap'       => true,
+        'supports'           => ['title', 'editor', 'author'],
+        'menu_icon'          => 'dashicons-format-chat',
+        'rewrite'            => false,
+    ]);
+    register_post_type('bitcore_artifact', [
+        'labels'             => [
+            'name'          => __('Artifacts', 'bitcore-core'),
+            'singular_name' => __('Artifact', 'bitcore-core'),
+        ],
+        'public'             => false,
+        'publicly_queryable' => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'map_meta_cap'       => true,
+        'supports'           => ['title', 'editor', 'author', 'revisions'],
+        'taxonomies'         => ['bitcore_channel', 'artifact_status'],
+        'menu_icon'          => 'dashicons-archive',
+        'rewrite'            => false,
+    ]);
+}
+add_action('init', 'bitcore_register_post_types', 5);
+
+function bitcore_register_taxonomies(): void {
+    register_taxonomy('bitcore_channel', ['agent_task', 'bitcore_artifact', 'post'], [
+        'labels'       => [
+            'name'          => __('Channels', 'bitcore-core'),
+            'singular_name' => __('Channel', 'bitcore-core'),
+        ],
+        'public'       => false,
+        'hierarchical' => true,
+        'show_ui'      => true,
+    ]);
+    register_taxonomy('task_type', ['bitcore_task'], [
+        'labels'       => [
+            'name'          => __('Task Types', 'bitcore-core'),
+            'singular_name' => __('Task Type', 'bitcore-core'),
+        ],
+        'public'       => false,
+        'hierarchical' => true,
+        'show_ui'      => true,
+    ]);
+    register_taxonomy('artifact_status', ['bitcore_artifact'], [
+        'labels'       => [
+            'name'          => __('Artifact Statuses', 'bitcore-core'),
+            'singular_name' => __('Artifact Status', 'bitcore-core'),
+        ],
+        'public'       => false,
+        'hierarchical' => false,
+        'show_ui'      => true,
+    ]);
+}
+add_action('init', 'bitcore_register_taxonomies', 6);
+
+
+// === ASHI: Post Router and Privacy ===
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/class-post-router.php';
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/class-privacy.php';

@@ -1,0 +1,80 @@
+### Page
+- Page URL: https://ashi.bitwiki.org/
+- Page Title: ASHI
+### Snapshot
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - heading "ASHI" [level=1] [ref=e7]:
+        - link "ASHI" [ref=e8] [cursor=pointer]:
+          - /url: https://ashi.bitwiki.org
+      - navigation [ref=e10]:
+        - list [ref=e11]:
+          - listitem [ref=e12]:
+            - link "Dashboard" [ref=e13] [cursor=pointer]:
+              - /url: /dashboard/
+          - listitem [ref=e14]:
+            - link "Feed" [ref=e15] [cursor=pointer]:
+              - /url: /feed/
+          - listitem [ref=e16]:
+            - link "Chat" [ref=e17] [cursor=pointer]:
+              - /url: /chat/
+          - listitem [ref=e18]:
+            - link "Submit Intent" [ref=e19] [cursor=pointer]:
+              - /url: /intent/
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]: ⚡
+      - heading "BITCORE" [level=1] [ref=e24]
+      - paragraph [ref=e25]: Intelligence Factory
+    - generic [ref=e26]:
+      - heading "Welcome" [level=2] [ref=e27]
+      - paragraph [ref=e28]: Access the BITCORE ecosystem through your Discourse account.
+      - link "Log" [ref=e29] [cursor=pointer]:
+        - /url: https://ashi.bitwiki.org/?discourse_sso=1&redirect_to=https%3A%2F%2Fashi.bitwiki.org%2Fdashboard
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - text: 📋
+          - strong [ref=e32]: Tasks
+          - text: — Dispatch and monitor
+        - generic [ref=e33]:
+          - text: 🎯
+          - strong [ref=e34]: Goals
+          - text: — Organize objectives
+        - generic [ref=e35]:
+          - text: 🤖
+          - strong [ref=e36]: Agents
+          - text: — Orchestrate AI
+        - generic [ref=e37]:
+          - text: 📊
+          - strong [ref=e38]: Dashboard
+          - text: — Command center
+    - generic [ref=e39]:
+      - heading "BITCORE Plan" [level=2] [ref=e40]
+      - paragraph [ref=e41]: One plan. Full power. No compromises.
+      - generic [ref=e43]:
+        - generic [ref=e44]: Everything Included
+        - generic [ref=e45]: BITCORE
+        - generic [ref=e46]: $44/month
+        - paragraph [ref=e47]: Unlock the full potential of the Intelligence Factory
+        - list [ref=e48]:
+          - listitem [ref=e49]: ✓ Access to all artifacts
+          - listitem [ref=e50]: ✓ Create unlimited artifacts
+          - listitem [ref=e51]: ✓ Sell on marketplace
+          - listitem [ref=e52]: ✓ Priority support
+          - listitem [ref=e53]: ✓ Advanced analytics
+          - listitem [ref=e54]: ✓ API access
+          - listitem [ref=e55]: ✓ Team collaboration
+          - listitem [ref=e56]: ✓ Custom integrations
+          - listitem [ref=e57]: ✓ Private artifacts
+          - listitem [ref=e58]: ✓ Dedicated support
+          - listitem [ref=e59]: ✓ Version history
+          - listitem [ref=e60]: ✓ Quality scoring
+          - listitem [ref=e61]: ✓ Export to multiple formats
+          - listitem [ref=e62]: ✓ Community marketplace access
+          - listitem [ref=e63]: ✓ Artifact builder
+        - paragraph [ref=e64]:
+          - link "Get Started" [ref=e65] [cursor=pointer]:
+            - /url: https://hub.bitwiki.org/welcome
+```

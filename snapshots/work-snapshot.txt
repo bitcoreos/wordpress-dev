@@ -1,0 +1,114 @@
+### Page
+- Page URL: https://ashi.bitwiki.org/work/
+- Page Title: Work | - Work
+- Console: 4 errors, 0 warnings
+### Snapshot
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e3]:
+      - link "◉ BITCORE" [ref=e4] [cursor=pointer]:
+        - /url: https://ashi.bitwiki.org/
+        - generic [ref=e5]: ◉
+        - generic [ref=e6]: BITCORE
+      - generic [ref=e7]: Intelligence Factory
+    - generic [ref=e8]:
+      - link "🏠 Home" [ref=e9] [cursor=pointer]:
+        - /url: https://ashi.bitwiki.org/
+        - generic [ref=e10]: 🏠
+        - generic [ref=e11]: Home
+      - link "📊 Dashboard" [ref=e12] [cursor=pointer]:
+        - /url: https://ashi.bitwiki.org/dashboard/
+        - generic [ref=e13]: 📊
+        - generic [ref=e14]: Dashboard
+      - link "📡 Feed" [ref=e15] [cursor=pointer]:
+        - /url: https://ashi.bitwiki.org/feed-2/
+        - generic [ref=e16]: 📡
+        - generic [ref=e17]: Feed
+      - button "⚙️ Operations ▾" [ref=e19] [cursor=pointer]:
+        - generic [ref=e20]: ⚙️
+        - generic [ref=e21]: Operations
+        - generic [ref=e22]: ▾
+      - button "🧠 Intelligence ▾" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 🧠
+        - generic [ref=e26]: Intelligence
+        - generic [ref=e27]: ▾
+      - button "📋 Management ▾" [ref=e29] [cursor=pointer]:
+        - generic [ref=e30]: 📋
+        - generic [ref=e31]: Management
+        - generic [ref=e32]: ▾
+      - button "📦 Artifacts ▾" [ref=e34] [cursor=pointer]:
+        - generic [ref=e35]: 📦
+        - generic [ref=e36]: Artifacts
+        - generic [ref=e37]: ▾
+      - button "🔧 Tools ▾" [ref=e39] [cursor=pointer]:
+        - generic [ref=e40]: 🔧
+        - generic [ref=e41]: Tools
+        - generic [ref=e42]: ▾
+      - link "⚡ Accelerate" [ref=e43] [cursor=pointer]:
+        - /url: https://ashi.bitwiki.org/accelerate/
+        - generic [ref=e44]: ⚡
+        - generic [ref=e45]: Accelerate
+  - generic [ref=e46]:
+    - banner [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]: ⚡
+        - generic [ref=e50]:
+          - heading "Work" [level=1] [ref=e51]
+          - paragraph [ref=e52]: Tasks · Goals · Missions
+      - button "⟳ Refresh" [ref=e54] [cursor=pointer]
+    - generic [ref=e55]:
+      - button "📋 Tasks 0" [ref=e56] [cursor=pointer]:
+        - text: 📋 Tasks
+        - generic [ref=e57]: "0"
+      - button "🎯 Goals 0" [ref=e58] [cursor=pointer]:
+        - text: 🎯 Goals
+        - generic [ref=e59]: "0"
+      - button "🚀 Missions 0" [ref=e60] [cursor=pointer]:
+        - text: 🚀 Missions
+        - generic [ref=e61]: "0"
+    - generic [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]: "0"
+        - generic [ref=e65]: Total Tasks
+      - generic [ref=e66]:
+        - generic [ref=e67]: "0"
+        - generic [ref=e68]: Pending
+      - generic [ref=e69]:
+        - generic [ref=e70]: "0"
+        - generic [ref=e71]: Running
+      - generic [ref=e72]:
+        - generic [ref=e73]: "0"
+        - generic [ref=e74]: Completed
+    - generic [ref=e76]:
+      - generic [ref=e77]:
+        - generic [ref=e78]:
+          - generic [ref=e79]: Tasks
+          - generic [ref=e80]: Loading...
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - button "All" [ref=e83] [cursor=pointer]
+            - button "Pending" [ref=e84] [cursor=pointer]
+            - button "Running" [ref=e85] [cursor=pointer]
+            - button "Completed" [ref=e86] [cursor=pointer]
+            - button "Failed" [ref=e87] [cursor=pointer]
+          - generic [ref=e105]: Failed to load tasks
+      - generic [ref=e91]:
+        - generic [ref=e93]: Create Task
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Task Name
+            - textbox "Task name" [ref=e97]
+          - generic [ref=e98]:
+            - generic [ref=e99]: Description
+            - textbox "Description" [ref=e100]
+          - generic [ref=e101]:
+            - generic [ref=e102]: Priority
+            - combobox [ref=e103]:
+              - option "Low"
+              - option "Normal" [selected]
+              - option "High"
+          - button "Create Task" [ref=e104] [cursor=pointer]
+```
+### Events
+- New console entries: .playwright-cli/console-2026-04-23T23-59-26-268Z.log#L4-L6
