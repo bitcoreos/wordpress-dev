@@ -258,6 +258,7 @@
     <!-- Tab Navigation -->
     <div class="tab-nav">
         <button class="tab-btn active" data-tab="tasks">📋 Tasks <span class="tab-count" id="tasks-count">0</span></button>
+        <button class="tab-btn" data-tab="kanban">📊 Kanban <span class="tab-count" id="kanban-count">0</span></button>
         <button class="tab-btn" data-tab="goals">🎯 Goals <span class="tab-count" id="goals-count">0</span></button>
         <button class="tab-btn" data-tab="missions">🚀 Missions <span class="tab-count" id="missions-count">0</span></button>
     </div>
@@ -335,6 +336,49 @@
                     </div>
                     <div class="card-body" id="task-detail-body"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Kanban Tab -->
+    <div class="tab-content" id="tab-kanban">
+        <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-sm); min-height: 500px;">
+            <div class="kanban-column" data-status="inbox">
+                <div class="kanban-header" style="padding: var(--space-sm); background: var(--bg-tertiary); border-radius: var(--radius-md) var(--radius-md) 0 0; border: 1px solid var(--border-default); border-bottom: none;">
+                    <strong>📥 Inbox</strong> <span class="kanban-count" data-status="inbox">0</span>
+                </div>
+                <div class="kanban-body" id="kanban-inbox" style="padding: var(--space-sm); background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: 0 0 var(--radius-md) var(--radius-md); min-height: 400px;"></div>
+            </div>
+            <div class="kanban-column" data-status="backlog">
+                <div class="kanban-header" style="padding: var(--space-sm); background: var(--bg-tertiary); border-radius: var(--radius-md) var(--radius-md) 0 0; border: 1px solid var(--border-default); border-bottom: none;">
+                    <strong>📋 Backlog</strong> <span class="kanban-count" data-status="backlog">0</span>
+                </div>
+                <div class="kanban-body" id="kanban-backlog" style="padding: var(--space-sm); background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: 0 0 var(--radius-md) var(--radius-md); min-height: 400px;"></div>
+            </div>
+            <div class="kanban-column" data-status="doing">
+                <div class="kanban-header" style="padding: var(--space-sm); background: var(--accent-warning); color: #000; border-radius: var(--radius-md) var(--radius-md) 0 0; border: 1px solid var(--border-default); border-bottom: none;">
+                    <strong>⚡ Doing</strong> <span class="kanban-count" data-status="doing">0</span>
+                </div>
+                <div class="kanban-body" id="kanban-doing" style="padding: var(--space-sm); background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: 0 0 var(--radius-md) var(--radius-md); min-height: 400px;"></div>
+            </div>
+            <div class="kanban-column" data-status="review">
+                <div class="kanban-header" style="padding: var(--space-sm); background: var(--accent-info); color: #fff; border-radius: var(--radius-md) var(--radius-md) 0 0; border: 1px solid var(--border-default); border-bottom: none;">
+                    <strong>👀 Review</strong> <span class="kanban-count" data-status="review">0</span>
+                </div>
+                <div class="kanban-body" id="kanban-review" style="padding: var(--space-sm); background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: 0 0 var(--radius-md) var(--radius-md); min-height: 400px;"></div>
+            </div>
+            <div class="kanban-column" data-status="done">
+                <div class="kanban-header" style="padding: var(--space-sm); background: var(--accent-primary); color: #000; border-radius: var(--radius-md) var(--radius-md) 0 0; border: 1px solid var(--border-default); border-bottom: none;">
+                    <strong>✅ Done</strong> <span class="kanban-count" data-status="done">0</span>
+                </div>
+                <div class="kanban-body" id="kanban-done" style="padding: var(--space-sm); background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: 0 0 var(--radius-md) var(--radius-md); min-height: 400px;"></div>
+            </div>
+            <div class="kanban-column" data-status="archived">
+                <div class="kanban-header" style="padding: var(--space-sm); background: var(--text-muted); color: var(--bg-primary); border-radius: var(--radius-md) var(--radius-md) 0 0; border: 1px solid var(--border-default); border-bottom: none;">
+                    <strong>🗃️ Archived</strong> <span class="kanban-count" data-status="archived">0</span>
+                </div>
+                <div class="kanban-body" id="kanban-archived" style="padding: var(--space-sm); background: var(--bg-secondary); border: 1px solid var(--border-default); border-radius: 0 0 var(--radius-md) var(--radius-md); min-height: 400px;"></div>
             </div>
         </div>
     </div>
