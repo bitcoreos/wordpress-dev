@@ -102,7 +102,9 @@ class BITCORE_Core {
         // $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
         // $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
         require_once BITCORE_PATH . 'infrastructure/webhooks/WebhookManager.php';
-        $this->container->register('webhooks.manager', function() { return new \BITCORE\Infrastructure\Webhooks\WebhookManager(); });
+        // DISABLED: WebhookManager requires 4 constructor args (repository, httpClient, logger, signatureVerifier)
+        // which are not registered in the container. Re-enable after wiring dependencies.
+        // $this->container->register('webhooks.manager', function() { return new \BITCORE\Infrastructure\Webhooks\WebhookManager(); });
 
         // === Hyperion: Wave 4 Security Services ===
         require_once BITCORE_PATH . 'infrastructure/security/middleware-pipeline.php';
