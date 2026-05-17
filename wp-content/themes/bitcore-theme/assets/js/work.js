@@ -90,6 +90,7 @@
 
         loadAll: function() {
             this.loadTasks();
+            this.loadKanban();
             this.loadGoals();
             this.loadMissions();
         },
@@ -649,6 +650,45 @@
             }
         },
 
+
+        // === KANBAN ===
+        loadKanban: function() {
+            var self = this;
+            fetch(this.config.restUrl + 'kanban', {
+                headers: this.getHeaders()
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                var tasks = data.tasks || [];
+                var columns = ['inbox', 'backlog', 'doing', 'review', 'done', 'archived'];
+                columns.forEach(function(status) {
+                    var container = document.getElementById('kanban-' + status);
+                    var columnTasks = tasks.filter(function(t) { return t.status === status; });
+                    document.querySelector('.kanban-count[data-status="' + status + '"]').textContent = columnTasks.length;
+                    if (container) {
+                        container.innerHTML = columnTasks.map(function(t) {
+                            return self.renderKanbanCard(t);
+                        }).join('') || '<div style="padding:20px;color:var(--text-muted);font-size:0.8rem;text-align:center;">Empty</div>';
+                    }
+                });
+                document.getElementById('kanban-count').textContent = tasks.length;
+            })
+            .catch(function(err) {
+                console.error('Kanban load failed:', err);
+            });
+        },
+
+        renderKanbanCard: function(task) {
+            var priorityColors = { low: '#6a6a7a', normal: '#3b82f6', high: '#ef4444' };
+            return '<div style="padding:10px;margin-bottom:8px;background:var(--bg-tertiary);border:1px solid var(--border-default);border-radius:6px;cursor:pointer;" onclick="WorkPage.showTaskDetail(' + task.id + ')">' +
+                '<div style="font-weight:600;font-size:0.85rem;margin-bottom:4px;">' + this.escapeHtml(task.title) + '</div>' +
+                '<div style="font-size:0.75rem;color:var(--text-muted);">' +
+                (task.task_type ? task.task_type + ' · ' : '') +
+                (task.assigned_to ? 'Assigned: ' + task.assigned_to : 'Unassigned') +
+                '</div>' +
+                '<div style="margin-top:6px;height:3px;border-radius:2px;background:' + (priorityColors[task.priority] || '#6a6a7a') + ';width:100%;"></div>' +
+                '</div>';
+        },
         // === UTILITIES ===
         showNotification: function(message, type) {
             var existing = document.querySelector('.notification');
