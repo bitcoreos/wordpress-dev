@@ -81,7 +81,7 @@ spl_autoload_register(function ($class) {
 });
 
 // === FROM HYPERION: Pattern Autoloader ===
-if (!function_exists("bitcore_load_patterns")):
+if (!function_exists("bitcore_load_patterns")) {
 function bitcore_load_patterns(): void {
     $autoloader_file = BITCORE_PLUGIN_DIR . 'classes/patterns-autoloader.php';
     if (file_exists($autoloader_file)) {
@@ -90,6 +90,7 @@ function bitcore_load_patterns(): void {
     }
 }
 add_action('plugins_loaded', 'bitcore_load_patterns', 5);
+}
 
 // === FROM HYPERION: Initialize Infrastructure ===
     // PSR-4 Autoloader for Paperclip Integration Modules
