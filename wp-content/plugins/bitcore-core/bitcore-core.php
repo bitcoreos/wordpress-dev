@@ -375,12 +375,12 @@ add_action('rest_api_init', function() {
     require_once BITCORE_PATH . '/rest/class-kanban-api.php';
     require_once BITCORE_PATH . '/rest/class-my-posts-api.php';
     $apis = [
-        'Checkout_Api',
-        'Org_Chart_Api',
-        'Budget_Api',
-        'Goals_Api',
-        'Approvals_Api',
-        'Sessions_Api',
+        'BITCORE\\Rest\\Checkout_Api',
+        'BITCORE\\Rest\\Org_Chart_Api',
+        'BITCORE\\Rest\\Budget_Api',
+        'BITCORE\\Rest\\Goals_Api',
+        'BITCORE\\Rest\\Approvals_Api',
+        'BITCORE\\Rest\\Sessions_Api',
         'BITCORE_Rest_Kanban_API',
         'BITCORE_Rest_My_Posts_API',
     ];
