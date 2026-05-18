@@ -58,6 +58,9 @@ spl_autoload_register(function ($class) {
         $filename = str_replace('BITCORE_Rest_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/rest/' . $filename . '.php';
+        if (!file_exists($file)) {
+            $file = BITCORE_PATH . '/rest/class-' . $filename . '.php';
+        }
     } elseif (strpos($class, 'BITCORE_MCP') !== false) {
         $filename = str_replace('BITCORE_MCP_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
@@ -164,9 +167,13 @@ add_action('wp', 'bitcore_schedule_cron');
 // === FROM HYPERION: Webhooks Retry Cron ===
 function bitcore_webhooks_retry_cron(): void {
     if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
-        $manager = $GLOBALS['bitcore']->container->get('webhooks.manager');
-        if ($manager) {
-            $manager->retryFailed(5);
+        try {
+            $manager = $GLOBALS['bitcore']->container->get('webhooks.manager');
+            if ($manager) {
+                $manager->retryFailed(5);
+            }
+        } catch (Exception $e) {
+            // Service not registered; silently skip
         }
     }
 }
@@ -358,15 +365,24 @@ function bitcore_log(string $message, array $context = []): void {
 
 // Paperclip Integration REST API Routes (Instance-based registration)
 add_action('rest_api_init', function() {
+    // Explicit requires for classes not matching BITCORE_Rest_ autoloader prefix
+    require_once BITCORE_PATH . '/rest/class-checkout-api.php';
+    require_once BITCORE_PATH . '/rest/class-org-chart-api.php';
+    require_once BITCORE_PATH . '/rest/class-budget-api.php';
+    require_once BITCORE_PATH . '/rest/class-goals-api.php';
+    require_once BITCORE_PATH . '/rest/class-approvals-api.php';
+    require_once BITCORE_PATH . '/rest/class-sessions-api.php';
+    require_once BITCORE_PATH . '/rest/class-kanban-api.php';
+    require_once BITCORE_PATH . '/rest/class-my-posts-api.php';
     $apis = [
-        'BITCORE\Rest\Checkout_API',
-        'BITCORE\Rest\Org_Chart_API',
-        'BITCORE\Rest\Budget_API',
-        'BITCORE\Rest\Goals_API',
-        'BITCORE\Rest\Approvals_API',
-        'BITCORE\Rest\Sessions_Api',
-        'BITCORE\Rest\Kanban_API',
-        'BITCORE\Rest\My_Posts_API',
+        'Checkout_Api',
+        'Org_Chart_Api',
+        'Budget_Api',
+        'Goals_Api',
+        'Approvals_Api',
+        'Sessions_Api',
+        'BITCORE_Rest_Kanban_API',
+        'BITCORE_Rest_My_Posts_API',
     ];
     foreach ($apis as $api_class) {
         if (class_exists($api_class)) {

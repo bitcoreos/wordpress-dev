@@ -153,7 +153,7 @@ class BITCORE_Rest_Tasks {
 
         foreach ( $posts as $post ) {
             $response = self::prepare_item_for_response( $post, $request );
-            $data[]   = self::prepare_response_for_collection( $response );
+            $data[]   = $response->get_data();
         }
 
         $response = rest_ensure_response( $data );
