@@ -116,6 +116,9 @@ add_action('init', 'bitcore_cli_init');
 // Two-layer defense: init priority 3 (before WP-Discourse) + wpdc_sso_client_redirect_url filter.
 require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/discourse-sso-fix.php';
 
+// === FROM HYPERION: Admin Menu Registration ===
+require_once BITCORE_PLUGIN_DIR . 'admin/menu-registration.php';
+
 // === FROM HYPERION: Custom Cron Schedules ===
 function bitcore_cron_schedules(array $schedules): array {
     $schedules['bitcore_queue_1min'] = [
