@@ -81,6 +81,7 @@ spl_autoload_register(function ($class) {
 });
 
 // === FROM HYPERION: Pattern Autoloader ===
+if (!function_exists("bitcore_load_patterns")):
 function bitcore_load_patterns(): void {
     $autoloader_file = BITCORE_PLUGIN_DIR . 'classes/patterns-autoloader.php';
     if (file_exists($autoloader_file)) {
