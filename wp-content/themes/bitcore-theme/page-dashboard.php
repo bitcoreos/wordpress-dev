@@ -1,73 +1,89 @@
 <?php
 /**
  * Template Name: Dashboard
- * The main BITCORE dashboard - unified view of work, agents, and activity.
+ * Personal SaaS dashboard — my tasks, posts, agents, and activity.
  */
 get_header();
 ?>
 <main class="bitcore-dashboard">
     <div class="dashboard-header">
-        <h1>BITCORE Dashboard</h1>
-        <div class="server-health" id="server-health">
-            <span class="health-dot" id="health-dot"></span>
-            <span class="health-text" id="health-text">Checking...</span>
+        <h1>Welcome, <?php echo esc_html(wp_get_current_user()->display_name); ?></h1>
+        <div class="credits-badge" id="credits-badge">
+            <span class="credits-icon">⚡</span>
+            <span class="credits-text" id="credits-text">Loading...</span>
         </div>
     </div>
     
     <div class="dashboard-grid">
+        <!-- My Tasks -->
         <section class="dashboard-card">
             <div class="card-header">
                 <span class="card-icon">📋</span>
-                <h2>Work</h2>
+                <h2>My Tasks</h2>
+                <a href="/work/" class="card-link">View all</a>
             </div>
-            <p class="card-desc">Tasks, goals, and missions</p>
-            <div class="card-meta" id="work-summary">Loading...</div>
+            <ul class="task-list" id="my-tasks">
+                <li>Loading...</li>
+            </ul>
             <a href="/work/" class="button card-cta">Go to Work</a>
         </section>
         
-        <section class="dashboard-card">
-            <div class="card-header">
-                <span class="card-icon">💬</span>
-                <h2>Chat</h2>
-            </div>
-            <p class="card-desc">Agent conversations</p>
-            <div class="card-meta" id="chat-summary">Loading...</div>
-            <a href="/chat/" class="button card-cta">Go to Chat</a>
-        </section>
-        
-        <section class="dashboard-card">
-            <div class="card-header">
-                <span class="card-icon">🤖</span>
-                <h2>Agents</h2>
-            </div>
-            <p class="card-desc">Manage your agent swarm</p>
-            <div class="card-meta" id="agents-summary">Loading...</div>
-            <a href="/agents/" class="button card-cta">Go to Agents</a>
-        </section>
-        
-        <section class="dashboard-card">
-            <div class="card-header">
-                <span class="card-icon">📚</span>
-                <h2>Knowledge</h2>
-            </div>
-            <p class="card-desc">Prompts, skills, artifacts</p>
-            <div class="card-meta" id="knowledge-summary">Loading...</div>
-            <a href="/knowledge/" class="button card-cta">Go to Knowledge</a>
-        </section>
-        
+        <!-- My Posts -->
         <section class="dashboard-card">
             <div class="card-header">
                 <span class="card-icon">📝</span>
                 <h2>My Posts</h2>
+                <a href="/my-posts/" class="card-link">View all</a>
             </div>
-            <p class="card-desc">Your content and tasks</p>
-            <div class="card-meta" id="posts-summary">Loading...</div>
-            <a href="/my-posts/" class="button card-cta">Go to My Posts</a>
+            <ul class="post-list" id="my-posts-list">
+                <li>Loading...</li>
+            </ul>
+            <a href="/my-posts/" class="button card-cta">New Post</a>
         </section>
         
-        <section class="dashboard-card recent-activity">
+        <!-- My Agents -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <span class="card-icon">🤖</span>
+                <h2>My Agents</h2>
+                <a href="/agents/" class="card-link">Manage</a>
+            </div>
+            <div class="agent-list" id="my-agents">
+                <div class="loading-state">Loading...</div>
+            </div>
+            <a href="/agents/" class="button card-cta">Go to Agents</a>
+        </section>
+        
+        <!-- Quick Actions -->
+        <section class="dashboard-card quick-actions">
             <div class="card-header">
                 <span class="card-icon">⚡</span>
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="action-grid">
+                <a href="/chat/" class="action-btn">
+                    <span class="action-icon">💬</span>
+                    <span>Start Chat</span>
+                </a>
+                <a href="/knowledge/" class="action-btn">
+                    <span class="action-icon">📚</span>
+                    <span>New Prompt</span>
+                </a>
+                <a href="/work/" class="action-btn">
+                    <span class="action-icon">📋</span>
+                    <span>New Task</span>
+                </a>
+                <a href="/my-posts/" class="action-btn">
+                    <span class="action-icon">📝</span>
+                    <span>New Post</span>
+                </a>
+            </div>
+        </section>
+        
+        <!-- Recent Activity -->
+        <section class="dashboard-card wide">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
                 <h2>Recent Activity</h2>
             </div>
             <ul class="activity-list" id="activity-list">
@@ -97,33 +113,22 @@ get_header();
     font-size: 28px;
     font-weight: 700;
 }
-.server-health {
+.credits-badge {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: var(--bg-tertiary, #1a1a25);
+    background: linear-gradient(135deg, #1a1a25, #22222e);
+    border: 1px solid rgba(99,102,241,0.3);
     border-radius: 8px;
-    border: 1px solid var(--border, #2a2a3a);
-}
-.health-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #6a6a7a;
-    transition: background 0.3s ease;
-}
-.health-dot.online { background: #00d4aa; box-shadow: 0 0 8px rgba(0,212,170,0.4); }
-.health-dot.offline { background: #ef4444; }
-.health-dot.warning { background: #f59e0b; }
-.health-text {
     font-size: 14px;
     color: var(--text-secondary, #a0a0b0);
 }
+.credits-icon { font-size: 16px; }
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 24px;
 }
 .dashboard-card {
@@ -136,40 +141,136 @@ get_header();
 .dashboard-card:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    border-color: rgba(99,102,241,0.3);
+}
+.dashboard-card.wide {
+    grid-column: 1 / -1;
 }
 .card-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 .card-icon {
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--bg-elevated, #22222e);
-    border-radius: 10px;
+    border-radius: 8px;
 }
 .card-header h2 {
     margin: 0;
-    font-size: 18px;
+    font-size: 17px;
     font-weight: 600;
+    flex: 1;
 }
-.card-desc {
-    margin: 0 0 12px 0;
-    color: var(--text-secondary, #a0a0b0);
+.card-link {
+    font-size: 13px;
+    color: #00d4aa;
+    text-decoration: none;
+}
+.card-link:hover { text-decoration: underline; }
+
+.task-list, .post-list, .activity-list {
+    list-style: none;
+    margin: 0 0 16px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 120px;
+}
+.task-list li, .post-list li, .activity-list li {
+    padding: 10px 12px;
+    background: var(--bg-elevated, #22222e);
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.task-list li .status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.task-list li .status.inbox { background: #6a6a7a; }
+.task-list li .status.doing { background: #3b82f6; }
+.task-list li .status.done { background: #22c55e; }
+.task-list li .title { flex: 1; }
+.task-list li .meta {
+    font-size: 11px;
+    color: var(--text-muted, #6a6a7a);
+}
+
+.agent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+    min-height: 80px;
+}
+.agent-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-elevated, #22222e);
+    border-radius: 8px;
+}
+.agent-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d4aa, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 14px;
 }
-.card-meta {
-    font-size: 13px;
-    color: var(--text-muted, #6a6a7a);
-    margin-bottom: 16px;
-    min-height: 20px;
+.agent-name { font-size: 13px; font-weight: 500; }
+.agent-status {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
+.agent-status.active {
+    background: rgba(34,197,94,0.2);
+    color: #22c55e;
+}
+.agent-status.inactive {
+    background: rgba(107,114,128,0.2);
+    color: #6b7280;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    background: var(--bg-elevated, #22222e);
+    border: 1px solid var(--border, #2a2a3a);
+    border-radius: 10px;
+    color: var(--text-primary, #f0f0f5);
+    text-decoration: none;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+.action-btn:hover {
+    border-color: rgba(99,102,241,0.4);
+}
+.action-icon { font-size: 18px; }
+
 .card-cta {
     display: inline-block;
     padding: 10px 20px;
@@ -179,32 +280,12 @@ get_header();
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
-    transition: opacity 0.2s ease;
 }
-.card-cta:hover { opacity: 0.9; }
-
-.recent-activity { grid-column: 1 / -1; }
-.activity-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.activity-list li {
-    padding: 10px 12px;
-    background: var(--bg-elevated, #22222e);
-    border-radius: 8px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.activity-list li .time {
+.loading-state {
+    text-align: center;
+    padding: 20px;
     color: var(--text-muted, #6a6a7a);
-    font-size: 12px;
-    min-width: 60px;
+    font-size: 13px;
 }
 </style>
 
@@ -230,69 +311,80 @@ get_header();
         return res.json().catch(() => null);
     }
     
-    async function loadHealth() {
+    async function loadTasks() {
         try {
-            const data = await api('/eliza/health');
-            const dot = document.getElementById('health-dot');
-            const text = document.getElementById('health-text');
-            if (data && data.status === 'ok') {
-                dot.className = 'health-dot online';
-                text.textContent = 'ElizaOS Online';
-            } else {
-                dot.className = 'health-dot offline';
-                text.textContent = 'ElizaOS Offline';
-            }
+            const data = await api('/kanban?limit=5');
+            const list = document.getElementById('my-tasks');
+            const items = Array.isArray(data) ? data : [];
+            if (!items.length) { list.innerHTML = '<li>No tasks yet</li>'; return; }
+            list.innerHTML = items.slice(0, 5).map(t => {
+                const status = t.status || 'inbox';
+                return '<li><span class="status ' + status + '"></span><span class="title">' + (t.title || 'Untitled') + '</span><span class="meta">' + status + '</span></li>';
+            }).join('');
         } catch (e) {
-            document.getElementById('health-dot').className = 'health-dot offline';
-            document.getElementById('health-text').textContent = 'ElizaOS Unreachable';
+            document.getElementById('my-tasks').innerHTML = '<li>Unable to load tasks</li>';
+        }
+    }
+    
+    async function loadPosts() {
+        try {
+            const data = await api('/my-posts?limit=5');
+            const list = document.getElementById('my-posts-list');
+            const items = (data && data.posts) ? data.posts : (Array.isArray(data) ? data : []);
+            if (!items.length) { list.innerHTML = '<li>No posts yet</li>'; return; }
+            list.innerHTML = items.slice(0, 5).map(p => {
+                return '<li><span>' + (p.title || 'Untitled') + '</span><span class="meta">' + (p.type || 'post') + '</span></li>';
+            }).join('');
+        } catch (e) {
+            document.getElementById('my-posts-list').innerHTML = '<li>Unable to load posts</li>';
         }
     }
     
     async function loadAgents() {
         try {
             const data = await api('/eliza/agents');
-            const active = (data || []).filter(a => a.status === 'active').length;
-            document.getElementById('agents-summary').textContent = active + ' active / ' + (data || []).length + ' total';
+            const container = document.getElementById('my-agents');
+            const items = Array.isArray(data) ? data : [];
+            if (!items.length) { container.innerHTML = '<div class="loading-state">No agents configured</div>'; return; }
+            container.innerHTML = items.map(a => {
+                const active = a.status === 'active';
+                return '<div class="agent-item"><span class="agent-avatar">' + (a.emoji || '🤖') + '</span><span class="agent-name">' + (a.name || 'Agent') + '</span><span class="agent-status ' + (active ? 'active' : 'inactive') + '">' + (active ? 'Active' : 'Idle') + '</span></div>';
+            }).join('');
         } catch (e) {
-            document.getElementById('agents-summary').textContent = 'Unable to load';
+            document.getElementById('my-agents').innerHTML = '<div class="loading-state">Unable to load agents</div>';
         }
     }
     
-    async function loadWork() {
+    async function loadCredits() {
         try {
-            const data = await api('/kanban');
-            const total = (data || []).length;
-            document.getElementById('work-summary').textContent = total + ' tasks in board';
+            const data = await api('/budget');
+            const credits = data && data.credits ? data.credits : '—';
+            document.getElementById('credits-text').textContent = credits + ' credits';
         } catch (e) {
-            document.getElementById('work-summary').textContent = 'Unable to load';
+            document.getElementById('credits-text').textContent = 'Credits unavailable';
         }
     }
     
     async function loadActivity() {
         try {
-            const data = await api('/kanban?limit=5');
+            const tasks = await api('/kanban?limit=3').catch(() => []);
+            const posts = await api('/my-posts?limit=3').catch(() => []);
             const list = document.getElementById('activity-list');
-            if (!data || !data.length) {
-                list.innerHTML = '<li>No recent activity</li>';
-                return;
-            }
-            list.innerHTML = data.slice(0, 5).map(item => {
-                const time = item.updated_at ? new Date(item.updated_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-                return '<li><span class="time">' + time + '</span><span>' + (item.title || 'Task updated') + '</span></li>';
-            }).join('');
+            const items = [];
+            (Array.isArray(tasks) ? tasks : []).slice(0, 3).forEach(t => items.push('<li><span>📋</span><span>Task: ' + (t.title || 'Untitled') + ' (' + (t.status || 'inbox') + ')</span></li>'));
+            (posts.posts || []).slice(0, 3).forEach(p => items.push('<li><span>📝</span><span>Post: ' + (p.title || 'Untitled') + '</span></li>'));
+            list.innerHTML = items.length ? items.join('') : '<li>No recent activity</li>';
         } catch (e) {
             document.getElementById('activity-list').innerHTML = '<li>Unable to load activity</li>';
         }
     }
     
     document.addEventListener('DOMContentLoaded', function() {
-        loadHealth();
+        loadTasks();
+        loadPosts();
         loadAgents();
-        loadWork();
+        loadCredits();
         loadActivity();
-        document.getElementById('chat-summary').textContent = 'Ready';
-        document.getElementById('knowledge-summary').textContent = 'Ready';
-        document.getElementById('posts-summary').textContent = 'Ready';
     });
 })();
 </script>
