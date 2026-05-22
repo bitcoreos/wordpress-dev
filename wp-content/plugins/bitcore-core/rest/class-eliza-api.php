@@ -677,17 +677,36 @@ class BITCORE_Rest_Eliza_Api {
             );
         }
 
+        // ElizaOS messaging API requires specific payload format
+        $channel_id = !empty($session_id) ? $session_id : wp_generate_uuid4();
+        $user_id    = get_current_user_id();
+
         $body = [
-            'content'   => $message,
-            'sessionId' => $session_id,
+            'channel_id'        => $channel_id,
+            'message_server_id' => wp_generate_uuid4(),
+            'author_id'         => (string) $user_id,
+            'content'           => $message,
+            'source_type'       => 'api',
+            'raw_message'       => $message,
         ];
 
-        // Include agentId for context if provided
+        // Include agentId for routing if provided
         if (!empty($agent_id)) {
             $body['agentId'] = $agent_id;
         }
 
-        return $this->proxy_request('POST', '/messaging/submit', $body);
+        $result = $this->proxy_request('POST', '/messaging/submit', $body);
+
+        // Attach the channel_id to the response for client session tracking
+        if (!is_wp_error($result)) {
+            $data = $result->get_data();
+            if (is_array($data)) {
+                $data['channel_id'] = $channel_id;
+            }
+            return new WP_REST_Response($data, $result->get_status());
+        }
+
+        return $result;
     }
 
     /**
