@@ -161,17 +161,17 @@ class BITCORE_Core {
      * Early REST API initialization (runs before plugins_loaded)
      */
     public function init_rest(): void {
-        require_once BITCORE_PATH . 'rest/class-sessions-api.php';
-        new \BITCORE\Rest\Sessions_Api();
-        require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
-
-        // ElizaOS Bridge
-        require_once BITCORE_PATH . "rest/class-eliza-api.php";
 
         // Sessions API
         require_once BITCORE_PATH . 'rest/class-sessions-api.php';
-        $sessions_api = new \BITCORE\Rest\Sessions_Api();
-        $sessions_api->register_routes();
+        new \BITCORE\Rest\Sessions_Api();
+
+        // ElizaOS Bridge — constructor calls register_routes()
+        require_once BITCORE_PATH . 'rest/class-eliza-api.php';  // loaded once
+        new BITCORE_Rest_Eliza_Api($this);
+
+        // Abstract connector for services
+        require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
     }
 
     
