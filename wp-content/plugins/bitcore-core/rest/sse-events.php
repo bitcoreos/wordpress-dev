@@ -100,8 +100,15 @@ class BITCORE_Rest_Sse_Events {
         // Keep connection alive with heartbeats
         $last_heartbeat = time();
         $heartbeat_interval = 15; // seconds
+        $max_connection_time = 300; // 5 minutes max per connection
+        $connection_start = time();
         
         while (connection_aborted() === 0) {
+            // Enforce max connection time to prevent zombie processes
+            if ((time() - $connection_start) > $max_connection_time) {
+                self::send_event('reconnect', ['reason' => 'timeout']);
+                break;
+            }
             // Send heartbeat
             if (time() - $last_heartbeat >= $heartbeat_interval) {
                 echo ":heartbeat\n\n";
@@ -118,7 +125,9 @@ class BITCORE_Rest_Sse_Events {
                 delete_transient("bitcore_sse_events_{$client_id}");
             }
             
-            sleep(1);
+            // Use shorter sleep with connection status check
+            // Reduces PHP process blocking vs sleep(1)
+            usleep(200000); // 200ms polling interval
         }
         
         // Cleanup on disconnect

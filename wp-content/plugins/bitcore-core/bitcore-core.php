@@ -154,6 +154,12 @@ function bitcore_schedule_cron(): void {
     if (!wp_next_scheduled('bitcore_health_check')) {
         wp_schedule_event(time(), 'bitcore_health_check', 'bitcore_health_check');
     }
+    if (!wp_next_scheduled('bitcore_cleanup_sessions')) {
+        wp_schedule_event(time(), 'hourly', 'bitcore_cleanup_sessions');
+    }
+    if (!wp_next_scheduled('bitcore_cleanup_transcriptions')) {
+        wp_schedule_event(time(), 'daily', 'bitcore_cleanup_transcriptions');
+    }
 }
 add_action('wp', 'bitcore_schedule_cron');
 
@@ -222,6 +228,8 @@ function bitcore_clear_cron(): void {
     wp_clear_scheduled_hook('bitcore_webhooks_retry');
     wp_clear_scheduled_hook('bitcore_health_check');
     wp_clear_scheduled_hook('bitcore_token_rotation_check');
+    wp_clear_scheduled_hook('bitcore_cleanup_sessions');
+    wp_clear_scheduled_hook('bitcore_cleanup_transcriptions');
 }
 add_action('bitcore_clear_cron', 'bitcore_clear_cron');
 
