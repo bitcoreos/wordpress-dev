@@ -1,19 +1,14 @@
 <?php
 /**
- * Pattern: Chat Widget
+ * Title: Chat Widget
+ * Slug: bitcore-theme/chat-widget
+ * Categories: bitcore-theme
+ * Description: Chat interface for agent communication.
  *
  * @package BITCORE_Theme
  */
-
-defined( 'ABSPATH' ) || exit;
-
-register_block_pattern(
-    'bitcore-theme/chat-widget',
-    array(
-        'title'       => __( 'Chat Widget', 'bitcore-theme' ),
-        'description' => __( 'Chat interface for agent communication.', 'bitcore-theme' ),
-        'categories'  => array( 'bitcore-theme' ),
-        'content'     => '<!-- wp:group {"className":"bitcore-chat"} -->
+?>
+<!-- wp:group {"className":"bitcore-chat"} -->
 <div class="wp-block-group bitcore-chat">
     <!-- wp:group {"className":"bitcore-chat__header","layout":{"type":"flex","flexWrap":"nowrap"}} -->
     <div class="wp-block-group bitcore-chat__header">
@@ -45,6 +40,4 @@ register_block_pattern(
     </div>
     <!-- /wp:group -->
 </div>
-<!-- /wp:group -->',
-    )
-);
+<!-- /wp:group -->

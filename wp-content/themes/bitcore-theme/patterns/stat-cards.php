@@ -1,19 +1,14 @@
 <?php
 /**
- * Pattern: Dashboard Stat Cards
+ * Title: Dashboard Stat Cards
+ * Slug: bitcore-theme/stat-cards
+ * Categories: bitcore-theme
+ * Description: Four stat cards with icons for dashboard metrics.
  *
  * @package BITCORE_Theme
  */
-
-defined( 'ABSPATH' ) || exit;
-
-register_block_pattern(
-    'bitcore-theme/stat-cards',
-    array(
-        'title'       => __( 'Dashboard Stat Cards', 'bitcore-theme' ),
-        'description' => __( 'Four stat cards with icons for dashboard metrics.', 'bitcore-theme' ),
-        'categories'  => array( 'bitcore-theme' ),
-        'content'     => '<!-- wp:group {"className":"bitcore-dashboard__stats","layout":{"type":"flex","flexWrap":"wrap"}} -->
+?>
+<!-- wp:group {"className":"bitcore-dashboard__stats","layout":{"type":"flex","flexWrap":"wrap"}} -->
 <div class="wp-block-group bitcore-dashboard__stats">
     <!-- wp:group {"className":"bitcore-card bitcore-stat-card","layout":{"type":"flex","flexWrap":"nowrap"}} -->
     <div class="wp-block-group bitcore-card bitcore-stat-card">
@@ -63,6 +58,4 @@ register_block_pattern(
     </div>
     <!-- /wp:group -->
 </div>
-<!-- /wp:group -->',
-    )
-);
+<!-- /wp:group -->

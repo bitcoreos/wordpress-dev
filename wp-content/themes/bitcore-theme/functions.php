@@ -83,15 +83,8 @@ function bitcore_register_block_patterns(): void {
         'bitcore-theme',
         array( 'label' => __( 'BITCORE Theme', 'bitcore-theme' ) )
     );
-    
-    $patterns = array( 'stat-cards', 'agent-grid', 'chat-widget' );
-    
-    foreach ( $patterns as $pattern ) {
-        $file = get_template_directory() . "/patterns/{$pattern}.php";
-        if ( file_exists( $file ) ) {
-            require_once $file;
-        }
-    }
+    // Pattern files are auto-discovered by WordPress from /patterns.
+    // Keep this function limited to category registration to avoid duplicate registration notices.
 }
 add_action( 'init', 'bitcore_register_block_patterns' );
 

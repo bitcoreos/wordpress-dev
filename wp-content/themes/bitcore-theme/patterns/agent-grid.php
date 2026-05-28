@@ -1,19 +1,14 @@
 <?php
 /**
- * Pattern: Agent Grid
+ * Title: Agent Grid
+ * Slug: bitcore-theme/agent-grid
+ * Categories: bitcore-theme
+ * Description: Grid display for swarm agents.
  *
  * @package BITCORE_Theme
  */
-
-defined( 'ABSPATH' ) || exit;
-
-register_block_pattern(
-    'bitcore-theme/agent-grid',
-    array(
-        'title'       => __( 'Agent Grid', 'bitcore-theme' ),
-        'description' => __( 'Grid display for swarm agents.', 'bitcore-theme' ),
-        'categories'  => array( 'bitcore-theme' ),
-        'content'     => '<!-- wp:group {"className":"bitcore-dashboard__agents"} -->
+?>
+<!-- wp:group {"className":"bitcore-dashboard__agents"} -->
 <div class="wp-block-group bitcore-dashboard__agents">
     <!-- wp:heading {"level":2,"className":"bitcore-section__title"} -->
     <h2 class="bitcore-section__title">Swarm Agents</h2>
@@ -73,6 +68,4 @@ register_block_pattern(
     </div>
     <!-- /wp:group -->
 </div>
-<!-- /wp:group -->',
-    )
-);
+<!-- /wp:group -->
