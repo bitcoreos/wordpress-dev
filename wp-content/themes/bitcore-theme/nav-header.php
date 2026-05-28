@@ -17,23 +17,14 @@ function _bitcore_nav_active($slug) {
     return $page && is_page($page->ID) ? 'active' : '';
 }
 
-// Core pages that MUST exist for LIVE readiness
+// Canonical ASHI pages. P2.7 consolidates legacy page sprawl into this surface.
 $nav_pages = [
     'dashboard'   => ['icon' => '📊', 'label' => 'Dashboard'],
     'work'        => ['icon' => '💼', 'label' => 'Work'],
-    'tasks'       => ['icon' => '✅', 'label' => 'Tasks'],
-    'agents'      => ['icon' => '🤖', 'label' => 'Agents'],
     'chat'        => ['icon' => '💬', 'label' => 'Chat'],
-];
-
-// Secondary pages (shown if they exist)
-$secondary_pages = [
-    'goals'       => ['icon' => '🎯', 'label' => 'Goals'],
-    'approvals'   => ['icon' => '📋', 'label' => 'Approvals'],
-    'budget'      => ['icon' => '💰', 'label' => 'Budget'],
-    'org-chart'   => ['icon' => '🏛️', 'label' => 'Org Chart'],
-    'sessions'    => ['icon' => '🔌', 'label' => 'Sessions'],
-    'checkout'    => ['icon' => '🛒', 'label' => 'Checkout'],
+    'agents'      => ['icon' => '🤖', 'label' => 'Agents'],
+    'knowledge'   => ['icon' => '📚', 'label' => 'Knowledge'],
+    'my-posts'    => ['icon' => '📝', 'label' => 'My Posts'],
 ];
 ?>
 <nav class="bitcore-nav">
@@ -60,25 +51,6 @@ $secondary_pages = [
             <span class="nav-label"><?php echo esc_html($meta['label']); ?></span>
         </a>
         <?php endforeach; ?>
-
-        <!-- Secondary Dropdown -->
-        <div class="nav-dropdown">
-            <button class="nav-link nav-dropdown-trigger">
-                <span class="nav-icon">⚙️</span>
-                <span class="nav-label">More</span>
-                <span class="nav-caret">▾</span>
-            </button>
-            <div class="nav-dropdown-menu">
-                <?php foreach ($secondary_pages as $slug => $meta):
-                    $url = _bitcore_nav_url($slug);
-                    if (!$url) continue;
-                ?>
-                <a href="<?php echo esc_url($url); ?>" class="nav-dropdown-item <?php echo _bitcore_nav_active($slug); ?>">
-                    <span class="nav-icon"><?php echo $meta['icon']; ?></span> <?php echo esc_html($meta['label']); ?>
-                </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
     </div>
 
     <div class="nav-actions">
@@ -121,19 +93,6 @@ $secondary_pages = [
 }
 .nav-link:hover, .nav-link.active { background: rgba(74, 222, 128, 0.1); color: #4ade80; }
 .nav-icon { font-size: 1rem; }
-.nav-dropdown { position: relative; }
-.nav-dropdown-trigger { cursor: pointer; background: none; border: none; }
-.nav-dropdown-menu {
-    display: none; position: absolute; top: 100%; left: 0; margin-top: 8px;
-    background: #161622; border: 1px solid #2a2a3e; border-radius: 10px; padding: 8px;
-    min-width: 180px; box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-}
-.nav-dropdown:hover .nav-dropdown-menu { display: block; }
-.nav-dropdown-item {
-    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-    border-radius: 6px; color: #a0a0b0; text-decoration: none; font-size: 0.85rem;
-}
-.nav-dropdown-item:hover, .nav-dropdown-item.active { background: rgba(74, 222, 128, 0.1); color: #4ade80; }
 .nav-actions { display: flex; align-items: center; gap: 16px; }
 .nav-user { display: flex; align-items: center; gap: 6px; color: #a0a0b0; font-size: 0.85rem; }
 .nav-btn {

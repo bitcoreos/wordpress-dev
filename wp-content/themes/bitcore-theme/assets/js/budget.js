@@ -1,15 +1,15 @@
 /**
- * BITCORE Budget Dashboard Controller
- * Paperclip Integration - Per-Agent Spending
+ * BITCORE Credits Dashboard Controller
+ * Canonical Credits API - Per-Agent Usage
  */
 (function(global) {
     'use strict';
     const BudgetPage = {
-        config: { endpoint: '/wp-json/bitcore/v1/budget', nonce: null, agentId: null },
+        config: { endpoint: '/wp-json/bitcore/v1/credits', nonce: null, agentId: 'eliza' },
         init: function() {
             if (typeof bitcoreData !== 'undefined') {
                 this.config.nonce = bitcoreData.nonce;
-                this.config.agentId = bitcoreData.userId || bitcoreData.agentId || null;
+                this.config.agentId = bitcoreData.agentId || this.config.agentId;
             }
             console.log('BudgetPage initializing...');
             this.bindEvents();
@@ -21,9 +21,7 @@
         },
         loadData: async function() {
             try {
-                var url = this.config.agentId
-                    ? this.config.endpoint + '/' + this.config.agentId
-                    : this.config.endpoint;
+                var url = this.config.endpoint + '/' + encodeURIComponent(this.config.agentId || 'eliza');
                 var response = await fetch(url, { headers: { 'X-WP-Nonce': this.config.nonce || '' } });
                 var data = await response.json();
                 this.render(data);
@@ -34,7 +32,7 @@
             }
         },
         render: function(data) {
-            var budgets = data.budgets || data || [];
+            var budgets = data.budgets || data.items || (data.agent_id ? [data] : []);
             var list = document.getElementById('budget-list');
             if (!list) return;
             if (budgets.length === 0) {
@@ -44,11 +42,11 @@
             var html = '';
             var totalBudget = 0, totalSpent = 0;
             budgets.forEach(function(b) {
-                var spent = b.spent || 0;
-                var limit = b.limit || b.budget || 100;
+                var spent = b.used_today || b.spent || 0;
+                var limit = b.daily_limit || b.limit || b.budget || 100;
                 var percent = Math.round((spent / limit) * 100);
                 totalBudget += limit; totalSpent += spent;
-                html += '<div class="budget-item"><div class="budget-header"><span class="agent-name">' + (b.agent || b.name) + '</span><span class="budget-amount">$' + spent + ' / $' + limit + '</span></div>';
+                html += '<div class="budget-item"><div class="budget-header"><span class="agent-name">' + (b.agent_id || b.agent || b.name || 'eliza') + '</span><span class="budget-amount">' + spent + ' / ' + limit + ' credits</span></div>';
                 html += '<div class="budget-bar"><div class="budget-fill" style="width:' + percent + '%"></div></div></div>';
             });
             list.innerHTML = html;

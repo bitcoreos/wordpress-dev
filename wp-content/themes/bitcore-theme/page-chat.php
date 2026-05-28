@@ -507,6 +507,7 @@ if (!is_user_logged_in()) {
         };
 
         const API_BASE = '<?php echo esc_url(rest_url("bitcore/v1/eliza")); ?>';
+        const EVENTS_STREAM = '<?php echo esc_url(rest_url("bitcore/v1/events/stream")); ?>';
         const NONCE = '<?php echo wp_create_nonce("wp_rest"); ?>';
 
         // Resolve agent from URL param
@@ -518,9 +519,9 @@ if (!is_user_logged_in()) {
         let currentSessionId = null;
         let messages = [];
         let isSending = false;
-        let pollingInterval = null;
+        let realtimeSource = null;
         let rateUsed = 0;
-        const RATE_LIMIT = 100;
+        let rateLimit = 100;
 
         // ---- DOM Refs ----
         const chatMessages = document.getElementById('chat-messages');
@@ -593,11 +594,29 @@ if (!is_user_logged_in()) {
 
         // ---- Rate Limit ----
         function updateRateDisplay() {
-            const pct = Math.min((rateUsed / RATE_LIMIT) * 100, 100);
-            rateLabel.textContent = rateUsed + ' / ' + RATE_LIMIT + ' calls today';
+            const safeLimit = Math.max(Number(rateLimit) || 100, 1);
+            const safeUsed = Math.max(Number(rateUsed) || 0, 0);
+            const pct = Math.min((safeUsed / safeLimit) * 100, 100);
+            rateLabel.textContent = safeUsed + ' / ' + safeLimit + ' calls today';
             rateFill.style.width = pct + '%';
             rateFill.className = 'rate-fill' +
                 (pct > 90 ? ' danger' : pct > 70 ? ' warning' : '');
+        }
+
+        async function loadRateLimit() {
+            try {
+                const data = await apiGet('/rate-limit');
+                if (data && typeof data.limit !== 'undefined') {
+                    rateLimit = Number(data.limit) || rateLimit;
+                }
+                if (data && typeof data.remaining !== 'undefined') {
+                    const remaining = Math.max(Number(data.remaining) || 0, 0);
+                    rateUsed = Math.max(rateLimit - remaining, 0);
+                }
+                updateRateDisplay();
+            } catch (e) {
+                updateRateDisplay();
+            }
         }
 
         // ---- Agent Status ----
@@ -771,8 +790,8 @@ if (!is_user_logged_in()) {
                 }
 
                 // Capture session ID from response if provided
-                if (response.sessionId || response.session_id) {
-                    currentSessionId = response.sessionId || response.session_id;
+                if (response.sessionId || response.session_id || response.channel_id) {
+                    currentSessionId = response.sessionId || response.session_id || response.channel_id;
                     sessionSelect.value = currentSessionId;
                 }
 
@@ -782,6 +801,8 @@ if (!is_user_logged_in()) {
                     timestamp: new Date().toISOString()
                 });
                 renderMessages();
+                loadSessions();
+                loadRateLimit();
             } catch (e) {
                 // Show error as agent message
                 messages.push({
@@ -804,6 +825,87 @@ if (!is_user_logged_in()) {
             chatInput.style.height = 'auto';
             chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
         }
+
+        // ---- Realtime Events ----
+        function connectRealtime() {
+            if (!('EventSource' in window)) {
+                return;
+            }
+            if (realtimeSource) {
+                realtimeSource.close();
+            }
+            const streamUrl = EVENTS_STREAM + '?_wpnonce=' + encodeURIComponent(NONCE);
+            realtimeSource = new EventSource(streamUrl);
+            realtimeSource.addEventListener('THINKING', function(event) {
+                handleRealtimeEvent('THINKING', parseRealtimePayload(event));
+            });
+            realtimeSource.addEventListener('messageComplete', function(event) {
+                handleRealtimeEvent('messageComplete', parseRealtimePayload(event));
+            });
+            realtimeSource.addEventListener('message_sent', function(event) {
+                handleRealtimeEvent('message_sent', parseRealtimePayload(event));
+            });
+            realtimeSource.addEventListener('system', function(event) {
+                handleRealtimeEvent('system', parseRealtimePayload(event));
+            });
+            realtimeSource.onerror = function() {
+                // EventSource reconnects automatically; keep UI usable during reconnects.
+            };
+        }
+
+        function parseRealtimePayload(event) {
+            try {
+                const parsed = JSON.parse(event.data || '{}');
+                return parsed.payload || parsed;
+            } catch (e) {
+                return {};
+            }
+        }
+
+        function isRelevantRealtimePayload(payload) {
+            if (!payload || typeof payload !== 'object') {
+                return false;
+            }
+            const payloadSession = payload.sessionId || payload.session_id || payload.channel_id || payload.channelId || null;
+            const payloadAgent = payload.agentId || payload.agent_id || payload.targetAgentId || null;
+            if (payloadSession && currentSessionId && payloadSession !== currentSessionId) {
+                return false;
+            }
+            if (payloadAgent && payloadAgent !== agent.id) {
+                return false;
+            }
+            return true;
+        }
+
+        function handleRealtimeEvent(type, payload) {
+            if (!isRelevantRealtimePayload(payload)) {
+                return;
+            }
+            if (type === 'THINKING') {
+                thinkingEl.className = 'thinking-indicator visible';
+                thinkingLabel.textContent = agent.name + ' is thinking...';
+                scrollToBottom();
+                return;
+            }
+            if (type === 'messageComplete' || type === 'message_sent') {
+                thinkingEl.className = 'thinking-indicator';
+                const content = payload.content || payload.text || payload.message || payload.response || '';
+                if (content) {
+                    messages.push({
+                        role: payload.role === 'user' ? 'user' : 'agent',
+                        content: content,
+                        timestamp: payload.timestamp || new Date().toISOString()
+                    });
+                    renderMessages();
+                }
+            }
+        }
+
+        window.addEventListener('beforeunload', function() {
+            if (realtimeSource) {
+                realtimeSource.close();
+            }
+        });
 
         // ---- Event Listeners ----
         sendBtn.addEventListener('click', sendMessage);
@@ -846,8 +948,10 @@ if (!is_user_logged_in()) {
         // ---- Init ----
         initAgentHeader();
         updateRateDisplay();
+        loadRateLimit();
         checkAgentStatus();
         loadSessions();
+        connectRealtime();
 
         // Auto-focus input
         chatInput.focus();

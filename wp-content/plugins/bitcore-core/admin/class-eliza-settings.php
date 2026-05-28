@@ -7,8 +7,10 @@
  *
  * Options managed:
  *  - bitcore_eliza_server_url       (default: http://172.17.0.1:3000/api)
- *  - bitcore_eliza_auth_token       (default: bitcore-eliza-os-auth-token-2026)
+ *  - bitcore_eliza_auth_token       (default: empty; configure in admin)
  *  - bitcore_eliza_daily_limit      (default: 100)
+ *  - bitcore_session_retention_hours (default: 24)
+ *  - bitcore_transcription_retention_days (default: 7)
  *  - bitcore_eliza_default_agent    (default: aria)
  *  - bitcore_eliza_x402_wallet      (default: '')
  *  - bitcore_eliza_anonymous_access (default: false)
@@ -57,7 +59,7 @@ class BITCORE_Eliza_Settings {
         register_setting($this->option_group, 'bitcore_eliza_auth_token', [
             'type'              => 'string',
             'sanitize_callback' => 'sanitize_text_field',
-            'default'           => 'bitcore-eliza-os-auth-token-2026',
+            'default'           => '',
         ]);
 
         // Daily Call Limit
@@ -65,6 +67,20 @@ class BITCORE_Eliza_Settings {
             'type'              => 'integer',
             'sanitize_callback' => 'absint',
             'default'           => 100,
+        ]);
+
+        // Session Retention Hours
+        register_setting($this->option_group, 'bitcore_session_retention_hours', [
+            'type'              => 'integer',
+            'sanitize_callback' => [$this, 'sanitize_session_retention_hours'],
+            'default'           => 24,
+        ]);
+
+        // Transcription Retention Days
+        register_setting($this->option_group, 'bitcore_transcription_retention_days', [
+            'type'              => 'integer',
+            'sanitize_callback' => [$this, 'sanitize_transcription_retention_days'],
+            'default'           => 7,
         ]);
 
         // Default Agent
@@ -168,6 +184,32 @@ class BITCORE_Eliza_Settings {
             ['field' => 'bitcore_eliza_anonymous_access', 'description' => 'Allow unauthenticated users to access chat/sessions endpoints with a valid X-Payment header']
         );
 
+        // === Section: Privacy & Retention ===
+        add_settings_section(
+            'bitcore_eliza_section_retention',
+            __('Privacy & Retention', 'bitcore-core'),
+            '__return_null',
+            $this->page_slug
+        );
+
+        add_settings_field(
+            'bitcore_session_retention_hours',
+            __('Session Retention Hours', 'bitcore-core'),
+            [$this, 'render_number_field'],
+            $this->page_slug,
+            'bitcore_eliza_section_retention',
+            ['field' => 'bitcore_session_retention_hours', 'min' => 1, 'max' => 720, 'description' => 'Delete inactive chat sessions after this many hours. Default: 24.']
+        );
+
+        add_settings_field(
+            'bitcore_transcription_retention_days',
+            __('Transcription Retention Days', 'bitcore-core'),
+            [$this, 'render_number_field'],
+            $this->page_slug,
+            'bitcore_eliza_section_retention',
+            ['field' => 'bitcore_transcription_retention_days', 'min' => 1, 'max' => 90, 'description' => 'Delete transcription logs after this many days. Default: 7.']
+        );
+
         // === Section: Agent Configuration ===
         add_settings_section(
             'bitcore_eliza_section_agents',
@@ -252,15 +294,20 @@ class BITCORE_Eliza_Settings {
             <h2>📊 Connection Status</h2>
             <?php
             $server_url = get_option('bitcore_eliza_server_url', 'http://172.17.0.1:3000/api');
-            $auth_token = get_option('bitcore_eliza_auth_token', 'bitcore-eliza-os-auth-token-2026');
+            $auth_token = get_option('bitcore_eliza_auth_token', '');
 
             // Quick health check
+            $health_args = [
+                'headers' => [],
+                'timeout' => 5,
+            ];
+            if (!empty($auth_token)) {
+                $health_args['headers']['X-API-KEY'] = $auth_token;
+            }
+
             $response = wp_remote_get(
                 rtrim($server_url, '/') . '/server/health',
-                [
-                    'headers' => ['X-API-KEY' => $auth_token],
-                    'timeout' => 5,
-                ]
+                $health_args
             );
 
             if (is_wp_error($response)) {
@@ -401,6 +448,20 @@ class BITCORE_Eliza_Settings {
         if ($desc) {
             printf('<p class="description">%s</p>', esc_html($desc));
         }
+    }
+
+    /**
+     * Bound session retention to a safe operational window.
+     */
+    public function sanitize_session_retention_hours($value): int {
+        return max(1, min(720, absint($value)));
+    }
+
+    /**
+     * Bound transcription retention to a short privacy-preserving window.
+     */
+    public function sanitize_transcription_retention_days($value): int {
+        return max(1, min(90, absint($value)));
     }
 
     /**

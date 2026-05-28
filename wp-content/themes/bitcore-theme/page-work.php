@@ -294,10 +294,22 @@
                 <div class="card-body">
                     <div class="filter-bar" id="task-filter-bar">
                         <button class="filter-btn active" data-filter="all">All</button>
-                        <button class="filter-btn" data-filter="pending">Pending</button>
-                        <button class="filter-btn" data-filter="running">Running</button>
-                        <button class="filter-btn" data-filter="completed">Completed</button>
-                        <button class="filter-btn" data-filter="failed">Failed</button>
+                        <button class="filter-btn" data-filter="inbox">Inbox</button>
+                        <button class="filter-btn" data-filter="backlog">Backlog</button>
+                        <button class="filter-btn" data-filter="doing">Doing</button>
+                        <button class="filter-btn" data-filter="review">Review</button>
+                        <button class="filter-btn" data-filter="done">Done</button>
+                        <button class="filter-btn" data-filter="archived">Archived</button>
+                    </div>
+                    <div class="form-group" style="max-width: 260px; margin-bottom: var(--space-md);">
+                        <label class="form-label">Type Filter</label>
+                        <select class="form-input" id="task-type-filter">
+                            <option value="all" selected>All Types</option>
+                            <option value="task">Task</option>
+                            <option value="goal">Goal</option>
+                            <option value="milestone">Milestone</option>
+                            <option value="sprint">Sprint</option>
+                        </select>
                     </div>
                     <div class="task-list" id="task-list">
                         <div class="empty-state">Loading tasks...</div>
@@ -317,6 +329,30 @@
                         <div class="form-group">
                             <label class="form-label">Description</label>
                             <textarea class="form-input form-textarea" id="new-task-desc" placeholder="Task description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Task Type</label>
+                            <select class="form-input" id="new-task-type">
+                                <option value="task" selected>Task</option>
+                                <option value="goal">Goal</option>
+                                <option value="milestone">Milestone</option>
+                                <option value="sprint">Sprint</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-input" id="new-task-status">
+                                <option value="inbox" selected>Inbox</option>
+                                <option value="backlog">Backlog</option>
+                                <option value="doing">Doing</option>
+                                <option value="review">Review</option>
+                                <option value="done">Done</option>
+                                <option value="archived">Archived</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Assigned Agent</label>
+                            <input type="text" class="form-input" id="new-task-assigned-to" placeholder="aria, forge, muse, or user id">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Priority</label>

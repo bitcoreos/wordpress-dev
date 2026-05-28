@@ -15,6 +15,9 @@ if (!defined('ABSPATH')) {
 require_once __DIR__ . '/trait-rest-tasks-permissions.php';
 require_once __DIR__ . '/trait-rest-tasks-schema.php';
 
+use Bitcore\Tasks\REST_Tasks_Permissions;
+use Bitcore\Tasks\REST_Tasks_Schema;
+
 class REST_Tasks {
     use REST_Tasks_Permissions;
     use REST_Tasks_Schema;
@@ -65,8 +68,8 @@ class REST_Tasks {
 
     public function get_items($request) {
         $params = $request->get_params();
-        $per_page = (int) ($params['per_page'] ?? 10);
-        $page = (int) ($params['page'] ?? 1);
+        $per_page = max(1, min(100, (int) ($params['per_page'] ?? 10)));
+        $page = max(1, (int) ($params['page'] ?? 1));
         $offset = ($page - 1) * $per_page;
 
         $args = [
@@ -83,6 +86,14 @@ class REST_Tasks {
                 'taxonomy' => 'task_status',
                 'field'    => 'slug',
                 'terms'    => sanitize_text_field($params['status']),
+            ];
+        }
+
+        if (!empty($params['task_type'])) {
+            $args['tax_query'][] = [
+                'taxonomy' => 'task_type',
+                'field'    => 'slug',
+                'terms'    => sanitize_text_field($params['task_type']),
             ];
         }
 
@@ -124,15 +135,20 @@ class REST_Tasks {
     public function create_item($request) {
         $data = $request->get_json_params();
 
+        $title = sanitize_text_field($data['title'] ?? '');
+        if ($title === '') {
+            return new WP_Error('invalid_title', 'Task title is required', ['status' => 400]);
+        }
+
         $post_id = wp_insert_post([
-            'post_title'   => sanitize_text_field($data['title']),
+            'post_title'   => $title,
             'post_content' => sanitize_textarea_field($data['description'] ?? ''),
             'post_type'    => self::POST_TYPE,
             'post_status'  => 'publish',
             'post_author'  => get_current_user_id(),
         ]);
 
-        if (is_wp_error($post_id)) {
+        if (is_wp_error($post_id) || empty($post_id)) {
             return new WP_Error('create_failed', 'Failed to create task', ['status' => 500]);
         }
 
@@ -150,9 +166,11 @@ class REST_Tasks {
             }
         }
 
-        // Set default status
-        wp_set_object_terms($post_id, 'inbox', 'task_status');
-        wp_set_object_terms($post_id, 'task', 'task_type');
+        $status = sanitize_text_field($data['status'] ?? 'inbox');
+        $task_type = sanitize_text_field($data['task_type'] ?? 'task');
+
+        wp_set_object_terms($post_id, $status !== '' ? $status : 'inbox', 'task_status');
+        wp_set_object_terms($post_id, $task_type !== '' ? $task_type : 'task', 'task_type');
 
         return rest_ensure_response([
             'success' => true,
@@ -172,13 +190,28 @@ class REST_Tasks {
         $update_data = ['ID' => $id];
 
         if (isset($data['title'])) {
-            $update_data['post_title'] = sanitize_text_field($data['title']);
+            $title = sanitize_text_field($data['title']);
+            if ($title === '') {
+                return new WP_Error('invalid_title', 'Task title is required', ['status' => 400]);
+            }
+            $update_data['post_title'] = $title;
         }
         if (isset($data['description'])) {
             $update_data['post_content'] = sanitize_textarea_field($data['description']);
         }
+
+        if (count($update_data) > 1) {
+            $result = wp_update_post($update_data);
+            if (is_wp_error($result) || empty($result)) {
+                return new WP_Error('update_failed', 'Failed to update task', ['status' => 500]);
+            }
+        }
+
         if (isset($data['status'])) {
             wp_set_object_terms($id, sanitize_text_field($data['status']), 'task_status');
+        }
+        if (isset($data['task_type'])) {
+            wp_set_object_terms($id, sanitize_text_field($data['task_type']), 'task_type');
         }
         if (isset($data['priority'])) {
             update_post_meta($id, '_bitcore_priority', sanitize_text_field($data['priority']));
@@ -186,9 +219,11 @@ class REST_Tasks {
         if (isset($data['assigned_to'])) {
             update_post_meta($id, '_bitcore_assigned_to', sanitize_text_field($data['assigned_to']));
         }
-
-        if (count($update_data) > 1) {
-            wp_update_post($update_data);
+        if (isset($data['params'])) {
+            $params = wp_unslash($data['params']);
+            if ($this->is_valid_json($params)) {
+                update_post_meta($id, '_bitcore_params', $params);
+            }
         }
 
         return rest_ensure_response(['success' => true]);
@@ -209,6 +244,10 @@ class REST_Tasks {
         }
 
         return rest_ensure_response(['success' => true]);
+    }
+
+    public function dispatch_item_permissions_check($request) {
+        return is_user_logged_in();
     }
 
     public function dispatch_task($request) {

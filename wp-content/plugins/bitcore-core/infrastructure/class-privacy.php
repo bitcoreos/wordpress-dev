@@ -134,24 +134,110 @@ class BITCORE_Privacy {
     }
 
     /**
+     * Get session retention TTL from admin settings in seconds.
+     */
+    public function get_session_ttl_seconds(): int {
+        $hours = max(1, min(720, (int) get_option('bitcore_session_retention_hours', 24)));
+        return (int) apply_filters('bitcore_session_ttl', $hours * HOUR_IN_SECONDS);
+    }
+
+    /**
+     * Get transcription retention TTL from admin settings in seconds.
+     */
+    public function get_transcription_ttl_seconds(): int {
+        $days = max(1, min(90, (int) get_option('bitcore_transcription_retention_days', 7)));
+        return (int) apply_filters('bitcore_transcription_ttl', $days * DAY_IN_SECONDS);
+    }
+
+    /**
      * Cleanup old sessions (called by cron).
+     *
+     * Multiple historical schemas exist for wp_bitcore_sessions. Build the
+     * retention predicate from columns that actually exist to avoid SQL errors
+     * while still enforcing expiry and TTL cleanup.
      */
     public function cleanup_sessions(): void {
         global $wpdb;
-        $ttl = apply_filters('bitcore_session_ttl', 24 * HOUR_IN_SECONDS);
-        $cutoff = gmdate('Y-m-d H:i:s', time() - $ttl);
 
-        $wpdb->query($wpdb->prepare(
-            "DELETE FROM {$wpdb->prefix}bitcore_sessions WHERE updated_at < %s",
-            $cutoff
-        ));
+        $table = $wpdb->prefix . 'bitcore_sessions';
+        $columns = $this->get_table_columns($table);
+        if (!$columns) {
+            return;
+        }
+
+        $ttl = max(0, $this->get_session_ttl_seconds());
+        $cutoff = gmdate('Y-m-d H:i:s', time() - $ttl);
+        $now = gmdate('Y-m-d H:i:s');
+
+        $where = [];
+        $args = [];
+
+        if (in_array('expires_at', $columns, true)) {
+            $where[] = '(expires_at IS NOT NULL AND expires_at < %s)';
+            $args[] = $now;
+        }
+
+        $activity_column = $this->first_existing_column(
+            $columns,
+            ['updated_at', 'last_activity', 'heartbeat_at', 'created_at', 'started_at']
+        );
+
+        if ($activity_column !== '') {
+            if (in_array('expires_at', $columns, true)) {
+                $where[] = "(expires_at IS NULL AND {$activity_column} < %s)";
+            } else {
+                $where[] = "{$activity_column} < %s";
+            }
+            $args[] = $cutoff;
+        }
+
+        if (!$where) {
+            return;
+        }
+
+        $query = "DELETE FROM {$table} WHERE " . implode(' OR ', $where);
+        $prepared = call_user_func_array([$wpdb, 'prepare'], array_merge([$query], $args));
+        $wpdb->query($prepared);
+    }
+
+    /**
+     * Return sanitized table column names.
+     */
+    private function get_table_columns(string $table): array {
+        global $wpdb;
+
+        if (!method_exists($wpdb, 'get_col')) {
+            return [];
+        }
+
+        $columns = $wpdb->get_col("SHOW COLUMNS FROM {$table}", 0);
+        if (!is_array($columns)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(
+            static fn($column) => is_string($column) && preg_match('/^[A-Za-z0-9_]+$/', $column) ? $column : '',
+            $columns
+        )));
+    }
+
+    /**
+     * Find the first available column from a preference list.
+     */
+    private function first_existing_column(array $columns, array $candidates): string {
+        foreach ($candidates as $candidate) {
+            if (in_array($candidate, $columns, true)) {
+                return $candidate;
+            }
+        }
+        return '';
     }
 
     /**
      * Cleanup old transcription logs (called by cron).
      */
     public function cleanup_transcriptions(): void {
-        $ttl = apply_filters('bitcore_transcription_ttl', 7 * DAY_IN_SECONDS);
+        $ttl = $this->get_transcription_ttl_seconds();
         $cutoff = time() - $ttl;
 
         $upload_dir = wp_upload_dir();
@@ -160,9 +246,9 @@ class BITCORE_Privacy {
             return;
         }
 
-        $files = glob($transcript_dir . '/*.json');
+        $files = glob($transcript_dir . '/*.json') ?: [];
         foreach ($files as $file) {
-            if (filemtime($file) < $cutoff) {
+            if (is_file($file) && !is_link($file) && filemtime($file) < $cutoff) {
                 unlink($file);
             }
         }

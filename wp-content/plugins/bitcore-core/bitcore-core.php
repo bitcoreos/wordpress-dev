@@ -4,7 +4,7 @@ declare(strict_types=1);
  * Plugin Name: BITCORE Core
  * Plugin URI: https://bitcore.org
  * Description: Core plugin for BITCORE Intelligence Factory. Modular AI system with MCP, REST API, and agent orchestration.
- * Version: 1.2.1
+ * Version: 1.3.0
  * Author: BITCORE
  * Author URI: https://bitcore.org
  * Text Domain: bitcore-core
@@ -20,8 +20,8 @@ if (!defined('ABSPATH')) {
 }
 
 // Define constants.
-define('BITCORE_VERSION', '1.2.1');
-define('BITCORE_DB_VERSION', '1.2.1');
+define('BITCORE_VERSION', '1.3.0');
+define('BITCORE_DB_VERSION', '1.3.0');
 define('BITCORE_PLUGIN_FILE', __FILE__);
 define('BITCORE_ENTRY', __FILE__);
 define('BITCORE_PLUGIN_DIR', plugin_dir_path(__FILE__));
@@ -117,6 +117,7 @@ add_action('init', 'bitcore_cli_init');
 // return_sso_url is always a WordPress domain URL, not Discourse.
 // Two-layer defense: init priority 3 (before WP-Discourse) + wpdc_sso_client_redirect_url filter.
 require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/discourse-sso-fix.php';
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/discourse-permission-capture.php';
 
 // === FROM HYPERION: Admin Menu Registration ===
 require_once BITCORE_PLUGIN_DIR . 'admin/menu-registration.php';
@@ -243,7 +244,12 @@ function bitcore_register_widgets(): void {
 add_action('widgets_init', 'bitcore_register_widgets');
 
 // === FROM CORALINE: REST API Routes Registration ===
-add_action('rest_api_init', ['BITCORE_Rest_Tasks', 'register_routes']);
+add_action('rest_api_init', function() {
+    require_once BITCORE_PATH . '/rest/class-rest-tasks.php';
+    if (class_exists('REST_Tasks')) {
+        (new REST_Tasks())->register_routes();
+    }
+});
 add_action('rest_api_init', ['BITCORE_Rest_Health_Knowledge', 'register_routes']);
 add_action('rest_api_init', ['BITCORE_Rest_Research_Intelligence', 'register_routes']);
 add_action('rest_api_init', ['BITCORE_Rest_Sse_Events', 'register_routes']);
@@ -381,8 +387,7 @@ add_action('rest_api_init', function() {
     // Explicit requires for classes not matching BITCORE_Rest_ autoloader prefix
     require_once BITCORE_PATH . '/rest/class-checkout-api.php';
     require_once BITCORE_PATH . '/rest/class-org-chart-api.php';
-    require_once BITCORE_PATH . '/rest/class-budget-api.php';
-    require_once BITCORE_PATH . '/rest/class-goals-api.php';
+    require_once BITCORE_PATH . '/rest/class-credits-api.php';
     require_once BITCORE_PATH . '/rest/class-approvals-api.php';
     require_once BITCORE_PATH . '/rest/class-sessions-api.php';
     require_once BITCORE_PATH . '/rest/class-kanban-api.php';
@@ -390,8 +395,7 @@ add_action('rest_api_init', function() {
     $apis = [
         'BITCORE\\Rest\\Checkout_Api',
         'BITCORE\\Rest\\Org_Chart_Api',
-        'BITCORE\\Rest\\Budget_Api',
-        'BITCORE\\Rest\\Goals_Api',
+        'BITCORE\\Rest\\Credits_Api',
         'BITCORE\\Rest\\Approvals_Api',
         'BITCORE\\Rest\\Sessions_Api',
         'BITCORE_Rest_Kanban_API',
@@ -451,7 +455,7 @@ function bitcore_register_taxonomies(): void {
         'hierarchical' => true,
         'show_ui'      => true,
     ]);
-    register_taxonomy('task_type', ['bitcore_task'], [
+    register_taxonomy('task_type', ['agent_task'], [
         'labels'       => [
             'name'          => __('Task Types', 'bitcore-core'),
             'singular_name' => __('Task Type', 'bitcore-core'),

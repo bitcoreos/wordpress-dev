@@ -281,8 +281,15 @@ if (!is_user_logged_in()) {
     }
     
     async function loadCredits() {
-        const data = await api('budget');
-        document.getElementById('credits-text').textContent = (data && data.credits) ? data.credits + ' credits' : 'Credits unavailable';
+        const data = await api('credits/eliza');
+        const target = document.getElementById('credits-text');
+        if (!data || typeof data.remaining_today === 'undefined' || typeof data.daily_limit === 'undefined') {
+            target.textContent = 'Credits unavailable';
+            return;
+        }
+
+        const tier = data.tier || 'core';
+        target.textContent = data.remaining_today + ' / ' + data.daily_limit + ' credits · ' + tier;
     }
     
     async function loadActivity() {

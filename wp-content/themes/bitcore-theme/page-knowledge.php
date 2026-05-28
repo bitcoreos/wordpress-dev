@@ -154,6 +154,13 @@ if (!is_user_logged_in()) {
             color: var(--text-muted);
             font-size: 14px;
         }
+        @media (max-width: 900px) {
+            .knowledge-header { align-items: stretch; }
+            .knowledge-search { width: 100%; }
+            .knowledge-search input { width: 100%; }
+            .knowledge-tabs { overflow-x: auto; }
+            .knowledge-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body <?php body_class(); ?>>
@@ -208,10 +215,16 @@ if (!is_user_logged_in()) {
     const restUrl = '/wp-json/bitcore/v1/';
     const nonce = '<?php echo wp_create_nonce("wp_rest"); ?>';
     
-    async function api(endpoint) {
+    async function api(endpoint, options = {}) {
         try {
             const res = await fetch(restUrl + endpoint.replace(/^\//, ''), {
-                headers: { 'Accept': 'application/json', 'X-WP-Nonce': nonce }
+                method: options.method || 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce
+                },
+                body: options.body ? JSON.stringify(options.body) : undefined
             });
             if (!res.ok) throw new Error(res.statusText);
             return await res.json().catch(() => null);
@@ -227,48 +240,90 @@ if (!is_user_logged_in()) {
         });
     });
     
+    let promptsItems = [];
+    let skillsItems = [];
+    let artifactItems = [];
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, function(char) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char];
+        });
+    }
+
     function renderCard(item) {
-        const tags = (item.tags || []).map(t => '<span class="tag">' + t + '</span>').join('');
+        const tags = (item.tags || []).map(t => '<span class="tag">' + escapeHtml(t) + '</span>').join('');
         return '<div class="knowledge-card">' +
-            '<h3>' + (item.title || 'Untitled') + '</h3>' +
-            '<p>' + (item.description || item.excerpt || item.content || 'No description') + '</p>' +
+            '<h3>' + escapeHtml(item.title || 'Untitled') + '</h3>' +
+            '<p>' + escapeHtml(item.description || item.excerpt || item.content || 'No description') + '</p>' +
             '<div class="card-meta">' +
-                '<span>' + (item.source || 'BITCORE') + '</span>' +
-                (item.updated_at ? '<span>' + new Date(item.updated_at).toLocaleDateString() + '</span>' : '') +
+                '<span>' + escapeHtml(item.source || 'BITCORE') + '</span>' +
+                (item.updated_at ? '<span>' + escapeHtml(new Date(item.updated_at).toLocaleDateString()) + '</span>' : '') +
             '</div>' +
             (tags ? '<div class="card-tags">' + tags + '</div>' : '') +
         '</div>';
     }
+
+    function filterItems(items, query) {
+        const needle = query.trim().toLowerCase();
+        if (!needle) return items;
+        return items.filter(item => [item.title, item.description, item.excerpt, item.content, item.source, (item.tags || []).join(' ')]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(needle));
+    }
+
+    function renderGrid(gridId, countId, items, emptyMessage) {
+        const grid = document.getElementById(gridId);
+        document.getElementById(countId).textContent = items.length + ' items';
+        if (!items.length) { grid.innerHTML = '<div class="empty-state">' + escapeHtml(emptyMessage) + '</div>'; return; }
+        grid.innerHTML = items.map(renderCard).join('');
+    }
+
+
+    function mergeRemoteSearchResults(remoteItems) {
+        const byKey = new Map();
+        [promptsItems, skillsItems, artifactItems, remoteItems || []].flat().forEach(item => {
+            const key = [item.source || 'local', item.id || item.title || JSON.stringify(item)].join(':');
+            if (!byKey.has(key)) byKey.set(key, item);
+        });
+        return Array.from(byKey.values());
+    }
+
+    async function runSearch() {
+        const query = document.getElementById('knowledge-search').value || '';
+        const data = query.trim() ? await api('context/search', { method: 'POST', body: { query } }) : null;
+        const remoteItems = (data && data.items) ? data.items : [];
+        const mergedItems = mergeRemoteSearchResults(remoteItems);
+        renderGrid('prompts-grid', 'prompts-count', filterItems(mergedItems.filter(item => ['prompt', 'topic'].includes(item.type || 'topic')), query), 'No prompts found. Create one in Bithub.');
+        renderGrid('skills-grid', 'skills-count', filterItems(mergedItems.filter(item => (item.type || '') === 'skill'), query), 'No skills found. Create one in BitWiki.');
+        renderGrid('artifacts-grid', 'artifacts-count', filterItems(mergedItems.filter(item => (item.type || '') === 'artifact'), query), 'No artifacts found. Create one in My Posts.');
+    }
     
     async function loadPrompts() {
         const data = await api('knowledge/nodes');
-        const grid = document.getElementById('prompts-grid');
-        const items = (data && data.nodes) ? data.nodes : (Array.isArray(data) ? data : []);
-        document.getElementById('prompts-count').textContent = items.length + ' items';
-        if (!items.length) { grid.innerHTML = '<div class="empty-state">No prompts found. Create one in Bithub.</div>'; return; }
-        grid.innerHTML = items.map(renderCard).join('');
+        promptsItems = (data && data.nodes) ? data.nodes : (Array.isArray(data) ? data : []);
+        renderGrid('prompts-grid', 'prompts-count', filterItems(promptsItems, document.getElementById('knowledge-search').value || ''), 'No prompts found. Create one in Bithub.');
     }
     
     async function loadSkills() {
         const data = await api('knowledge/edges');
-        const grid = document.getElementById('skills-grid');
-        const items = (data && data.edges) ? data.edges : (Array.isArray(data) ? data : []);
-        document.getElementById('skills-count').textContent = items.length + ' items';
-        if (!items.length) { grid.innerHTML = '<div class="empty-state">No skills found. Create one in BitWiki.</div>'; return; }
-        grid.innerHTML = items.map(renderCard).join('');
+        skillsItems = (data && data.edges) ? data.edges : (Array.isArray(data) ? data : []);
+        renderGrid('skills-grid', 'skills-count', filterItems(skillsItems, document.getElementById('knowledge-search').value || ''), 'No skills found. Create one in BitWiki.');
     }
     
     async function loadArtifacts() {
-        const data = await api('my-posts');
-        const grid = document.getElementById('artifacts-grid');
-        const items = (data && data.posts) ? data.posts : (Array.isArray(data) ? data : []);
-        document.getElementById('artifacts-count').textContent = items.length + ' items';
-        if (!items.length) { grid.innerHTML = '<div class="empty-state">No artifacts found. Create one in My Posts.</div>'; return; }
-        grid.innerHTML = items.map(renderCard).join('');
+        const data = await api('my-posts?type=bitcore_artifact');
+        artifactItems = (data && data.items) ? data.items : (Array.isArray(data) ? data : []);
+        renderGrid('artifacts-grid', 'artifacts-count', filterItems(artifactItems, document.getElementById('knowledge-search').value || ''), 'No artifacts found. Create one in My Posts.');
     }
     
     document.addEventListener('DOMContentLoaded', function() {
         loadPrompts(); loadSkills(); loadArtifacts();
+        document.getElementById('search-btn').addEventListener('click', runSearch);
+        document.getElementById('knowledge-search').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') runSearch();
+        });
     });
 })();
 </script>

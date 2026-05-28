@@ -52,8 +52,9 @@ class BITCORE_Modules_Tasks {
         add_action('save_post', [$this, 'save_meta'], 10, 2);
         add_action('transition_post_status', [$this, 'on_status_change'], 10, 3);
         
-        // Register default statuses on init
+        // Register default statuses and types on init
         add_action('init', [$this, 'register_default_statuses'], 20);
+        add_action('init', [$this, 'register_default_types'], 20);
     }
 
     /**
@@ -164,6 +165,24 @@ class BITCORE_Modules_Tasks {
         foreach ($statuses as $slug => $name) {
             if (!term_exists($slug, self::TAX_STATUS)) {
                 wp_insert_term($name, self::TAX_STATUS, ['slug' => $slug]);
+            }
+        }
+    }
+
+    /**
+     * Register default task types
+     */
+    public function register_default_types(): void {
+        $types = [
+            'task'      => 'Task',
+            'goal'      => 'Goal',
+            'milestone' => 'Milestone',
+            'sprint'    => 'Sprint',
+        ];
+
+        foreach ($types as $slug => $name) {
+            if (!term_exists($slug, self::TAX_TYPE)) {
+                wp_insert_term($name, self::TAX_TYPE, ['slug' => $slug]);
             }
         }
     }

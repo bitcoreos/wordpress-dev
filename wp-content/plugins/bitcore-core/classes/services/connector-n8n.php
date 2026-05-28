@@ -60,6 +60,31 @@ class BITCORE_Services_Connector_N8N {
     }
 
     /**
+     * Query a single agent status from n8n
+     */
+    public function get_agent_status( $agent_id ) {
+        $payload = [
+            'action' => 'agent_status',
+            'agent_id' => sanitize_key( (string) $agent_id ),
+            'timestamp' => time(),
+        ];
+
+        return $this->post_to_webhook( $payload );
+    }
+
+    /**
+     * Query swarm status from n8n
+     */
+    public function get_swarm_status() {
+        $payload = [
+            'action' => 'swarm_status',
+            'timestamp' => time(),
+        ];
+
+        return $this->post_to_webhook( $payload );
+    }
+
+    /**
      * Post to n8n webhook
      */
     private function post_to_webhook( $payload ) {
@@ -82,8 +107,18 @@ class BITCORE_Services_Connector_N8N {
             return $response;
         }
 
+        $code = wp_remote_retrieve_response_code( $response );
+        if ( $code < 200 || $code >= 300 ) {
+            return new WP_Error( 'n8n_http_error', 'n8n webhook returned an unsuccessful HTTP status' );
+        }
+
         $body = wp_remote_retrieve_body( $response );
-        return json_decode( $body, true );
+        $decoded = json_decode( $body, true );
+        if ( ! is_array( $decoded ) ) {
+            return new WP_Error( 'n8n_invalid_json', 'n8n webhook returned invalid JSON' );
+        }
+
+        return $decoded;
     }
 
     /**

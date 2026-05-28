@@ -20,7 +20,8 @@
             missions: [],
             taskFilter: 'all',
             goalFilter: 'all',
-            missionFilter: 'all'
+            missionFilter: 'all',
+            taskTypeFilter: 'all'
         },
 
         init: function() {
@@ -133,9 +134,9 @@
                 if (doneLabel) doneLabel.textContent = 'Completed';
                 var missions = this.state.missions;
                 if (totalEl) totalEl.textContent = missions.length;
-                if (pendingEl) pendingEl.textContent = missions.filter(function(m) { return m.status === 'proposed'; }).length;
-                if (activeEl) activeEl.textContent = missions.filter(function(m) { return m.status === 'in-progress'; }).length;
-                if (doneEl) doneEl.textContent = missions.filter(function(m) { return m.status === 'completed'; }).length;
+                if (pendingEl) pendingEl.textContent = missions.filter(function(m) { return (m.status || 'proposed') === 'proposed'; }).length;
+                if (activeEl) activeEl.textContent = missions.filter(function(m) { return (m.status || 'proposed') === 'in-progress'; }).length;
+                if (doneEl) doneEl.textContent = missions.filter(function(m) { return (m.status || 'proposed') === 'completed'; }).length;
             }
         },
 
@@ -159,6 +160,23 @@
                     self.renderTasks();
                 });
             });
+            var typeFilter = document.getElementById('task-type-filter');
+            if (typeFilter) {
+                typeFilter.addEventListener('change', function() {
+                    self.state.taskTypeFilter = this.value || 'all';
+                    self.loadTasks();
+                });
+            }
+        },
+
+        getTaskListEndpoint: function(taskType) {
+            var endpoints = {
+                task: 'tasks?task_type=task',
+                goal: 'tasks?task_type=goal',
+                milestone: 'tasks?task_type=milestone',
+                sprint: 'tasks?task_type=sprint'
+            };
+            return endpoints[taskType] || 'tasks';
         },
 
         loadTasks: async function() {
@@ -166,7 +184,8 @@
             var listEl = document.getElementById('task-list');
             if (listEl) listEl.innerHTML = '<div class="empty-state">Loading tasks...</div>';
             try {
-                var response = await fetch(this.config.restUrl + 'tasks', {
+                var endpoint = this.getTaskListEndpoint(this.state.taskTypeFilter);
+                var response = await fetch(this.config.restUrl + endpoint, {
                     method: 'GET', headers: this.getHeaders()
                 });
                 if (!response.ok) throw new Error('API returned ' + response.status);
@@ -230,25 +249,79 @@
         selectTask: function(taskId) {
             var task = this.state.tasks.find(function(t) { return t.id == taskId; });
             if (!task) return;
-            var status = task.task_status || task.status || 'pending';
+            var status = task.task_status || task.status || 'inbox';
+            var assignedTo = task.assigned_to || '';
             var detailCard = document.getElementById('task-detail-card');
             var detailBody = document.getElementById('task-detail-body');
             if (detailCard && detailBody) {
                 detailCard.style.display = 'block';
                 detailBody.innerHTML =
                     '<p><strong>Title:</strong> ' + this.escapeHtml(task.title || 'Untitled') + '</p>' +
-                    '<p><strong>Status:</strong> ' + status + '</p>' +
-                    '<p><strong>Content:</strong> ' + this.escapeHtml(task.content || 'None') + '</p>' +
-                    '<p><strong>Date:</strong> ' + (task.date || 'Unknown') + '</p>' +
-                    '<div style="margin-top:12px;display:flex;gap:8px;">' +
+                    '<p><strong>Type:</strong> ' + this.escapeHtml(task.task_type || 'task') + '</p>' +
+                    '<p><strong>Assigned:</strong> ' + this.escapeHtml(assignedTo || 'Unassigned') + '</p>' +
+                    '<p><strong>Content:</strong> ' + this.escapeHtml(this.getTaskDescription(task) || 'None') + '</p>' +
+                    '<p><strong>Date:</strong> ' + (task.date || task.created_at || 'Unknown') + '</p>' +
+                    '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">' +
+                    '<select id="task-status-select" class="form-input" style="width:auto;">' +
+                    '<option value="inbox"' + (status === 'inbox' ? ' selected' : '') + '>Inbox</option>' +
+                    '<option value="backlog"' + (status === 'backlog' ? ' selected' : '') + '>Backlog</option>' +
+                    '<option value="doing"' + (status === 'doing' ? ' selected' : '') + '>Doing</option>' +
+                    '<option value="review"' + (status === 'review' ? ' selected' : '') + '>Review</option>' +
+                    '<option value="done"' + (status === 'done' ? ' selected' : '') + '>Done</option>' +
+                    '<option value="archived"' + (status === 'archived' ? ' selected' : '') + '>Archived</option>' +
+                    '</select>' +
+                    '<button class="btn btn-primary btn-sm" onclick="WorkPage.updateTaskStatus(' + task.id + ')">Update Status</button>' +
+                    '<button class="btn btn-sm" onclick="WorkPage.dispatchTask(' + task.id + ')">Dispatch</button>' +
                     '<button class="btn btn-danger btn-sm" onclick="WorkPage.deleteTask(' + task.id + ')">Delete Task</button>' +
                     '</div>';
+            }
+        },
+
+        updateTaskStatus: async function(taskId) {
+            var selectEl = document.getElementById('task-status-select');
+            if (!selectEl) return;
+            var newStatus = selectEl.value;
+            try {
+                var response = await fetch(this.config.restUrl + 'tasks/' + taskId, {
+                    method: 'PUT', headers: this.getHeaders(),
+                    body: JSON.stringify({ status: newStatus })
+                });
+                if (!response.ok) throw new Error('Failed to update: ' + response.status);
+                this.showNotification('Task status updated!', 'success');
+                this.loadTasks();
+                this.loadKanban();
+                var detailCard = document.getElementById('task-detail-card');
+                if (detailCard) detailCard.style.display = 'none';
+            } catch (error) {
+                console.error('Update task error:', error);
+                this.showNotification('Update failed: ' + error.message, 'error');
+            }
+        },
+
+        dispatchTask: async function(taskId) {
+            try {
+                var response = await fetch(this.config.restUrl + 'tasks/' + taskId + '/dispatch', {
+                    method: 'POST', headers: this.getHeaders()
+                });
+                if (!response.ok) throw new Error('Failed to dispatch: ' + response.status);
+                this.showNotification('Task dispatched!', 'success');
+                this.loadTasks();
+                this.loadKanban();
+                var detailCard = document.getElementById('task-detail-card');
+                if (detailCard) detailCard.style.display = 'none';
+            } catch (error) {
+                console.error('Dispatch task error:', error);
+                this.showNotification('Dispatch failed: ' + error.message, 'error');
             }
         },
 
         createTask: async function() {
             var nameEl = document.getElementById('new-task-name');
             var descEl = document.getElementById('new-task-desc');
+            var typeEl = document.getElementById('new-task-type');
+            var statusEl = document.getElementById('new-task-status');
+            var priorityEl = document.getElementById('new-task-priority');
+            var assignedEl = document.getElementById('new-task-assigned-to');
             var title = nameEl ? nameEl.value.trim() : '';
             var content = descEl ? descEl.value.trim() : '';
             if (!title) { this.showNotification('Task name required', 'error'); return; }
@@ -256,7 +329,14 @@
             try {
                 var response = await fetch(this.config.restUrl + 'tasks', {
                     method: 'POST', headers: this.getHeaders(),
-                    body: JSON.stringify({ title: title, content: content })
+                    body: JSON.stringify({
+                        title: title,
+                        description: content,
+                        task_type: typeEl ? typeEl.value : 'task',
+                        status: statusEl ? statusEl.value : 'inbox',
+                        priority: priorityEl ? priorityEl.value : 'normal',
+                        assigned_to: assignedEl ? assignedEl.value : ''
+                    })
                 });
                 if (!response.ok) {
                     var errorMsg = 'Failed to create task: ' + response.status;
@@ -265,7 +345,12 @@
                 }
                 if (nameEl) nameEl.value = '';
                 if (descEl) descEl.value = '';
+                if (assignedEl) assignedEl.value = '';
+                if (typeEl) typeEl.value = 'task';
+                if (statusEl) statusEl.value = 'inbox';
+                if (priorityEl) priorityEl.value = 'normal';
                 this.loadTasks();
+                this.loadKanban();
                 this.showNotification('Task created!', 'success');
             } catch (error) {
                 console.error('Create task error:', error);
@@ -311,16 +396,15 @@
         },
 
         loadGoals: async function() {
-            var self = this;
             var treeEl = document.getElementById('goal-tree');
             if (treeEl) treeEl.innerHTML = '<div class="empty-state">Loading goals...</div>';
             try {
-                var response = await fetch(this.config.restUrl + 'goals', {
+                var response = await fetch(this.config.restUrl + 'tasks?task_type=goal', {
                     method: 'GET', headers: this.getHeaders()
                 });
                 if (!response.ok) throw new Error('API returned ' + response.status);
                 var data = await response.json();
-                this.state.goals = data.goals || (Array.isArray(data) ? data : []);
+                this.state.goals = this.normalizeTaskCollection(data);
                 this.renderGoals();
                 this.updateStats();
                 var countEl = document.getElementById('goals-count');
@@ -355,7 +439,7 @@
                     '<span class="goal-title-text">' + icon + ' ' + WorkPage.escapeHtml(g.title || 'Untitled') + '</span>' +
                     '<span class="goal-level ' + level + '">' + level + '</span>' +
                     '</div>';
-                if (g.description) html += '<div class="goal-desc">' + WorkPage.escapeHtml(g.description) + '</div>';
+                if (WorkPage.getTaskDescription(g)) html += '<div class="goal-desc">' + WorkPage.escapeHtml(WorkPage.getTaskDescription(g)) + '</div>';
                 if (g.status) html += '<div style="margin-top:4px;font-size:0.75rem;color:var(--text-muted)">Status: ' + g.status + '</div>';
                 html += '</div>';
             });
@@ -403,7 +487,7 @@
                     '<p><strong>Title:</strong> ' + this.escapeHtml(goal.title || 'Untitled') + '</p>' +
                     '<p><strong>Level:</strong> ' + (goal.level || 'task') + '</p>' +
                     '<p><strong>Status:</strong> ' + (goal.status || 'N/A') + '</p>' +
-                    '<p><strong>Description:</strong> ' + this.escapeHtml(goal.description || 'None') + '</p>' +
+                    '<p><strong>Description:</strong> ' + this.escapeHtml(this.getTaskDescription(goal) || 'None') + '</p>' +
                     (goal.parent_id ? '<p><strong>Parent:</strong> Goal #' + goal.parent_id + '</p>' : '') +
                     '<div style="margin-top:12px;display:flex;gap:8px;">' +
                     '<button class="btn btn-danger btn-sm" onclick="WorkPage.deleteGoal(' + goal.id + ')">Delete Goal</button>' +
@@ -422,13 +506,14 @@
             var data = {
                 title: title,
                 description: descEl ? descEl.value.trim() : '',
-                level: levelEl ? levelEl.value : 'task'
+                task_type: 'goal',
+                params: JSON.stringify({ level: levelEl ? levelEl.value : 'task' })
             };
             var parentId = parentEl ? parentEl.value : '';
             if (parentId) data.parent_id = parseInt(parentId);
 
             try {
-                var response = await fetch(this.config.restUrl + 'goals', {
+                var response = await fetch(this.config.restUrl + 'tasks', {
                     method: 'POST', headers: this.getHeaders(),
                     body: JSON.stringify(data)
                 });
@@ -450,7 +535,7 @@
         deleteGoal: async function(goalId) {
             if (!confirm('Delete this goal?')) return;
             try {
-                var response = await fetch(this.config.restUrl + 'goals/' + goalId, {
+                var response = await fetch(this.config.restUrl + 'tasks/' + goalId, {
                     method: 'DELETE', headers: this.getHeaders()
                 });
                 if (!response.ok) throw new Error('Failed to delete: ' + response.status);
@@ -485,16 +570,15 @@
         },
 
         loadMissions: async function() {
-            var self = this;
             var gridEl = document.getElementById('mission-grid');
             if (gridEl) gridEl.innerHTML = '<div class="empty-state">Loading missions...</div>';
             try {
-                var response = await fetch(this.config.restUrl + 'missions', {
+                var response = await fetch(this.config.restUrl + 'tasks?task_type=milestone', {
                     method: 'GET', headers: this.getHeaders()
                 });
                 if (!response.ok) throw new Error('API returned ' + response.status);
                 var data = await response.json();
-                this.state.missions = data.missions || [];
+                this.state.missions = this.normalizeTaskCollection(data);
                 this.renderMissions();
                 this.updateStats();
                 var countEl = document.getElementById('missions-count');
@@ -511,7 +595,7 @@
             var filter = this.state.missionFilter;
             var missions = this.state.missions;
             if (filter !== 'all') {
-                missions = missions.filter(function(m) { return m.status === filter; });
+                missions = missions.filter(function(m) { return (m.status || 'proposed') === filter; });
             }
 
             if (missions.length === 0) {
@@ -528,7 +612,7 @@
                     '<span class="mission-title">' + WorkPage.escapeHtml(m.title || 'Untitled') + '</span>' +
                     '<span class="mission-status ' + (m.status || 'proposed') + '">' + (m.status || 'proposed') + '</span>' +
                     '</div>' +
-                    '<div class="mission-desc">' + WorkPage.escapeHtml((m.content || '').substring(0, 120)) + '</div>' +
+                    '<div class="mission-desc">' + WorkPage.escapeHtml(WorkPage.getTaskDescription(m).substring(0, 120)) + '</div>' +
                     '<div class="mission-meta">' +
                     '<span class="mission-priority">P' + (m.priority || 3) + ': ' + prioLabel + '</span>' +
                     '<span>' + (m.date ? m.date.substring(0, 10) : 'N/A') + '</span>' +
@@ -560,7 +644,7 @@
                     '<p><strong>Title:</strong> ' + this.escapeHtml(mission.title || 'Untitled') + '</p>' +
                     '<p><strong>Status:</strong> <span class="mission-status ' + mission.status + '">' + mission.status + '</span></p>' +
                     '<p><strong>Priority:</strong> P' + mission.priority + ' - ' + (priorityLabels[mission.priority] || 'Medium') + '</p>' +
-                    '<p><strong>Description:</strong> ' + this.escapeHtml(mission.content || 'None') + '</p>' +
+                    '<p><strong>Description:</strong> ' + this.escapeHtml(this.getTaskDescription(mission) || 'None') + '</p>' +
                     (mission.due_date ? '<p><strong>Due:</strong> ' + mission.due_date + '</p>' : '') +
                     '<p><strong>Author:</strong> ' + this.escapeHtml(mission.author || 'Unknown') + '</p>' +
                     '<p><strong>Created:</strong> ' + (mission.date || 'Unknown') + '</p>' +
@@ -583,7 +667,7 @@
             if (!selectEl) return;
             var newStatus = selectEl.value;
             try {
-                var response = await fetch(this.config.restUrl + 'missions/' + missionId, {
+                var response = await fetch(this.config.restUrl + 'tasks/' + missionId, {
                     method: 'POST', headers: this.getHeaders(),
                     body: JSON.stringify({ status: newStatus })
                 });
@@ -608,13 +692,14 @@
 
             var data = {
                 title: title,
-                content: contentEl ? contentEl.value.trim() : '',
+                description: contentEl ? contentEl.value.trim() : '',
                 status: statusEl ? statusEl.value : 'proposed',
-                priority: priorityEl ? parseInt(priorityEl.value) : 3
+                priority: priorityEl ? parseInt(priorityEl.value) : 3,
+                task_type: 'milestone'
             };
 
             try {
-                var response = await fetch(this.config.restUrl + 'missions', {
+                var response = await fetch(this.config.restUrl + 'tasks', {
                     method: 'POST', headers: this.getHeaders(),
                     body: JSON.stringify(data)
                 });
@@ -636,7 +721,7 @@
         deleteMission: async function(missionId) {
             if (!confirm('Delete this mission?')) return;
             try {
-                var response = await fetch(this.config.restUrl + 'missions/' + missionId, {
+                var response = await fetch(this.config.restUrl + 'tasks/' + missionId, {
                     method: 'DELETE', headers: this.getHeaders()
                 });
                 if (!response.ok) throw new Error('Failed to delete: ' + response.status);
@@ -650,6 +735,18 @@
             }
         },
 
+
+        normalizeTaskCollection: function(data) {
+            if (Array.isArray(data)) return data;
+            if (data && Array.isArray(data.tasks)) return data.tasks;
+            if (data && Array.isArray(data.items)) return data.items;
+            if (data && Array.isArray(data.data)) return data.data;
+            return [];
+        },
+
+        getTaskDescription: function(task) {
+            return task.description || task.content || '';
+        },
 
         // === KANBAN ===
         loadKanban: function() {

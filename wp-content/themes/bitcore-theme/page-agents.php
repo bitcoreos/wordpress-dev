@@ -409,7 +409,7 @@ if (!is_user_logged_in()) {
             const details = document.getElementById('status-details');
             try {
                 const data = await apiGet('/health');
-                if (data && data.status === 'healthy') {
+                if (data && (data.status === 'healthy' || data.status === 'ok')) {
                     dot.className = 'status-dot healthy';
                     label.innerHTML = '<strong>Server Healthy</strong>';
                     details.textContent = data.timestamp || '';
@@ -463,6 +463,8 @@ if (!is_user_logged_in()) {
                 // Merge server data if available
                 const server = serverAgents.find(function(a) { return a.id === agent.id; }) || {};
                 const isActive = activeAgentId === agent.id;
+                const hasActiveAgent = activeAgentId !== null;
+                const primaryActionLabel = hasActiveAgent ? 'Switch Agent' : 'Start Agent';
                 const status = server ? (server.status || 'inactive') : 'inactive';
 
                 const card = document.createElement('div');
@@ -484,8 +486,8 @@ if (!is_user_logged_in()) {
                                 ? '<button class="btn btn-sm" disabled>✓ Running</button>' +
                                   '<a href="/chat/?agent=' + agent.slug + '" class="btn btn-secondary btn-sm">💬 Open Chat</a>' +
                                   '<button class="btn btn-sm" onclick="deactivateAgent(\'' + agent.id + '\')">Stop</button>'
-                                : '<button class="btn btn-primary btn-sm" onclick="activateAgent(\'' + agent.id + '\')">⚡ Start Agent</button>' +
-                                  '<a href="/chat/?agent=' + agent.slug + '" class="btn btn-sm">💬 Chat</a>'
+                                : '<button class="btn btn-primary btn-sm" onclick="activateAgent(\'' + agent.id + '\')">⚡ ' + primaryActionLabel + '</button>' +
+                                  '<a href="/chat/?agent=' + agent.slug + '" class="btn btn-sm">💬 Open Chat</a>'
                             ) +
                         '</div>' +
                     '</div>';

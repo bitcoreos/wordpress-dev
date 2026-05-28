@@ -65,6 +65,46 @@ class Knowledge_Api {
             ],
         ]);
 
+        register_rest_route($this->namespace, '/knowledge/nodes', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'get_nodes'],
+            'permission_callback' => [$this, 'check_read_permission'],
+            'args'                => [
+                'limit' => ['type' => 'integer', 'default' => 20],
+            ],
+        ]);
+
+        register_rest_route($this->namespace, '/knowledge/edges', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'get_edges'],
+            'permission_callback' => [$this, 'check_read_permission'],
+            'args'                => [
+                'limit' => ['type' => 'integer', 'default' => 20],
+            ],
+        ]);
+
+        register_rest_route($this->namespace, '/context/search', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'search_context'],
+            'permission_callback' => [$this, 'check_read_permission'],
+            'args'                => [
+                'query' => ['type' => 'string', 'required' => true],
+                'limit' => ['type' => 'integer', 'default' => 20],
+            ],
+        ]);
+
+        register_rest_route($this->namespace, '/context', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'create_context'],
+            'permission_callback' => [$this, 'check_create_permission'],
+            'args'                => [
+                'title'      => ['type' => 'string', 'required' => true],
+                'content'    => ['type' => 'string', 'required' => true],
+                'tags'       => ['type' => 'array'],
+                'session_id' => ['type' => 'string'],
+            ],
+        ]);
+
         register_rest_route($this->namespace, '/knowledge/(?P<id>\d+)', [
             [
                 'methods'             => 'GET',
@@ -175,6 +215,136 @@ class Knowledge_Api {
         ]);
     }
 
+    public function get_nodes(\WP_REST_Request $request): \WP_REST_Response {
+        $limit = $this->normalize_limit($request->get_param('limit'));
+        $nodes = [];
+
+        $bithub = $this->get_bithub_connector();
+        if ($bithub) {
+            $topics = $bithub->get_latest_topics($limit);
+            if (!is_wp_error($topics) && is_array($topics)) {
+                foreach ($topics as $topic) {
+                    $nodes[] = $this->normalize_knowledge_card($topic, 'bithub', 'topic');
+                }
+            }
+
+            if (count($nodes) < $limit && method_exists($bithub, 'get_artifacts')) {
+                $artifacts = $bithub->get_artifacts();
+                if (!is_wp_error($artifacts) && is_array($artifacts)) {
+                    foreach ($artifacts as $artifact) {
+                        if (count($nodes) >= $limit) {
+                            break;
+                        }
+                        $nodes[] = $this->normalize_knowledge_card($artifact, 'bithub', 'artifact');
+                    }
+                }
+            }
+        }
+
+        return rest_ensure_response([
+            'nodes' => $nodes,
+            'count' => count($nodes),
+        ]);
+    }
+
+    public function get_edges(\WP_REST_Request $request): \WP_REST_Response {
+        $limit = $this->normalize_limit($request->get_param('limit'));
+        $edges = [];
+
+        $bitwiki = $this->get_bitwiki_connector();
+        if ($bitwiki) {
+            $items = method_exists($bitwiki, 'get_index') ? $bitwiki->get_index() : [];
+            if (!is_wp_error($items) && is_array($items)) {
+                foreach ($items as $item) {
+                    if (count($edges) >= $limit) {
+                        break;
+                    }
+                    $edges[] = $this->normalize_knowledge_card($item, 'bitwiki', 'skill');
+                }
+            }
+        }
+
+        return rest_ensure_response([
+            'edges' => $edges,
+            'count' => count($edges),
+        ]);
+    }
+
+
+    public function search_context(\WP_REST_Request $request): \WP_REST_Response {
+        $query = trim(sanitize_text_field($request->get_param('query') ?? ''));
+        $limit = $this->normalize_limit($request->get_param('limit'));
+        $items = [];
+
+        if ($query !== '') {
+            $bithub = $this->get_bithub_connector();
+            if ($bithub) {
+                $bithub_results = method_exists($bithub, 'search')
+                    ? $bithub->search($query, $limit)
+                    : $bithub->get_latest_topics($limit);
+                if (!is_wp_error($bithub_results) && is_array($bithub_results)) {
+                    foreach ($bithub_results as $result) {
+                        if (count($items) >= $limit) {
+                            break;
+                        }
+                        $items[] = $this->normalize_knowledge_card($result, 'bithub', $result['type'] ?? 'topic');
+                    }
+                }
+            }
+
+            $bitwiki = $this->get_bitwiki_connector();
+            if ($bitwiki && method_exists($bitwiki, 'search')) {
+                $remaining = max($limit - count($items), 0);
+                $bitwiki_results = $remaining > 0 ? $bitwiki->search($query, $remaining) : [];
+                if (!is_wp_error($bitwiki_results) && is_array($bitwiki_results)) {
+                    foreach ($bitwiki_results as $result) {
+                        if (count($items) >= $limit) {
+                            break;
+                        }
+                        $items[] = $this->normalize_knowledge_card($result, 'bitwiki', 'skill');
+                    }
+                }
+            }
+        }
+
+        return rest_ensure_response([
+            'query' => $query,
+            'items' => $items,
+            'count' => count($items),
+        ]);
+    }
+
+    public function create_context(\WP_REST_Request $request): \WP_REST_Response {
+        $data = [
+            'user_id'      => get_current_user_id(),
+            'session_id'   => $request->get_param('session_id'),
+            'title'        => sanitize_text_field($request->get_param('title')),
+            'content'      => wp_kses_post($request->get_param('content')),
+            'content_type' => 'context',
+            'tags'         => $this->sanitize_tags($request->get_param('tags')),
+            'status'       => 'private',
+        ];
+
+        $table  = $this->wpdb->prefix . 'bitcore_knowledge';
+        $result = $this->wpdb->insert($table, $data, ['%d', '%s', '%s', '%s', '%s', '%s', '%s']);
+
+        if ($result === false) {
+            return new \WP_REST_Response(['error' => 'Failed to create context'], 500);
+        }
+
+        return new \WP_REST_Response([
+            'id'      => $this->wpdb->insert_id,
+            'success' => true,
+            'context' => [
+                'id'         => $this->wpdb->insert_id,
+                'title'      => $data['title'],
+                'status'     => 'private',
+                'type'       => 'context',
+                'session_id' => $data['session_id'],
+            ],
+        ], 201);
+    }
+
     public function create_item(\WP_REST_Request $request): \WP_REST_Response {
         $data = [
             'user_id'      => get_current_user_id(),
@@ -193,7 +363,7 @@ class Knowledge_Api {
             return new \WP_REST_Response(['error' => 'Failed to create knowledge item'], 500);
         }
 
-        return rest_ensure_response([
+        return new \WP_REST_Response([
             'id'      => $this->wpdb->insert_id,
             'status'  => 'private',
             'success' => true,
@@ -326,6 +496,54 @@ class Knowledge_Api {
     }
 
     /* ---------- helpers ---------- */
+
+    private function normalize_limit(mixed $limit): int {
+        return max(min((int) ($limit ?: 20), 100), 1);
+    }
+
+    private function get_bithub_connector(): mixed {
+        if (isset($GLOBALS['bitcore']->connector_bithub)) {
+            return $GLOBALS['bitcore']->connector_bithub;
+        }
+        if (class_exists('BITCORE_Services_Connector_BIThub')) {
+            return new \BITCORE_Services_Connector_BIThub($GLOBALS['bitcore'] ?? null);
+        }
+        return null;
+    }
+
+    private function get_bitwiki_connector(): mixed {
+        if (isset($GLOBALS['bitcore']->connector_bitwiki)) {
+            return $GLOBALS['bitcore']->connector_bitwiki;
+        }
+        if (class_exists('BITCORE_Services_Connector_BITwiki')) {
+            return new \BITCORE_Services_Connector_BITwiki($GLOBALS['bitcore'] ?? null);
+        }
+        return null;
+    }
+
+    private function normalize_knowledge_card(array $item, string $source, string $default_type): array {
+        $id = $item['id'] ?? $item['topic_id'] ?? $item['page_id'] ?? $item['slug'] ?? $item['title'] ?? uniqid($source . '-', false);
+        $title = $item['title'] ?? $item['name'] ?? 'Untitled';
+        $description = $item['description'] ?? $item['excerpt'] ?? $item['summary'] ?? $item['content'] ?? '';
+        $tags = $item['tags'] ?? $item['keywords'] ?? [];
+        if (is_string($tags)) {
+            $tags = array_values(array_filter(array_map('trim', explode(',', $tags))));
+        }
+        if (!is_array($tags)) {
+            $tags = [];
+        }
+
+        return [
+            'id'          => (string) $id,
+            'title'       => sanitize_text_field($title),
+            'description' => wp_kses_post($description),
+            'source'      => $source,
+            'type'        => sanitize_text_field($item['type'] ?? $default_type),
+            'tags'        => array_values(array_map('sanitize_text_field', $tags)),
+            'updated_at'  => sanitize_text_field($item['updated_at'] ?? $item['created_at'] ?? $item['last_posted_at'] ?? ''),
+            'url'         => isset($item['url']) ? sanitize_text_field($item['url']) : '',
+        ];
+    }
 
     private function get_item_by_id(int $id): ?array {
         $table = $this->wpdb->prefix . 'bitcore_knowledge';

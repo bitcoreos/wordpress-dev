@@ -60,19 +60,6 @@ class BITCORE_Rest_API {
             'callback' => [ $this, 'search' ],
             'permission_callback' => '__return_true',
         ] );
-
-        // MCP Tools endpoint
-        register_rest_route( $this->namespace, '/mcp/tools', [
-            'methods' => 'GET',
-            'callback' => [ $this, 'get_mcp_tools' ],
-            'permission_callback' => '__return_true',
-        ] );
-
-        register_rest_route( $this->namespace, '/mcp/call', [
-            'methods' => 'POST',
-            'callback' => [ $this, 'call_mcp_tool' ],
-            'permission_callback' => [ $this, 'check_permission' ],
-        ] );
     }
 
     /**

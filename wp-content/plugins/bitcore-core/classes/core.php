@@ -128,8 +128,12 @@ class BITCORE_Core {
 
         // x402 Payment Verification
         require_once BITCORE_PATH . 'infrastructure/class-x402.php';
+        require_once BITCORE_PATH . 'infrastructure/class-x402-facilitator.php';
         $this->container->register('x402.verifier', function() {
             return new \BITCORE\Infrastructure\X402_Verifier();
+        });
+        $this->container->register('x402.facilitator', function() {
+            return new \BITCORE\Infrastructure\X402_Facilitator_Client();
         });
 
         // Initialize Wave 4 Services
@@ -170,6 +174,10 @@ class BITCORE_Core {
         require_once BITCORE_PATH . 'rest/class-eliza-api.php';  // loaded once
         new BITCORE_Rest_Eliza_Api($this);
 
+        // Knowledge API — constructor calls register_routes()
+        require_once BITCORE_PATH . 'rest/class-knowledge-api.php';
+        new \BITCORE\Rest\Knowledge_Api();
+
         // Abstract connector for services
         require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
     }
@@ -201,6 +209,9 @@ class BITCORE_Core {
         add_action('user_register', [$this, 'eliza_user_registered']);
         add_action('wp_login', [$this, 'eliza_user_login'], 10, 2);
 
+        // Subscription provisioning hook. Payment integrations must verify purchase first.
+        add_action('bitcore_subscription_purchase', [$this, 'provision_subscription_purchase'], 10, 3);
+
         // Admin
         if (is_admin()) {
             $this->init_admin();
@@ -221,8 +232,9 @@ class BITCORE_Core {
         $this->connector_n8n = $this->container->get('connector_n8n');
         $this->connector_bithub = $this->container->get('connector_bithub');
         $this->connector_bitwiki = $this->container->get('connector_bitwiki');
-        // x402 Payment Verification — instantiate to register filter hook
+        // x402 Payment Verification — instantiate to register filter hooks
         $this->container->get('x402.verifier');
+        $this->container->get('x402.facilitator');
     }
 
     /**
@@ -333,23 +345,19 @@ class BITCORE_Core {
             return;
         }
 
-        // Get default agent (Aria by default)
-        $default_agent = get_option('bitcore_eliza_default_agent', 'aria');
-        $agent_map = [
-            'aria'  => get_option('bitcore_eliza_agent_aria', 'eac677dd-94c4-02ab-bfea-bc554e52b2a3'),
-            'forge' => get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
-            'muse'  => get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
-        ];
+        // Provision once only. Existing active-agent choices must survive re-fired hooks.
+        $active_agent = get_user_meta($user_id, 'bitcore_eliza_active_agent', true);
+        if (!empty($active_agent)) {
+            return;
+        }
 
-        $agent_id = $agent_map[$default_agent] ?? $agent_map['aria'];
+        [$default_agent, $agent_id] = $this->get_default_eliza_agent_assignment();
 
         // Set active agent for the new user
         update_user_meta($user_id, 'bitcore_eliza_active_agent', $agent_id);
         update_user_meta($user_id, 'bitcore_eliza_active_agent_name', $default_agent);
 
-        // Initialize daily call counter to 0
-        $today = gmdate('Y-m-d');
-        update_user_meta($user_id, 'bitcore_eliza_calls_' . $today, 0);
+        // Credits usage is lazily initialized by Credits_Manager.
     }
 
     /**
@@ -365,27 +373,54 @@ class BITCORE_Core {
         $active_agent = get_user_meta($user_id, 'bitcore_eliza_active_agent', true);
 
         if (empty($active_agent)) {
-            // No active agent — set Aria as default
-            $default_agent = get_option('bitcore_eliza_default_agent', 'aria');
-            $agent_map = [
-                'aria'  => get_option('bitcore_eliza_agent_aria', 'eac677dd-94c4-02ab-bfea-bc554e52b2a3'),
-                'forge' => get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
-                'muse'  => get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
-            ];
-
-            $agent_id = $agent_map[$default_agent] ?? $agent_map['aria'];
+            [$default_agent, $agent_id] = $this->get_default_eliza_agent_assignment();
 
             update_user_meta($user_id, 'bitcore_eliza_active_agent', $agent_id);
             update_user_meta($user_id, 'bitcore_eliza_active_agent_name', $default_agent);
         }
 
-        // Ensure daily call counter exists
-        $today = gmdate('Y-m-d');
-        $key = 'bitcore_eliza_calls_' . $today;
-        $count = get_user_meta($user_id, $key, true);
-        if ($count === '') {
-            update_user_meta($user_id, $key, 0);
+        // Credits usage is lazily initialized by Credits_Manager.
+    }
+
+    /**
+     * Provision subscription-derived agent quota after verified purchase.
+     *
+     * This method is deliberately provider-agnostic. Checkout, WooCommerce,
+     * PMPro, EDD, or x402 adapters should call `do_action(
+     * 'bitcore_subscription_purchase', $user_id, $tier, $metadata )` only
+     * after their own payment verification succeeds.
+     *
+     * @param array<string,mixed> $metadata Purchase metadata sanitized by Credits_Manager.
+     */
+    public function provision_subscription_purchase(int $user_id, string $tier, array $metadata = []): bool {
+        require_once BITCORE_PATH . 'infrastructure/class-credits.php';
+
+        if (!class_exists('\BITCORE\Infrastructure\Credits_Manager')) {
+            return false;
         }
+
+        $credits = new \BITCORE\Infrastructure\Credits_Manager();
+        return $credits->provision_subscription_purchase($user_id, $tier, $metadata);
+    }
+
+    /**
+     * Return a normalized default ElizaOS agent assignment.
+     *
+     * @return array{0:string,1:string} Tuple of agent slug and agent UUID.
+     */
+    private function get_default_eliza_agent_assignment(): array {
+        $default_agent = (string) get_option('bitcore_eliza_default_agent', 'aria');
+        $agent_map = [
+            'aria'  => (string) get_option('bitcore_eliza_agent_aria', 'eac677dd-94c4-02ab-bfea-bc554e52b2a3'),
+            'forge' => (string) get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
+            'muse'  => (string) get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
+        ];
+
+        if (!array_key_exists($default_agent, $agent_map)) {
+            $default_agent = 'aria';
+        }
+
+        return [$default_agent, $agent_map[$default_agent]];
     }
 
     public function admin_init(): void {}

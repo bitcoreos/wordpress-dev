@@ -26,6 +26,7 @@ class BITCORE_Container {
             'factory' => $factory,
             'shared'  => $shared,
         ];
+        unset($this->instances[$id]);
         return $this;
     }
 

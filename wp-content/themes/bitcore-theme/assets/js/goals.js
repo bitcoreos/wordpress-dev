@@ -5,9 +5,12 @@
 (function(global) {
     'use strict';
     const GoalsPage = {
-        config: { endpoint: '/wp-json/bitcore/v1/goals', nonce: null },
+        config: { endpoint: '/wp-json/bitcore/v1/tasks?task_type=goal', nonce: null },
         init: function() {
-            if (typeof bitcoreData !== 'undefined') this.config.nonce = bitcoreData.nonce;
+            if (typeof bitcoreData !== 'undefined') {
+                this.config.nonce = bitcoreData.nonce;
+                if (bitcoreData.restUrl) this.config.endpoint = bitcoreData.restUrl + 'tasks?task_type=goal';
+            }
             console.log('GoalsPage initializing...');
             this.bindEvents();
             this.loadData();
@@ -28,28 +31,45 @@
             }
         },
         render: function(data) {
-            var goals = data.goals || data || [];
+            var goals = this.normalizeTaskCollection(data);
             var tree = document.getElementById('goal-tree');
             if (!tree) return;
             if (goals.length === 0) {
                 tree.innerHTML = '<div class="empty-state">No goals defined</div>';
+                this.updateStats(0, 0, 0);
                 return;
             }
             var html = '<div class="goal-list">';
             var missions = 0, objectives = 0, tasks = 0;
             goals.forEach(function(g) {
-                html += '<div class="goal-node level-' + (g.level || 'mission') + '">';
-                html += '<span class="goal-icon">' + (g.level === 'mission' ? '🎯' : g.level === 'objective' ? '📋' : '✅') + '</span>';
-                html += '<span class="goal-title">' + (g.title || g.name) + '</span>';
-                if (g.description) html += '<span class="goal-desc">' + g.description + '</span>';
+                var level = GoalsPage.getGoalLevel(g);
+                var description = g.description || g.content || '';
+                html += '<div class="goal-node level-' + level + '">';
+                html += '<span class="goal-icon">' + (level === 'mission' ? '🎯' : level === 'objective' ? '📋' : '✅') + '</span>';
+                html += '<span class="goal-title">' + (g.title || g.name || 'Untitled goal') + '</span>';
+                if (description) html += '<span class="goal-desc">' + description + '</span>';
                 html += '</div>';
-                if (g.level === 'mission') missions++;
-                else if (g.level === 'objective') objectives++;
+                if (level === 'mission') missions++;
+                else if (level === 'objective') objectives++;
                 else tasks++;
             });
             html += '</div>';
             tree.innerHTML = html;
             this.updateStats(missions, objectives, tasks);
+        },
+        normalizeTaskCollection: function(data) {
+            if (Array.isArray(data)) return data;
+            if (data && Array.isArray(data.data)) return data.data;
+            if (data && Array.isArray(data.tasks)) return data.tasks;
+            if (data && Array.isArray(data.goals)) return data.goals;
+            if (data && Array.isArray(data.items)) return data.items;
+            return [];
+        },
+        getGoalLevel: function(goal) {
+            if (goal.level) return goal.level;
+            if (goal.task_type === 'milestone') return 'mission';
+            if (goal.task_type === 'goal') return 'objective';
+            return 'task';
         },
         updateStats: function(missions, objectives, tasks) {
             if (document.getElementById('total-missions')) document.getElementById('total-missions').textContent = missions;

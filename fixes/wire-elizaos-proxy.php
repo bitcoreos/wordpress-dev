@@ -4,7 +4,7 @@ $file = '/var/www/html/wp-content/plugins/bitcore-core/bitcore-core.php';
 $content = file_get_contents($file);
 
 $eliza_host = 'http://64.23.153.113:3000';
-$auth_header = 'X-API-KEY: bitcore-eliza-os-auth-token-2026';
+$auth_header = 'X-API-KEY: <configure-bitcore_eliza_auth_token>';
 
 // Replace handle_workflow_run
 $old_wf = <<<'OLD'

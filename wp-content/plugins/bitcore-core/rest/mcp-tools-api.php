@@ -11,9 +11,12 @@ declare(strict_types=1);
 
 class BITCORE_Rest_MCP_Tools_API {
     private $namespace = 'bitcore/v1';
+    private $core;
+    private $mcp;
 
-    public function __construct() {
-        add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+    public function __construct( $core = null ) {
+        $this->core = $core ?: ( $GLOBALS['bitcore'] ?? null );
+        $this->mcp = $this->resolve_mcp_core( $this->core );
     }
 
     /**
@@ -141,8 +144,19 @@ class BITCORE_Rest_MCP_Tools_API {
             ),
         );
 
+        $mcp = $this->get_mcp_core();
+        if ( $mcp && method_exists( $mcp, 'list_tools' ) ) {
+            foreach ( $mcp->list_tools() as $tool ) {
+                if ( ! is_array( $tool ) || empty( $tool['name'] ) ) {
+                    continue;
+                }
+
+                $tools[] = $tool;
+            }
+        }
+
         return rest_ensure_response( array(
-            'tools' => $tools,
+            'tools' => $this->dedupe_tools( $tools ),
         ) );
     }
 
@@ -178,11 +192,7 @@ class BITCORE_Rest_MCP_Tools_API {
                 return $this->create_webhook( $params );
             
             default:
-                return new WP_Error(
-                    'tool_not_found',
-                    __( 'Tool not found.', 'bitcore' ),
-                    array( 'status' => 404 )
-                );
+                return $this->call_core_mcp_tool( $tool_name, is_array( $params ) ? $params : array() );
         }
     }
 
@@ -195,18 +205,18 @@ class BITCORE_Rest_MCP_Tools_API {
 
         // Public tools (read-only)
         $public_tools = array( 'bitcore_get_posts' );
-        if ( in_array( $tool_name, $public_tools ) ) {
-            return '__return_true';
+        if ( in_array( $tool_name, $public_tools, true ) ) {
+            return true;
         }
 
         // Tools requiring specific permissions
         $content_tools = array( 'bitcore_create_post' );
-        if ( in_array( $tool_name, $content_tools ) ) {
+        if ( in_array( $tool_name, $content_tools, true ) ) {
             return current_user_can( 'edit_posts' );
         }
 
         $webhook_tools = array( 'bitcore_create_webhook' );
-        if ( in_array( $tool_name, $webhook_tools ) ) {
+        if ( in_array( $tool_name, $webhook_tools, true ) ) {
             return current_user_can( 'manage_options' );
         }
 
@@ -279,20 +289,73 @@ class BITCORE_Rest_MCP_Tools_API {
     }
 
     private function chat( $params ) {
-        $message = isset( $params['message'] ) ? sanitize_text_field( $params['message'] ) : '';
-        $model = isset( $params['model'] ) ? sanitize_key( $params['model'] ) : 'coraline';
+        $args = array(
+            'message' => isset( $params['message'] ) ? sanitize_text_field( $params['message'] ) : '',
+        );
 
-        // Placeholder - integrate with actual AI engine
-        $response = 'BITCORE AI (' . $model . '): Received your message: ' . $message;
+        if ( isset( $params['context'] ) ) {
+            $args['context'] = sanitize_text_field( $params['context'] );
+        }
 
-        return rest_ensure_response( array(
-            'content' => array(
-                array(
-                    'type' => 'string',
-                    'text' => $response,
-                ),
-            ),
-        ) );
+        if ( isset( $params['model'] ) ) {
+            $args['model'] = sanitize_key( $params['model'] );
+        }
+
+        return $this->call_core_mcp_tool( 'stream_chat', $args );
+    }
+
+    private function resolve_mcp_core( $core ) {
+        if ( is_object( $core ) && isset( $core->mcp ) && is_object( $core->mcp ) ) {
+            return $core->mcp;
+        }
+
+        if ( is_object( $core ) && method_exists( $core, 'call_tool' ) && method_exists( $core, 'list_tools' ) ) {
+            return $core;
+        }
+
+        return null;
+    }
+
+    private function get_mcp_core() {
+        if ( ! $this->mcp ) {
+            $this->mcp = $this->resolve_mcp_core( $this->core ?: ( $GLOBALS['bitcore'] ?? null ) );
+        }
+
+        return $this->mcp;
+    }
+
+    private function call_core_mcp_tool( string $tool_name, array $params ) {
+        $mcp = $this->get_mcp_core();
+        if ( ! $mcp || ! method_exists( $mcp, 'call_tool' ) ) {
+            return new WP_Error(
+                'mcp_core_unavailable',
+                __( 'MCP core is unavailable.', 'bitcore' ),
+                array( 'status' => 503 )
+            );
+        }
+
+        return $mcp->call_tool( $tool_name, $params );
+    }
+
+    private function dedupe_tools( array $tools ): array {
+        $deduped = array();
+        $seen = array();
+
+        foreach ( $tools as $tool ) {
+            if ( ! is_array( $tool ) || empty( $tool['name'] ) ) {
+                continue;
+            }
+
+            $name = (string) $tool['name'];
+            if ( isset( $seen[ $name ] ) ) {
+                continue;
+            }
+
+            $seen[ $name ] = true;
+            $deduped[] = $tool;
+        }
+
+        return $deduped;
     }
 
     private function create_webhook( $params ) {
@@ -329,6 +392,3 @@ class BITCORE_Rest_MCP_Tools_API {
         ) );
     }
 }
-
-// Initialize
-new BITCORE_Rest_MCP_Tools_API();

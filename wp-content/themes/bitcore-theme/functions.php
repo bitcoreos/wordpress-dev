@@ -271,15 +271,68 @@ function bitcore_shortcode_chat( $atts = array() ): string {
 add_shortcode( 'bitcore-chat', 'bitcore_shortcode_chat' );
 
 /**
+ * Count agent_task items assigned to one or more task_status terms.
+ *
+ * @param array<int, string> $slugs Task status slugs.
+ * @return int Real term count, or 0 when taxonomy data is unavailable.
+ */
+function bitcore_theme_count_task_status_terms( array $slugs ): int {
+    if ( ! function_exists( 'taxonomy_exists' ) || ! taxonomy_exists( 'task_status' ) ) {
+        return 0;
+    }
+
+    $slugs = array_values( array_filter( array_map( 'sanitize_key', $slugs ) ) );
+    if ( empty( $slugs ) || ! function_exists( 'get_terms' ) ) {
+        return 0;
+    }
+
+    $terms = get_terms( array(
+        'taxonomy'   => 'task_status',
+        'slug'       => $slugs,
+        'hide_empty' => false,
+    ) );
+
+    if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+        return 0;
+    }
+
+    $count = 0;
+    foreach ( $terms as $term ) {
+        $count += isset( $term->count ) ? max( 0, (int) $term->count ) : 0;
+    }
+
+    return $count;
+}
+
+/**
+ * Get active agent count from the BITCORE health snapshot when available.
+ */
+function bitcore_theme_get_agents_online_count(): int {
+    if ( ! class_exists( 'BITCORE_Health_Snapshot' ) || ! method_exists( 'BITCORE_Health_Snapshot', 'get_latest' ) ) {
+        return 0;
+    }
+
+    $snapshot = BITCORE_Health_Snapshot::get_latest( false );
+    if ( ! is_array( $snapshot ) ) {
+        return 0;
+    }
+
+    return max( 0, (int) ( $snapshot['active_agents'] ?? 0 ) );
+}
+
+/**
  * REST API Endpoint: Get Dashboard Stats
  */
 function bitcore_rest_get_stats(): WP_REST_Response {
     $stats = array(
-        'active_tasks'  => rand( 5, 25 ),
-        'completed'     => rand( 100, 500 ),
-        'pending'       => rand( 10, 50 ),
-        'agents_online' => rand( 2, 8 ),
+        'active_tasks'  => bitcore_theme_count_task_status_terms( array( 'doing', 'review', 'running', 'active' ) ),
+        'completed'     => bitcore_theme_count_task_status_terms( array( 'done', 'completed' ) ),
+        'pending'       => bitcore_theme_count_task_status_terms( array( 'inbox', 'pending', 'backlog' ) ),
+        'agents_online' => bitcore_theme_get_agents_online_count(),
+        'source'        => 'real_counts',
+        'generated_at'  => current_time( 'mysql' ),
     );
+
     return new WP_REST_Response( $stats, 200 );
 }
 
@@ -303,22 +356,10 @@ function bitcore_enqueue_page_scripts() {
         'userId'  => get_current_user_id(),
     );
 
-    // Core SaaS page scripts
-    $page_scripts = array(
-        'tasks' => 'tasks.js',
+    // Canonical ASHI page scripts. Legacy task/goal/session pages are consolidated into /work/.
+    $all_scripts = array(
+        'work' => 'work.js',
     );
-    
-    // Paperclip integration pages
-    $paperclip_pages = array(
-        'org-chart'  => 'org-chart.js',
-        'budget'     => 'budget.js',
-        'goals'      => 'goals.js',
-        'approvals'  => 'approvals.js',
-        'sessions'   => 'sessions.js',
-    );
-
-    // Merge: paperclip pages take precedence for enqueue style
-    $all_scripts = array_merge( $page_scripts, $paperclip_pages );
 
     $slug = get_post_field('post_name', get_queried_object_id());
     

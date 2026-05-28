@@ -40,8 +40,17 @@ class BITCORE_Rest_Eliza_Api {
     /** @var string ElizaOS authentication key */
     private string $eliza_api_key;
 
-    /** @var int Daily call limit per non-admin user */
+    /** @var int Daily call limit per non-admin user; retained as legacy fallback only. */
     private int $daily_limit;
+
+    /** @var \BITCORE\Infrastructure\Credits_Manager Unified credits/quota service */
+    private $credits_manager;
+
+    /** @var string Credits agent scope for ElizaOS bridge usage */
+    private string $credits_agent_id = 'eliza';
+
+    /** @var string Credits resource scope for ElizaOS bridge usage */
+    private string $credits_resource_type = 'api_calls';
 
     /** @var int Request timeout in seconds */
     private int $request_timeout = 30;
@@ -68,10 +77,11 @@ class BITCORE_Rest_Eliza_Api {
 
         // Load configuration from WordPress options
         $this->eliza_base_url = get_option('bitcore_eliza_server_url', 'http://172.17.0.1:3000/api');
-        $this->eliza_api_key   = get_option('bitcore_eliza_auth_token', 'bitcore-eliza-os-auth-token-2026');
+        $this->eliza_api_key   = (string) get_option('bitcore_eliza_auth_token', '');
         $this->daily_limit     = (int) get_option('bitcore_eliza_daily_limit', 100);
         $this->x402_wallet     = get_option('bitcore_eliza_x402_wallet', '');
         $this->anonymous_access = (bool) get_option('bitcore_eliza_anonymous_access', false);
+        $this->credits_manager = $this->create_credits_manager();
 
         $this->register_routes();
 
@@ -206,7 +216,10 @@ class BITCORE_Rest_Eliza_Api {
      * Check basic permission: logged-in user with read or bitcore_access capability.
      */
     public function check_permission(): bool {
-        return is_user_logged_in();
+        $is_logged_in = is_user_logged_in();
+        $this->rate_limit_user_id = $is_logged_in ? get_current_user_id() : null;
+
+        return $is_logged_in;
     }
 
     /**
@@ -216,7 +229,10 @@ class BITCORE_Rest_Eliza_Api {
      * @return bool|WP_Error
      */
     public function check_auth_and_rate_limit() {
-        if (!is_user_logged_in()) {
+        $is_logged_in = is_user_logged_in();
+        $this->rate_limit_user_id = $is_logged_in ? get_current_user_id() : null;
+
+        if (!$is_logged_in) {
             return new WP_Error(
                 'rest_not_logged_in',
                 __('You must be logged in to use this endpoint.'),
@@ -242,8 +258,11 @@ class BITCORE_Rest_Eliza_Api {
      * @return bool|WP_Error
      */
     public function check_anonymous_access() {
+        $is_logged_in = is_user_logged_in();
+        $this->rate_limit_user_id = $is_logged_in ? get_current_user_id() : null;
+
         // Case 1: Anonymous user
-        if (!is_user_logged_in()) {
+        if (!$is_logged_in) {
             // Check if anonymous access is enabled
             if (!$this->anonymous_access) {
                 return new WP_Error(
@@ -263,7 +282,7 @@ class BITCORE_Rest_Eliza_Api {
                 );
             }
 
-            // Verify x402 payment via filter (placeholder)
+            // Verify x402 payment via registered verifier/facilitator filters
             $verified = apply_filters('bitcore_eliza_x402_verify', false, $payment);
             if (!$verified) {
                 return new WP_Error(
@@ -292,28 +311,65 @@ class BITCORE_Rest_Eliza_Api {
     // =========================================================================
 
     /**
+     * Create unified credits manager with a local require guard for standalone tests.
+     *
+     * @return \BITCORE\Infrastructure\Credits_Manager
+     */
+    private function create_credits_manager() {
+        if (!class_exists('BITCORE\\Infrastructure\\Credits_Manager')) {
+            $path = dirname(__DIR__) . '/infrastructure/class-credits.php';
+            if (is_file($path)) {
+                require_once $path;
+            }
+        }
+
+        return new \BITCORE\Infrastructure\Credits_Manager();
+    }
+
+    /**
+     * Convert a credits decision into a REST permission error.
+     *
+     * @param array<string,mixed> $decision Credits manager decision payload.
+     */
+    private function credits_error(array $decision): WP_Error {
+        $status = (int) ($decision['status'] ?? 402);
+        $code = sanitize_text_field((string) ($decision['code'] ?? 'x402_payment_required'));
+        $message = $code === 'x402_payment_required'
+            ? __('Daily call limit reached. Include X-Payment header to continue or wait for reset.')
+            : __('Credit authorization failed.');
+
+        return new WP_Error($code, $message, ['status' => $status]);
+    }
+
+    /**
      * Check daily rate limit using wp_usermeta.
      *
      * @return bool|WP_Error
      */
     private function check_rate_limit() {
-        $user_id = get_current_user_id();
-        $key     = 'bitcore_eliza_calls_' . gmdate('Y-m-d');
-        $count   = (int) get_user_meta($user_id, $key, true);
+        $user_id = (int) ($this->rate_limit_user_id ?? get_current_user_id());
+        $this->rate_limit_user_id = $user_id > 0 ? $user_id : null;
 
-        if ($count >= $this->daily_limit) {
-            return new WP_Error(
-                'rate_limit_exceeded',
-                sprintf(
-                    __('Daily call limit of %d reached. Limit resets at midnight UTC.'),
-                    $this->daily_limit
-                ),
-                ['status' => 429]
-            );
+        $decision = $this->credits_manager->can_consume(
+            $user_id,
+            $this->credits_agent_id,
+            1,
+            $this->credits_resource_type,
+            false
+        );
+
+        if (!($decision['allowed'] ?? false)) {
+            return $this->credits_error($decision);
         }
 
-        // Increment counter
-        update_user_meta($user_id, $key, $count + 1);
+        $this->credits_manager->consume(
+            $user_id,
+            $this->credits_agent_id,
+            1,
+            $this->credits_resource_type,
+            'eliza_proxy',
+            ['endpoint' => 'eliza']
+        );
 
         return true;
     }
@@ -326,35 +382,36 @@ class BITCORE_Rest_Eliza_Api {
      * @return bool|WP_Error
      */
     private function check_rate_limit_with_x402() {
-        $user_id = get_current_user_id();
-        $key     = 'bitcore_eliza_calls_' . gmdate('Y-m-d');
-        $count   = (int) get_user_meta($user_id, $key, true);
+        $user_id = (int) ($this->rate_limit_user_id ?? get_current_user_id());
+        $this->rate_limit_user_id = $user_id > 0 ? $user_id : null;
 
-        if ($count >= $this->daily_limit) {
-            // Rate limit exceeded — check for x402 payment
-            $payment = $this->get_payment_header();
-            if (!empty($payment)) {
-                $verified = apply_filters('bitcore_eliza_x402_verify', false, $payment);
-                if ($verified) {
-                    // x402 payment bypasses rate limit
-                    $this->x402_bypass = true;
-                    return true;
-                }
-            }
+        $payment = $this->get_payment_header();
+        $verified = $payment !== '' && $this->credits_manager->verify_x402_payment($payment);
+        $decision = $this->credits_manager->can_consume(
+            $user_id,
+            $this->credits_agent_id,
+            1,
+            $this->credits_resource_type,
+            $verified
+        );
 
-            // No valid payment — return 402 Payment Required
-            return new WP_Error(
-                'x402_payment_required',
-                sprintf(
-                    __('Daily call limit of %d reached. Include X-Payment header to continue or wait for reset.'),
-                    $this->daily_limit
-                ),
-                ['status' => 402]
-            );
+        if (!($decision['allowed'] ?? false)) {
+            return $this->credits_error($decision);
         }
 
-        // Increment counter
-        update_user_meta($user_id, $key, $count + 1);
+        if (!empty($decision['paid'])) {
+            $this->x402_bypass = true;
+            return true;
+        }
+
+        $this->credits_manager->consume(
+            $user_id,
+            $this->credits_agent_id,
+            1,
+            $this->credits_resource_type,
+            'eliza_proxy',
+            ['endpoint' => 'eliza']
+        );
 
         return true;
     }
@@ -366,17 +423,20 @@ class BITCORE_Rest_Eliza_Api {
      * @return array{limit: int, remaining: int, reset: int, plan: string}
      */
     private function get_rate_limit_info(int $user_id): array {
-        $key   = 'bitcore_eliza_calls_' . gmdate('Y-m-d');
-        $count = (int) get_user_meta($user_id, $key, true);
+        $status = $this->credits_manager->get_status(
+            $user_id,
+            $this->credits_agent_id,
+            $this->credits_resource_type
+        );
 
         // Calculate midnight UTC timestamp for reset
         $tomorrow = strtotime('tomorrow 00:00:00 UTC');
 
         return [
-            'limit'      => $this->daily_limit,
-            'remaining'  => max(0, $this->daily_limit - $count),
+            'limit'      => (int) ($status['daily_limit'] ?? 0),
+            'remaining'  => (int) ($status['remaining_today'] ?? 0),
             'reset'      => $tomorrow,
-            'plan'       => current_user_can('manage_options') ? 'admin' : 'standard',
+            'plan'       => current_user_can('manage_options') ? 'admin' : (string) ($status['tier'] ?? 'standard'),
         ];
     }
 
@@ -398,8 +458,8 @@ class BITCORE_Rest_Eliza_Api {
     /**
      * Check x402 payment validity.
      *
-     * Checks for X-Payment header in request. Applies filter for actual
-     * payment verification (placeholder for future implementation).
+     * Checks for X-Payment header in request and delegates verification to
+     * registered x402 verifier/facilitator filters.
      *
      * @return bool Whether payment is valid
      */
@@ -446,9 +506,11 @@ class BITCORE_Rest_Eliza_Api {
             return $response;
         }
 
-        // Add rate limit headers for logged-in users (non-admins)
-        if (is_user_logged_in() && !current_user_can('manage_options')) {
-            $user_id = get_current_user_id();
+        // Add rate limit headers for authenticated non-admin users without
+        // repeating is_user_logged_in(); permission callbacks cache this context.
+        $user_id = (int) ($this->rate_limit_user_id ?? get_current_user_id());
+        if ($user_id > 0 && !current_user_can('manage_options')) {
+            $this->rate_limit_user_id = $user_id;
             $info = $this->get_rate_limit_info($user_id);
 
             $response->header('X-RateLimit-Limit', (string) $info['limit']);
@@ -489,11 +551,14 @@ class BITCORE_Rest_Eliza_Api {
             'method'  => $method,
             'headers' => [
                 'Content-Type' => 'application/json',
-                'X-API-KEY'    => $this->eliza_api_key,
                 'X-Entity-Id'  => (string) $user_id,
             ],
             'timeout' => $this->request_timeout,
         ];
+
+        if ($this->eliza_api_key !== '') {
+            $args['headers']['X-API-KEY'] = $this->eliza_api_key;
+        }
 
         // Pass X-Payment header through to ElizaOS if present
         $payment = $this->get_payment_header();
@@ -582,7 +647,7 @@ class BITCORE_Rest_Eliza_Api {
     /**
      * GET /eliza/agents — List available agents.
      */
-    public function get_agents(): WP_REST_Response {
+    public function get_agents(): WP_REST_Response|WP_Error {
         return $this->proxy_request('GET', '/agents');
     }
 
@@ -592,7 +657,7 @@ class BITCORE_Rest_Eliza_Api {
      * Enforces single-active-agent policy: stops any currently active agent
      * before starting the requested one.
      */
-    public function activate_agent(WP_REST_Request $request): WP_REST_Response {
+    public function activate_agent(WP_REST_Request $request): WP_REST_Response|WP_Error {
         $agent_id = sanitize_text_field($request['id']);
 
         if (empty($agent_id)) {
@@ -633,7 +698,7 @@ class BITCORE_Rest_Eliza_Api {
     /**
      * POST /eliza/agents/{id}/deactivate — Stop an agent.
      */
-    public function deactivate_agent(WP_REST_Request $request): WP_REST_Response {
+    public function deactivate_agent(WP_REST_Request $request): WP_REST_Response|WP_Error {
         $agent_id = sanitize_text_field($request['id']);
 
         if (empty($agent_id)) {
@@ -662,8 +727,18 @@ class BITCORE_Rest_Eliza_Api {
 
     /**
      * POST /eliza/chat — Send a message to the active agent.
+     *
+     * Uses ElizaOS 1.7.2 messaging API:
+     * POST /api/messaging/channels/{channelId}/messages
+     *
+     * Payload shape:
+     *   message_server_id: 00000000-0000-0000-0000-000000000000 (fixed server ID)
+     *   author_id: UUID from user meta (stable per user)
+     *   raw_message: {text: message} (object, not string)
+     *   transport: websocket (immediate 201 response)
+     *   metadata.targetAgentId: agent UUID for routing
      */
-    public function send_message(WP_REST_Request $request): WP_REST_Response {
+    public function send_message(WP_REST_Request $request): WP_REST_Response|WP_Error {
         $params   = $request->get_json_params();
         $message  = wp_kses_post($params['message'] ?? '');
         $session_id = isset($params['sessionId']) ? sanitize_text_field($params['sessionId']) : '';
@@ -677,25 +752,25 @@ class BITCORE_Rest_Eliza_Api {
             );
         }
 
-        // ElizaOS messaging API requires specific payload format
+        // ElizaOS 1.7.2: /api/messaging/channels/{channelId}/messages
         $channel_id = !empty($session_id) ? $session_id : wp_generate_uuid4();
         $user_id    = get_current_user_id();
-
+        $author_id  = $this->get_request_author_uuid($user_id, $channel_id);
         $body = [
-            'channel_id'        => $channel_id,
-            'message_server_id' => wp_generate_uuid4(),
-            'author_id'         => (string) $user_id,
+            'channelId'         => $channel_id,
+            'message_server_id' => '00000000-0000-0000-0000-000000000000',
+            'author_id'         => $author_id,
             'content'           => $message,
-            'source_type'       => 'api',
-            'raw_message'       => $message,
+            'raw_message'       => ['text' => $message],
+            'transport'         => 'websocket',
+            'metadata'          => ['isDm' => true],
         ];
 
-        // Include agentId for routing if provided
+        // Route to specific agent via metadata.targetAgentId
         if (!empty($agent_id)) {
-            $body['agentId'] = $agent_id;
+            $body['metadata']['targetAgentId'] = $agent_id;
         }
-
-        $result = $this->proxy_request('POST', '/messaging/submit', $body);
+        $result = $this->proxy_request('POST', '/messaging/channels/' . $channel_id . '/messages', $body);
 
         // Attach the channel_id to the response for client session tracking
         if (!is_wp_error($result)) {
@@ -712,14 +787,14 @@ class BITCORE_Rest_Eliza_Api {
     /**
      * GET /eliza/sessions — List user's chat sessions.
      */
-    public function get_sessions(): WP_REST_Response {
+    public function get_sessions(): WP_REST_Response|WP_Error {
         return $this->proxy_request('GET', '/messaging/sessions');
     }
 
     /**
      * POST /eliza/sessions — Create a new chat session.
      */
-    public function create_session(WP_REST_Request $request): WP_REST_Response {
+    public function create_session(WP_REST_Request $request): WP_REST_Response|WP_Error {
         $params   = $request->get_json_params();
         $agent_id = isset($params['agentId']) ? sanitize_text_field($params['agentId']) : '';
 
@@ -734,7 +809,7 @@ class BITCORE_Rest_Eliza_Api {
     /**
      * DELETE /eliza/sessions/{id} — Delete a chat session.
      */
-    public function delete_session(WP_REST_Request $request): WP_REST_Response {
+    public function delete_session(WP_REST_Request $request): WP_REST_Response|WP_Error {
         $session_id = sanitize_text_field($request['id']);
 
         if (empty($session_id)) {
@@ -778,5 +853,67 @@ class BITCORE_Rest_Eliza_Api {
             'forge' => get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
             'muse'  => get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
         ];
+    }
+
+    /**
+     * Get or create a stable UUID for a WordPress user.
+     *
+     * Stored in user meta as 'bitcore_eliza_uuid' to provide a consistent
+     * author_id across all ElizaOS messaging requests.
+     *
+     * @param int $user_id WordPress user ID
+     * @return string UUID v4
+     */
+    private function get_user_uuid(int $user_id): string {
+        $uuid = get_user_meta($user_id, 'bitcore_eliza_uuid', true);
+        if (empty($uuid) || !wp_is_uuid($uuid)) {
+            $uuid = wp_generate_uuid4();
+            update_user_meta($user_id, 'bitcore_eliza_uuid', $uuid);
+        }
+        return $uuid;
+    }
+
+    /**
+     * Get a valid author UUID for the current request.
+     *
+     * Logged-in users receive a stable UUID persisted in user meta.
+     * Anonymous x402 requests receive a deterministic UUID derived from the
+     * payment header or channel ID without writing user meta for user ID 0.
+     *
+     * @param int    $user_id    WordPress user ID, or 0 for anonymous requests.
+     * @param string $channel_id ElizaOS channel/session ID.
+     * @return string UUID v4-compatible value.
+     */
+    private function get_request_author_uuid(int $user_id, string $channel_id): string {
+        if ($user_id > 0) {
+            return $this->get_user_uuid($user_id);
+        }
+
+        $source = $this->get_payment_header();
+        if (empty($source)) {
+            $source = $channel_id;
+        }
+
+        return $this->uuid_from_hash('anonymous-eliza-author:' . $source);
+    }
+
+    /**
+     * Convert a source string into a deterministic UUID v4-compatible value.
+     *
+     * @param string $source Stable source material.
+     * @return string UUID v4-compatible value.
+     */
+    private function uuid_from_hash(string $source): string {
+        $hex = hash('sha256', $source);
+
+        return sprintf(
+            '%s-%s-4%s-%s%s-%s',
+            substr($hex, 0, 8),
+            substr($hex, 8, 4),
+            substr($hex, 13, 3),
+            dechex((hexdec($hex[16]) & 0x3) | 0x8),
+            substr($hex, 17, 3),
+            substr($hex, 20, 12)
+        );
     }
 }

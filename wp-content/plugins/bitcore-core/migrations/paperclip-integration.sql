@@ -54,24 +54,9 @@ CREATE TABLE IF NOT EXISTS `{table_prefix}bitcore_budget_incidents` (
     KEY `incident_type` (`incident_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Goals Table (Hierarchical goal structure)
-CREATE TABLE IF NOT EXISTS `{table_prefix}bitcore_goals` (
-    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-    `parent_id` bigint(20) unsigned DEFAULT NULL,
-    `company_id` bigint(20) unsigned DEFAULT NULL,
-    `title` varchar(255) NOT NULL,
-    `description` text DEFAULT NULL,
-    `level` enum('mission','objective','task') DEFAULT 'task',
-    `status` enum('active','completed','cancelled','on_hold') DEFAULT 'active',
-    `priority` int(11) DEFAULT 0,
-    `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    KEY `parent_id` (`parent_id`),
-    KEY `company_id` (`company_id`),
-    KEY `level` (`level`),
-    KEY `status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- 4. Retired Goals Table
+-- Task unification retired the legacy hierarchical goals table.
+-- Use canonical WordPress agent_task storage via /bitcore/v1/tasks.
 
 -- 5. Approvals Table (Governance approval queue)
 CREATE TABLE IF NOT EXISTS `{table_prefix}bitcore_approvals` (

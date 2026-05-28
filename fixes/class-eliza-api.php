@@ -68,7 +68,7 @@ class BITCORE_Rest_Eliza_Api {
 
         // Load configuration from WordPress options
         $this->eliza_base_url = get_option('bitcore_eliza_server_url', 'http://172.17.0.1:3000/api');
-        $this->eliza_api_key   = get_option('bitcore_eliza_auth_token', 'bitcore-eliza-os-auth-token-2026');
+        $this->eliza_api_key   = get_option('bitcore_eliza_auth_token', '');
         $this->daily_limit     = (int) get_option('bitcore_eliza_daily_limit', 100);
         $this->x402_wallet     = get_option('bitcore_eliza_x402_wallet', '');
         $this->anonymous_access = (bool) get_option('bitcore_eliza_anonymous_access', false);

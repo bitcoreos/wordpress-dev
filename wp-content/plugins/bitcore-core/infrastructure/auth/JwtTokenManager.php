@@ -9,11 +9,14 @@ use BITCORE\Infrastructure\Auth\TokenPayload;
 use InvalidArgumentException;
 use RuntimeException;
 
+require_once __DIR__ . '/TokenPayload.php';
+require_once __DIR__ . '/contracts/TokenManagerInterface.php';
+
 /**
- * JWT Token Manager implementation using base64 encoding.
+ * JWT Token Manager implementation using HMAC-SHA256 signed JWTs.
  *
- * Note: This is a placeholder implementation using base64 encoding.
- * A proper JWT library will be integrated in a future update.
+ * Implements strict header validation, base64url decoding, expiration checks,
+ * revocation support, and per-token cryptographic JWT IDs.
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\Auth
@@ -61,6 +64,7 @@ class JwtTokenManager implements TokenManagerInterface {
         $tokenData = [
             'iat' => $issuedAt,
             'exp' => $expiresAt,
+            'jti' => bin2hex(random_bytes(16)),
             'data' => $payload,
         ];
 
@@ -105,8 +109,12 @@ class JwtTokenManager implements TokenManagerInterface {
         $header = json_decode($this->base64UrlDecode($base64Header), true);
         $payload = json_decode($this->base64UrlDecode($base64Payload), true);
 
-        if (!$header || !$payload) {
+        if (!is_array($header) || !is_array($payload)) {
             throw new InvalidArgumentException('Invalid token encoding');
+        }
+
+        if (($header['typ'] ?? null) !== 'JWT' || ($header['alg'] ?? null) !== $this->algorithm) {
+            throw new RuntimeException('Invalid token header');
         }
 
         // Verify signature
@@ -117,12 +125,28 @@ class JwtTokenManager implements TokenManagerInterface {
             throw new RuntimeException('Invalid token signature');
         }
 
+        if (!isset($payload['iat'], $payload['exp'], $payload['jti'], $payload['data'])) {
+            throw new InvalidArgumentException('Invalid token payload');
+        }
+
+        if (!is_int($payload['iat']) || !is_int($payload['exp'])) {
+            throw new InvalidArgumentException('Invalid token timestamps');
+        }
+
+        if (!is_string($payload['jti']) || !preg_match('/^[a-f0-9]{32}$/', $payload['jti'])) {
+            throw new InvalidArgumentException('Invalid token id');
+        }
+
+        if (!is_array($payload['data'])) {
+            throw new InvalidArgumentException('Invalid token data');
+        }
+
         // Check expiration
-        if (isset($payload['exp']) && $payload['exp'] < time()) {
+        if ($payload['exp'] < time()) {
             throw new RuntimeException('Token has expired');
         }
 
-        $data = $payload['data'] ?? [];
+        $data = $payload['data'];
 
         return new TokenPayload(
             $data['user_id'] ?? 0,
@@ -154,11 +178,9 @@ class JwtTokenManager implements TokenManagerInterface {
     public function refresh(string $token): string {
         $payload = $this->validate($token);
 
-        $newPayload = [
-            'user_id' => $payload->userId,
-            'roles' => $payload->roles,
-            'data' => $payload->data,
-        ];
+        $newPayload = $payload->data;
+        $newPayload['user_id'] = $payload->userId;
+        $newPayload['roles'] = $payload->roles;
 
         // Revoke old token
         $this->revoke($token);
@@ -183,10 +205,20 @@ class JwtTokenManager implements TokenManagerInterface {
      * @return string The decoded string.
      */
     private function base64UrlDecode(string $data): string {
+        if ($data === '' || preg_match('/[^A-Za-z0-9_-]/', $data)) {
+            throw new InvalidArgumentException('Invalid token encoding');
+        }
+
         $remainder = strlen($data) % 4;
         if ($remainder) {
             $data .= str_repeat('=', 4 - $remainder);
         }
-        return base64_decode(strtr($data, '-_', '+/'));
+
+        $decoded = base64_decode(strtr($data, '-_', '+/'), true);
+        if ($decoded === false) {
+            throw new InvalidArgumentException('Invalid token encoding');
+        }
+
+        return $decoded;
     }
 }
