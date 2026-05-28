@@ -594,16 +594,19 @@ class BITCORE_Rest_Eliza_Api {
 
         $decoded = json_decode($data, true);
 
-        // Pass through ElizaOS errors gracefully
+        // Pass through ElizaOS errors gracefully. ElizaOS 1.7.x may return
+        // nested error objects; WP_Error requires a scalar message string.
         if ($code >= 400) {
-            $error_message = is_array($decoded) && !empty($decoded['error'])
-                ? $decoded['error']
-                : ($decoded['message'] ?? __('Unknown ElizaOS error'));
+            $raw_error = is_array($decoded) ? ($decoded['error'] ?? ($decoded['message'] ?? null)) : null;
+            $error_message = $this->normalize_eliza_error_message($raw_error);
 
             return new WP_Error(
                 'eliza_error',
                 $error_message,
-                ['status' => $code]
+                [
+                    'status'    => $code,
+                    'raw_error' => $raw_error,
+                ]
             );
         }
 
@@ -648,7 +651,37 @@ class BITCORE_Rest_Eliza_Api {
      * GET /eliza/agents — List available agents.
      */
     public function get_agents(): WP_REST_Response|WP_Error {
-        return $this->proxy_request('GET', '/agents');
+        $result = $this->proxy_request('GET', '/agents');
+
+        if (!is_wp_error($result)) {
+            return $result;
+        }
+
+        return $this->get_configured_agents_fallback($result);
+    }
+
+
+    /**
+     * Normalize a nested ElizaOS error payload into a safe WP_Error message.
+     *
+     * @param mixed $raw_error Raw upstream error payload.
+     * @return string Human-readable error message.
+     */
+    private function normalize_eliza_error_message(mixed $raw_error): string {
+        if (is_array($raw_error)) {
+            foreach (['message', 'error', 'details', 'code'] as $key) {
+                if (isset($raw_error[$key]) && is_scalar($raw_error[$key]) && (string) $raw_error[$key] !== '') {
+                    return (string) $raw_error[$key];
+                }
+            }
+            return __('Unknown ElizaOS error');
+        }
+
+        if (is_scalar($raw_error) && (string) $raw_error !== '') {
+            return (string) $raw_error;
+        }
+
+        return __('Unknown ElizaOS error');
     }
 
     /**
@@ -853,6 +886,69 @@ class BITCORE_Rest_Eliza_Api {
             'forge' => get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
             'muse'  => get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
         ];
+    }
+
+
+    /**
+     * Build a resilient configured-agent response when ElizaOS agent index fails.
+     *
+     * ElizaOS 1.7.2 can return 500 from /api/agents when its agents table is
+     * degraded even while messaging and health routes are available. The ASHI UI
+     * still needs the configured agent identities, but must not fake live status.
+     *
+     * @param WP_Error $error Upstream proxy error.
+     * @return WP_REST_Response
+     */
+    private function get_configured_agents_fallback(WP_Error $error): WP_REST_Response {
+        $agent_map = $this->get_agent_map();
+        $profiles = [
+            'aria' => [
+                'name'        => 'Aria',
+                'emoji'       => '🧭',
+                'style'       => 'Strategic coordinator',
+                'description' => 'Default planning and orchestration agent.',
+            ],
+            'forge' => [
+                'name'        => 'Forge',
+                'emoji'       => '⚒️',
+                'style'       => 'Builder and systems engineer',
+                'description' => 'Implementation-focused engineering agent.',
+            ],
+            'muse' => [
+                'name'        => 'Muse',
+                'emoji'       => '🎨',
+                'style'       => 'Creative synthesis',
+                'description' => 'Research, narrative, and synthesis agent.',
+            ],
+        ];
+
+        $agents = [];
+        foreach ($agent_map as $slug => $id) {
+            $profile = $profiles[$slug] ?? [];
+            $agents[] = [
+                'id'          => (string) $id,
+                'slug'        => (string) $slug,
+                'name'        => $profile['name'] ?? ucfirst((string) $slug),
+                'emoji'       => $profile['emoji'] ?? '🤖',
+                'style'       => $profile['style'] ?? 'Configured agent',
+                'description' => $profile['description'] ?? 'Configured ElizaOS agent.',
+                'status'      => 'unknown',
+                'source'      => 'wordpress_config',
+            ];
+        }
+
+        return new WP_REST_Response([
+            'status'         => 'degraded',
+            'source'         => 'wordpress_config',
+            'agents'         => $agents,
+            'upstream_error' => [
+                'code'      => $error->get_error_code(),
+                'message'   => $error->get_error_message(),
+                'status'    => (int) ($error->get_error_data()['status'] ?? 502),
+                'raw_error' => $error->get_error_data()['raw_error'] ?? null,
+            ],
+            'timestamp'      => current_time('iso'),
+        ], 200);
     }
 
     /**

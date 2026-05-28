@@ -147,6 +147,7 @@ function wp_remote_request(string $url, array $args): array {
 }
 function wp_remote_retrieve_response_code(array $response): int { return (int) ($response['response']['code'] ?? 0); }
 function wp_remote_retrieve_body(array $response): string { return (string) ($response['body'] ?? ''); }
+function current_time(string $type = 'mysql'): string { return '2026-05-28T15:30:11+00:00'; }
 
 require_once dirname(__DIR__, 2) . '/rest/class-eliza-api.php';
 
@@ -166,7 +167,8 @@ final class ElizaApiMessageContractStandaloneTest {
         $this->test_activate_agent_missing_id_returns_wp_error_not_type_error();
         $this->test_deactivate_agent_missing_id_returns_wp_error_not_type_error();
         $this->test_delete_session_missing_id_returns_wp_error_not_type_error();
-        $this->test_get_agents_proxy_error_returns_wp_error_not_type_error();
+        $this->test_get_agents_returns_configured_fallback_when_upstream_agent_index_fails();
+        $this->test_get_agents_success_passes_upstream_response_without_fallback();
         $this->test_get_sessions_proxy_error_returns_wp_error_not_type_error();
         $this->test_create_session_proxy_error_returns_wp_error_not_type_error();
         $this->report();
@@ -340,17 +342,65 @@ final class ElizaApiMessageContractStandaloneTest {
         }
     }
 
-    private function test_get_agents_proxy_error_returns_wp_error_not_type_error(): void {
+    private function test_get_agents_returns_configured_fallback_when_upstream_agent_index_fails(): void {
         bitcore_test_reset_state(42);
-        $GLOBALS['bitcore_test_state']['remote_response_code'] = 503;
-        $GLOBALS['bitcore_test_state']['remote_response_body'] = ['error' => 'agents unavailable'];
+        $GLOBALS['bitcore_test_state']['remote_response_code'] = 500;
+        $GLOBALS['bitcore_test_state']['remote_response_body'] = [
+            'success' => false,
+            'error' => [
+                'code' => '500',
+                'message' => 'Error retrieving agents',
+                'details' => 'Failed query: select "id", "name", "bio" from "agents"',
+            ],
+        ];
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_agent_aria'] = 'aria-custom-uuid';
         $api = new BITCORE_Rest_Eliza_Api(new stdClass());
         $result = $this->capture_throwable(fn() => $api->get_agents());
 
-        $this->assert_true($result instanceof WP_Error, 'get_agents_proxy_error_returns_wp_error_not_type_error');
-        if ($result instanceof WP_Error) {
-            $this->assert_same('eliza_error', $result->get_error_code(), 'get_agents_proxy_error_code');
+        $this->assert_true($result instanceof WP_REST_Response, 'get_agents_fallback_returns_rest_response');
+        if (!$result instanceof WP_REST_Response) {
+            return;
         }
+
+        $data = $result->get_data();
+        $this->assert_same(200, $result->get_status(), 'get_agents_fallback_uses_200_for_ui_resilience');
+        $this->assert_same('degraded', $data['status'] ?? null, 'get_agents_fallback_marks_degraded');
+        $this->assert_same('wordpress_config', $data['source'] ?? null, 'get_agents_fallback_source_wordpress_config');
+        $this->assert_same(500, $data['upstream_error']['status'] ?? null, 'get_agents_fallback_preserves_upstream_status');
+        $this->assert_same('Error retrieving agents', $data['upstream_error']['message'] ?? null, 'get_agents_fallback_normalizes_nested_upstream_message');
+        $this->assert_same('Failed query: select "id", "name", "bio" from "agents"', $data['upstream_error']['raw_error']['details'] ?? null, 'get_agents_fallback_preserves_raw_upstream_details');
+        $this->assert_same(3, count($data['agents'] ?? []), 'get_agents_fallback_returns_three_agents');
+        $this->assert_same('aria-custom-uuid', $data['agents'][0]['id'] ?? null, 'get_agents_fallback_uses_configured_aria_id');
+        $this->assert_same('aria', $data['agents'][0]['slug'] ?? null, 'get_agents_fallback_sets_aria_slug');
+        $this->assert_same('Aria', $data['agents'][0]['name'] ?? null, 'get_agents_fallback_sets_aria_name');
+        $this->assert_same('unknown', $data['agents'][0]['status'] ?? null, 'get_agents_fallback_status_unknown_not_fake_active');
+        $this->assert_same('forge', $data['agents'][1]['slug'] ?? null, 'get_agents_fallback_sets_forge_slug');
+        $this->assert_same('muse', $data['agents'][2]['slug'] ?? null, 'get_agents_fallback_sets_muse_slug');
+        $this->assert_same(1, count($GLOBALS['bitcore_test_state']['remote_requests']), 'get_agents_fallback_does_not_retry_or_fan_out');
+    }
+
+    private function test_get_agents_success_passes_upstream_response_without_fallback(): void {
+        bitcore_test_reset_state(42);
+        $GLOBALS['bitcore_test_state']['remote_response_code'] = 200;
+        $GLOBALS['bitcore_test_state']['remote_response_body'] = [
+            'agents' => [
+                ['id' => 'live-aria', 'name' => 'Aria', 'status' => 'active'],
+            ],
+            'source' => 'elizaos',
+        ];
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+        $result = $api->get_agents();
+
+        $this->assert_true($result instanceof WP_REST_Response, 'get_agents_success_returns_rest_response');
+        if (!$result instanceof WP_REST_Response) {
+            return;
+        }
+        $data = $result->get_data();
+        $this->assert_same(200, $result->get_status(), 'get_agents_success_preserves_status');
+        $this->assert_same('elizaos', $data['source'] ?? null, 'get_agents_success_preserves_upstream_source');
+        $this->assert_same('live-aria', $data['agents'][0]['id'] ?? null, 'get_agents_success_preserves_upstream_agent_id');
+        $this->assert_true(!array_key_exists('upstream_error', $data), 'get_agents_success_does_not_add_fallback_error');
+        $this->assert_same(1, count($GLOBALS['bitcore_test_state']['remote_requests']), 'get_agents_success_single_upstream_request');
     }
 
     private function test_get_sessions_proxy_error_returns_wp_error_not_type_error(): void {

@@ -409,7 +409,8 @@ if (!is_user_logged_in()) {
             const details = document.getElementById('status-details');
             try {
                 const data = await apiGet('/health');
-                if (data && (data.status === 'healthy' || data.status === 'ok')) {
+                const healthStatus = String(data.status || '').toLowerCase();
+                if (data && (healthStatus === 'healthy' || healthStatus === 'ok')) {
                     dot.className = 'status-dot healthy';
                     label.innerHTML = '<strong>Server Healthy</strong>';
                     details.textContent = data.timestamp || '';

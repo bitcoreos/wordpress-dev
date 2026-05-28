@@ -61,8 +61,9 @@ final class AgentsPageContractTest {
 
     private function test_health_accepts_bridge_ok_or_healthy_status(): void {
         $body = $this->extract_function_body('checkHealth');
-        $this->assert_contains("data.status === 'healthy'", $body, 'agents_health_accepts_healthy_status');
-        $this->assert_contains("data.status === 'ok'", $body, 'agents_health_accepts_eliza_ok_status');
+        $this->assert_contains("String(data.status || '').toLowerCase()", $body, 'agents_health_normalizes_status_case');
+        $this->assert_contains("healthStatus === 'healthy'", $body, 'agents_health_accepts_healthy_status');
+        $this->assert_contains("healthStatus === 'ok'", $body, 'agents_health_accepts_eliza_ok_status');
         $this->assert_contains('Server Healthy', $body, 'agents_health_sets_healthy_label');
         $this->assert_contains('Server Degraded', $body, 'agents_health_sets_degraded_label');
         $this->assert_contains('Server Offline', $body, 'agents_health_sets_offline_label');
