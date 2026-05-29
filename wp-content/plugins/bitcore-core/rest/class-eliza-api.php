@@ -219,7 +219,34 @@ class BITCORE_Rest_Eliza_Api {
         $is_logged_in = is_user_logged_in();
         $this->rate_limit_user_id = $is_logged_in ? get_current_user_id() : null;
 
-        return $is_logged_in;
+        if ($is_logged_in) {
+            return true;
+        }
+
+        return $this->has_valid_inbound_api_key();
+    }
+
+    /**
+     * Validate inbound API access for service/API clients.
+     *
+     * This intentionally reuses the configured ElizaOS auth token because the
+     * bridge already exposes it as the administrative API credential. An empty
+     * configured token never authorizes anonymous access.
+     */
+    private function has_valid_inbound_api_key(): bool {
+        $configured = trim((string) $this->eliza_api_key);
+        if ($configured === '') {
+            return false;
+        }
+
+        $provided = '';
+        if (isset($_SERVER['HTTP_X_API_KEY'])) {
+            $provided = trim((string) wp_unslash($_SERVER['HTTP_X_API_KEY']));
+        } elseif (isset($_SERVER['REDIRECT_HTTP_X_API_KEY'])) {
+            $provided = trim((string) wp_unslash($_SERVER['REDIRECT_HTTP_X_API_KEY']));
+        }
+
+        return $provided !== '' && hash_equals($configured, $provided);
     }
 
     /**

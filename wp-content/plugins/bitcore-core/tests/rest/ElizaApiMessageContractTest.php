@@ -111,6 +111,7 @@ function bitcore_test_reset_state(int $current_user_id = 42): void {
         'remote_response_body' => ['accepted' => true],
     ];
     unset($_SERVER['HTTP_X_PAYMENT']);
+    unset($_SERVER['HTTP_X_API_KEY']);
 }
 
 function __(string $text): string { return $text; }
@@ -122,6 +123,7 @@ function is_user_logged_in(): bool { return $GLOBALS['bitcore_test_state']['curr
 function current_user_can(string $capability): bool { return false; }
 function get_current_user_id(): int { return $GLOBALS['bitcore_test_state']['current_user_id']; }
 function sanitize_text_field(mixed $value): string { return trim(strip_tags((string) $value)); }
+function wp_unslash(mixed $value): mixed { return is_string($value) ? stripslashes($value) : $value; }
 function wp_kses_post(mixed $value): string { return (string) $value; }
 function wp_json_encode(mixed $value): string { return json_encode($value, JSON_UNESCAPED_SLASHES); }
 function is_wp_error(mixed $value): bool { return $value instanceof WP_Error; }
@@ -157,6 +159,9 @@ final class ElizaApiMessageContractStandaloneTest {
 
     public function run(): void {
         $this->test_constructor_registers_required_eliza_routes();
+        $this->test_check_permission_accepts_valid_inbound_api_key_for_api_access();
+        $this->test_check_permission_rejects_invalid_or_empty_inbound_api_key();
+        $this->test_check_permission_accepts_logged_in_user_without_api_key();
         $this->test_logged_in_message_uses_eliza_172_payload_contract();
         $this->test_proxy_omits_api_key_header_when_auth_token_not_configured();
         $this->test_proxy_sends_api_key_header_when_auth_token_configured();
@@ -172,6 +177,41 @@ final class ElizaApiMessageContractStandaloneTest {
         $this->test_get_sessions_proxy_error_returns_wp_error_not_type_error();
         $this->test_create_session_proxy_error_returns_wp_error_not_type_error();
         $this->report();
+    }
+
+
+    private function test_check_permission_accepts_valid_inbound_api_key_for_api_access(): void {
+        bitcore_test_reset_state(0);
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_auth_token'] = 'configured-inbound-token';
+        $_SERVER['HTTP_X_API_KEY'] = 'configured-inbound-token';
+
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+
+        $this->assert_true($api->check_permission(), 'valid_inbound_api_key_allows_basic_eliza_routes');
+        $this->assert_same(0, $GLOBALS['bitcore_test_state']['current_user_id'], 'valid_inbound_api_key_does_not_fake_logged_in_user');
+    }
+
+    private function test_check_permission_rejects_invalid_or_empty_inbound_api_key(): void {
+        bitcore_test_reset_state(0);
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_auth_token'] = 'configured-inbound-token';
+        $_SERVER['HTTP_X_API_KEY'] = 'wrong-token';
+
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+        $this->assert_true(!$api->check_permission(), 'invalid_inbound_api_key_rejected');
+
+        bitcore_test_reset_state(0);
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_auth_token'] = '';
+        $_SERVER['HTTP_X_API_KEY'] = '';
+
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+        $this->assert_true(!$api->check_permission(), 'empty_configured_token_does_not_enable_anonymous_access');
+    }
+
+    private function test_check_permission_accepts_logged_in_user_without_api_key(): void {
+        bitcore_test_reset_state(42);
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+
+        $this->assert_true($api->check_permission(), 'logged_in_user_still_allows_basic_eliza_routes');
     }
 
 
