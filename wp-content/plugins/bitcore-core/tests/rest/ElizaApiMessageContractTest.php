@@ -161,13 +161,17 @@ final class ElizaApiMessageContractStandaloneTest {
         $this->test_constructor_registers_required_eliza_routes();
         $this->test_check_permission_accepts_valid_inbound_api_key_for_api_access();
         $this->test_check_permission_rejects_invalid_or_empty_inbound_api_key();
+        $this->test_check_anonymous_access_accepts_valid_inbound_api_key_for_chat_routes();
         $this->test_check_permission_accepts_logged_in_user_without_api_key();
         $this->test_logged_in_message_uses_eliza_172_payload_contract();
         $this->test_proxy_omits_api_key_header_when_auth_token_not_configured();
         $this->test_proxy_sends_api_key_header_when_auth_token_configured();
         $this->test_anonymous_x402_author_uuid_is_deterministic_and_does_not_write_user_meta();
         $this->test_anonymous_without_payment_falls_back_to_channel_id_without_user_meta_write();
-        $this->test_omitted_agent_id_does_not_send_target_agent_id();
+        $this->test_omitted_agent_id_defaults_to_configured_aria_and_sets_dm_participant_metadata();
+        $this->test_explicit_agent_slug_resolves_to_configured_uuid();
+        $this->test_logged_in_active_agent_fallback_is_used_when_agent_id_omitted();
+        $this->test_invalid_agent_id_omits_routing_metadata_without_arbitrary_participant_injection();
         $this->test_empty_message_returns_error_and_does_not_call_remote();
         $this->test_activate_agent_missing_id_returns_wp_error_not_type_error();
         $this->test_deactivate_agent_missing_id_returns_wp_error_not_type_error();
@@ -205,6 +209,19 @@ final class ElizaApiMessageContractStandaloneTest {
 
         $api = new BITCORE_Rest_Eliza_Api(new stdClass());
         $this->assert_true(!$api->check_permission(), 'empty_configured_token_does_not_enable_anonymous_access');
+    }
+
+    private function test_check_anonymous_access_accepts_valid_inbound_api_key_for_chat_routes(): void {
+        bitcore_test_reset_state(0);
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_auth_token'] = 'configured-inbound-token';
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_anonymous_access'] = false;
+        $_SERVER['HTTP_X_API_KEY'] = 'configured-inbound-token';
+
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+        $result = $api->check_anonymous_access();
+
+        $this->assert_true($result === true, 'valid_inbound_api_key_allows_chat_permission_path');
+        $this->assert_same(0, $GLOBALS['bitcore_test_state']['current_user_id'], 'valid_inbound_api_key_chat_does_not_fake_logged_in_user');
     }
 
     private function test_check_permission_accepts_logged_in_user_without_api_key(): void {
@@ -270,6 +287,8 @@ final class ElizaApiMessageContractStandaloneTest {
         $this->assert_same('websocket', $body['transport'] ?? null, 'payload_transport_is_websocket');
         $this->assert_same(true, $body['metadata']['isDm'] ?? null, 'payload_metadata_is_dm');
         $this->assert_same('eac677dd-94c4-02ab-bfea-bc554e52b2a3', $body['metadata']['targetAgentId'] ?? null, 'payload_targetAgentId_uses_agent_uuid');
+        $this->assert_same('eac677dd-94c4-02ab-bfea-bc554e52b2a3', $body['metadata']['recipientId'] ?? null, 'payload_recipientId_uses_agent_uuid_for_dm_autocreate');
+        $this->assert_same('eac677dd-94c4-02ab-bfea-bc554e52b2a3', $body['metadata']['targetUserId'] ?? null, 'payload_targetUserId_uses_agent_uuid_for_dm_autocreate');
         $this->assert_same('channel-123', $response->get_data()['channel_id'] ?? null, 'response_exposes_channel_id');
         $this->assert_same(1, count($GLOBALS['bitcore_test_state']['meta_updates']), 'logged_in_creates_one_user_uuid_meta_update');
         $this->assert_same(42, $GLOBALS['bitcore_test_state']['meta_updates'][0][0], 'logged_in_uuid_meta_update_uses_real_user_id');
@@ -326,15 +345,58 @@ final class ElizaApiMessageContractStandaloneTest {
         $this->assert_true(!isset($GLOBALS['bitcore_test_state']['remote_requests'][0]['args']['headers']['X-Payment']), 'anonymous_channel_fallback_does_not_forward_missing_payment_header');
     }
 
-    private function test_omitted_agent_id_does_not_send_target_agent_id(): void {
+    private function test_omitted_agent_id_defaults_to_configured_aria_and_sets_dm_participant_metadata(): void {
         bitcore_test_reset_state(42);
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_agent_aria'] = 'eac677dd-94c4-02ab-bfea-bc554e52b2a3';
         $api = new BITCORE_Rest_Eliza_Api(new stdClass());
 
         $api->send_message(new WP_REST_Request(['message' => 'no agent', 'sessionId' => 'channel-no-agent']));
         $body = json_decode($GLOBALS['bitcore_test_state']['remote_requests'][0]['args']['body'], true);
 
-        $this->assert_true(isset($body['metadata']['isDm']), 'no_agent_still_sends_metadata_isdm');
-        $this->assert_true(!array_key_exists('targetAgentId', $body['metadata']), 'no_agent_omits_targetAgentId');
+        $this->assert_true(isset($body['metadata']['isDm']), 'default_agent_still_sends_metadata_isdm');
+        $this->assert_same('eac677dd-94c4-02ab-bfea-bc554e52b2a3', $body['metadata']['targetAgentId'] ?? null, 'default_agent_sets_targetAgentId_for_routing');
+        $this->assert_same('eac677dd-94c4-02ab-bfea-bc554e52b2a3', $body['metadata']['recipientId'] ?? null, 'default_agent_sets_recipientId_for_dm_autocreate');
+        $this->assert_same('eac677dd-94c4-02ab-bfea-bc554e52b2a3', $body['metadata']['targetUserId'] ?? null, 'default_agent_sets_targetUserId_for_dm_autocreate');
+    }
+
+    private function test_explicit_agent_slug_resolves_to_configured_uuid(): void {
+        bitcore_test_reset_state(42);
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_agent_forge'] = '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd';
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+
+        $api->send_message(new WP_REST_Request(['message' => 'forge please', 'sessionId' => 'channel-forge', 'agentId' => 'forge']));
+        $body = json_decode($GLOBALS['bitcore_test_state']['remote_requests'][0]['args']['body'], true);
+
+        $this->assert_same('3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd', $body['metadata']['targetAgentId'] ?? null, 'explicit_slug_sets_targetAgentId');
+        $this->assert_same('3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd', $body['metadata']['recipientId'] ?? null, 'explicit_slug_sets_recipientId');
+        $this->assert_same('3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd', $body['metadata']['targetUserId'] ?? null, 'explicit_slug_sets_targetUserId');
+    }
+
+    private function test_logged_in_active_agent_fallback_is_used_when_agent_id_omitted(): void {
+        bitcore_test_reset_state(42);
+        $GLOBALS['bitcore_test_state']['user_meta'][42]['bitcore_eliza_active_agent'] = 'muse';
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_agent_muse'] = 'cf0dee2b-9fc6-041b-83a0-90a644d26362';
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+
+        $api->send_message(new WP_REST_Request(['message' => 'active agent', 'sessionId' => 'channel-active']));
+        $body = json_decode($GLOBALS['bitcore_test_state']['remote_requests'][0]['args']['body'], true);
+
+        $this->assert_same('cf0dee2b-9fc6-041b-83a0-90a644d26362', $body['metadata']['targetAgentId'] ?? null, 'active_agent_fallback_sets_targetAgentId');
+        $this->assert_same('cf0dee2b-9fc6-041b-83a0-90a644d26362', $body['metadata']['recipientId'] ?? null, 'active_agent_fallback_sets_recipientId');
+        $this->assert_same('cf0dee2b-9fc6-041b-83a0-90a644d26362', $body['metadata']['targetUserId'] ?? null, 'active_agent_fallback_sets_targetUserId');
+    }
+
+    private function test_invalid_agent_id_omits_routing_metadata_without_arbitrary_participant_injection(): void {
+        bitcore_test_reset_state(42);
+        $GLOBALS['bitcore_test_state']['options']['bitcore_eliza_agent_aria'] = '';
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+
+        $api->send_message(new WP_REST_Request(['message' => 'invalid agent', 'sessionId' => 'channel-invalid', 'agentId' => 'not-a-valid-agent-id']));
+        $body = json_decode($GLOBALS['bitcore_test_state']['remote_requests'][0]['args']['body'], true);
+
+        $this->assert_true(!array_key_exists('targetAgentId', $body['metadata']), 'invalid_agent_does_not_set_targetAgentId');
+        $this->assert_true(!array_key_exists('recipientId', $body['metadata']), 'invalid_agent_does_not_set_recipientId');
+        $this->assert_true(!array_key_exists('targetUserId', $body['metadata']), 'invalid_agent_does_not_set_targetUserId');
     }
 
     private function test_empty_message_returns_error_and_does_not_call_remote(): void {

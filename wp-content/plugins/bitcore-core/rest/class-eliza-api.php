@@ -288,6 +288,12 @@ class BITCORE_Rest_Eliza_Api {
         $is_logged_in = is_user_logged_in();
         $this->rate_limit_user_id = $is_logged_in ? get_current_user_id() : null;
 
+        // Service/API clients: allow configured inbound API key for chat/session routes.
+        // This does not fake a WordPress user and does not weaken x402 anonymous access.
+        if (!$is_logged_in && $this->has_valid_inbound_api_key()) {
+            return true;
+        }
+
         // Case 1: Anonymous user
         if (!$is_logged_in) {
             // Check if anonymous access is enabled
@@ -826,10 +832,18 @@ class BITCORE_Rest_Eliza_Api {
             'metadata'          => ['isDm' => true],
         ];
 
-        // Route to specific agent via metadata.targetAgentId
-        if (!empty($agent_id)) {
-            $body['metadata']['targetAgentId'] = $agent_id;
+        // Route to a specific agent and include DM participant metadata.
+        // ElizaOS 1.7.2 auto-creates DM channels using recipientId/targetUserId,
+        // then routes processing through targetAgentId. Omitting these fields can
+        // create a channel with only the human author and fail with
+        // "No agent found in channel participants".
+        $target_agent_id = $this->resolve_message_agent_id($agent_id, $user_id);
+        if (!empty($target_agent_id)) {
+            $body['metadata']['targetAgentId'] = $target_agent_id;
+            $body['metadata']['recipientId']    = $target_agent_id;
+            $body['metadata']['targetUserId']  = $target_agent_id;
         }
+
         $result = $this->proxy_request('POST', '/messaging/channels/' . $channel_id . '/messages', $body);
 
         // Attach the channel_id to the response for client session tracking
@@ -913,6 +927,54 @@ class BITCORE_Rest_Eliza_Api {
             'forge' => get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
             'muse'  => get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
         ];
+    }
+
+    /**
+     * Resolve the target ElizaOS agent UUID for a chat message.
+     *
+     * Precedence:
+     * 1. Explicit request agentId, accepting either UUID or configured slug.
+     * 2. Logged-in user's active agent usermeta, accepting UUID or configured slug.
+     * 3. Configured Aria UUID as the safe default.
+     *
+     * @param string $requested_agent_id Raw request agentId value.
+     * @param int    $user_id            WordPress user ID, or 0 for anonymous.
+     * @return string Agent UUID or empty string if no valid configured value exists.
+     */
+    private function resolve_message_agent_id(string $requested_agent_id, int $user_id): string {
+        $agent_map = $this->get_agent_map();
+
+        $candidate = trim($requested_agent_id);
+        if ($candidate === '' && $user_id > 0) {
+            $candidate = trim((string) get_user_meta($user_id, 'bitcore_eliza_active_agent', true));
+        }
+        if ($candidate === '') {
+            $candidate = (string) ($agent_map['aria'] ?? '');
+        }
+
+        $slug = strtolower($candidate);
+        if (isset($agent_map[$slug])) {
+            $candidate = (string) $agent_map[$slug];
+        }
+
+        return $this->is_eliza_agent_uuid($candidate) ? $candidate : '';
+    }
+
+    /**
+     * Check ElizaOS agent IDs using UUID-shaped validation.
+     *
+     * ElizaOS 1.7.2 agent IDs are UUID-shaped but are not guaranteed to be
+     * RFC v4 UUIDs, so WordPress wp_is_uuid() is too strict for configured
+     * agent IDs such as eac677dd-94c4-02ab-bfea-bc554e52b2a3.
+     *
+     * @param string $value Candidate agent ID.
+     * @return bool
+     */
+    private function is_eliza_agent_uuid(string $value): bool {
+        return (bool) preg_match(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
+            $value
+        );
     }
 
 
