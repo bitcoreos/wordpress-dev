@@ -21,6 +21,8 @@ final class AppRouteAuthContractTest {
         $this->canonical_app_templates_require_login();
         $this->canonical_app_templates_preserve_return_url();
         $this->public_home_and_nav_are_not_app_auth_targets();
+        $this->canonical_app_templates_include_shared_navigation();
+        $this->front_page_explains_ashi_without_private_api_calls();
         printf("\nAssertions passed: %d\nAssertions failed: %d\n", $this->passed, $this->failed);
         return $this->failed === 0 ? 0 : 1;
     }
@@ -53,6 +55,26 @@ final class AppRouteAuthContractTest {
         $this->contains("'work'", $nav, 'nav includes work app route');
         $this->contains("'my-posts'", $nav, 'nav includes my-posts app route');
         $this->notContains('wp_redirect(', $nav, 'nav does not perform auth redirects');
+    }
+
+
+    private function canonical_app_templates_include_shared_navigation(): void {
+        foreach ($this->canonicalTemplates() as $file) {
+            $source = $this->read($file);
+            $base = basename($file);
+            $this->contains('nav-header.php', $source, "$base includes shared ASHI navigation");
+        }
+    }
+
+    private function front_page_explains_ashi_without_private_api_calls(): void {
+        $source = $this->read($this->themeRoot . '/front-page.php');
+        $this->contains('ASHI · personal swarm manager', $source, 'front page identifies ASHI as personal swarm manager');
+        $this->contains('BIThub is the shared Discourse forum', $source, 'front page explains BIThub role');
+        $this->contains('wp_login_url(home_url(\'/dashboard/\'))', $source, 'front page uses WordPress login URL to dashboard');
+        $this->contains('nav-header.php', $source, 'front page includes shared navigation');
+        $this->notContains('wp-json/bitcore/v1/', $source, 'front page does not call private BITCORE REST APIs');
+        $this->notContains('discourse_sso_secret', $source, 'front page does not handle SSO secrets');
+        $this->notContains('wpdc_sso_secret', $source, 'front page does not handle WP-Discourse secret');
     }
 
     private function canonicalTemplates(): array {

@@ -31,9 +31,9 @@ $nav_pages = [
     <div class="nav-brand">
         <a href="<?php echo esc_url(home_url('/')); ?>" class="nav-logo">
             <span class="nav-symbol">◉</span>
-            <span class="nav-title">BITCORE</span>
+            <span class="nav-title">ASHI</span>
         </a>
-        <span class="nav-tagline">Intelligence Factory</span>
+        <span class="nav-tagline">Personal Swarm Surface</span>
     </div>
 
     <div class="nav-links">
@@ -61,8 +61,17 @@ $nav_pages = [
         </div>
         <?php endif; ?>
 
-        <a href="https://hub.bitwiki.org" class="nav-btn primary" target="_blank">
-            Enter BIThub →
+        <?php if (is_user_logged_in()): ?>
+        <a href="<?php echo esc_url(_bitcore_nav_url('dashboard') ?: home_url('/dashboard/')); ?>" class="nav-btn primary">
+            Open ASHI →
+        </a>
+        <?php else: ?>
+        <a href="<?php echo esc_url(wp_login_url(home_url('/dashboard/'))); ?>" class="nav-btn primary">
+            Log in with Discourse →
+        </a>
+        <?php endif; ?>
+        <a href="https://hub.bitwiki.org" class="nav-btn secondary" target="_blank" rel="noopener">
+            BIThub
         </a>
     </div>
 </nav>
@@ -101,6 +110,8 @@ $nav_pages = [
 }
 .nav-btn.primary { background: #4ade80; color: #0d0d14; }
 .nav-btn.primary:hover { background: #22c55e; transform: translateY(-1px); }
+.nav-btn.secondary { border: 1px solid #2a2a3a; color: #a0a0b0; }
+.nav-btn.secondary:hover { border-color: #4ade80; color: #4ade80; }
 
 /* Mobile */
 @media (max-width: 900px) {

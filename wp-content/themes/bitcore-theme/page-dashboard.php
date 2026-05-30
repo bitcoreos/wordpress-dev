@@ -170,6 +170,7 @@ if (!is_user_logged_in()) {
     </style>
 </head>
 <body <?php body_class(); ?>>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
 <div class="dashboard-container">
     <div class="dashboard-header">
         <h1>Welcome, <?php echo esc_html(wp_get_current_user()->display_name); ?></h1>

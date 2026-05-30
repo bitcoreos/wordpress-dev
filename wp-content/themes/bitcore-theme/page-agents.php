@@ -295,7 +295,8 @@ if (!is_user_logged_in()) {
         }
     </style>
 </head>
-<body>
+<body <?php body_class(); ?>>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
     <div class="agents-container">
         <header class="agents-header">
             <div class="agents-title">
