@@ -22,6 +22,7 @@ final class ChatPageContractTest {
         $this->test_session_management_contract();
         $this->test_realtime_sse_and_message_complete_contract();
         $this->test_rate_limit_is_loaded_from_endpoint_not_local_counter_only();
+        $this->test_chat_has_starter_messages_and_autostarts_session();
         $this->test_accessibility_and_mobile_contract();
         $this->test_no_placeholders_or_dead_polling_state();
         echo "\nAssertions passed: {$this->passed}\n";
@@ -95,6 +96,15 @@ final class ChatPageContractTest {
         $this->assert_contains('function loadRateLimit', $this->source, 'chat_has_load_rate_limit_function');
         $this->assert_contains('data.remaining', $this->source, 'chat_uses_remaining_from_rate_limit_response');
         $this->assert_contains('data.limit', $this->source, 'chat_uses_limit_from_rate_limit_response');
+    }
+
+    private function test_chat_has_starter_messages_and_autostarts_session(): void {
+        $this->assert_contains('data-starter', $this->source, 'chat_has_starter_message_buttons');
+        $this->assert_contains('Orient me', $this->source, 'chat_has_orientation_starter');
+        $this->assert_contains('Plan work', $this->source, 'chat_has_work_planning_starter');
+        $this->assert_contains('Research brief', $this->source, 'chat_has_research_starter');
+        $this->assert_contains('function autoStartSession()', $this->source, 'chat_has_auto_start_session_function');
+        $this->assert_contains('loadSessions().then(autoStartSession)', $this->source, 'chat_autostarts_after_loading_sessions');
     }
 
     private function test_accessibility_and_mobile_contract(): void {

@@ -22,6 +22,7 @@ final class AgentsPageContractTest {
         $this->test_health_accepts_bridge_ok_or_healthy_status();
         $this->test_single_active_rendering_and_actions();
         $this->test_open_chat_label_is_consistent_for_all_cards();
+        $this->test_agents_has_onboarding_actions();
         $this->test_mobile_breakpoint_and_accessibility_basics();
         $this->test_no_placeholder_or_random_status_logic();
         echo "\nAssertions passed: {$this->passed}\n";
@@ -87,6 +88,14 @@ final class AgentsPageContractTest {
         foreach (['aria', 'forge', 'muse'] as $slug) {
             $this->assert_contains('/chat/?agent=', $this->source, "agents_chat_link_base_{$slug}");
         }
+    }
+
+    private function test_agents_has_onboarding_actions(): void {
+        $this->assert_contains('agent-onboarding', $this->source, 'agents_has_onboarding_strip');
+        foreach (['Start with Aria', 'Start with Forge', 'Start with Muse'] as $label) {
+            $this->assert_contains($label, $this->source, 'agents_onboarding_' . preg_replace('/[^a-z0-9]+/i', '_', strtolower($label)));
+        }
+        $this->assert_contains('wordpress_config', $this->source, 'agents_explains_configured_roster_degraded_source');
     }
 
     private function test_mobile_breakpoint_and_accessibility_basics(): void {

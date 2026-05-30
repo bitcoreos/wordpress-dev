@@ -5,16 +5,20 @@
  * Include: <?php include(get_template_directory() . '/nav-header.php'); ?>
  */
 
-// Resolve pages by slug — returns URL or null if missing
-function _bitcore_nav_url($slug) {
-    $page = get_page_by_path($slug);
-    return $page && !is_wp_error($page) ? get_permalink($page->ID) : null;
+// Resolve pages by slug — returns URL or null if missing.
+if (!function_exists('_bitcore_nav_url')) {
+    function _bitcore_nav_url($slug) {
+        $page = get_page_by_path($slug);
+        return $page && !is_wp_error($page) ? get_permalink($page->ID) : null;
+    }
 }
 
-// Helper: active state by slug
-function _bitcore_nav_active($slug) {
-    $page = get_page_by_path($slug);
-    return $page && is_page($page->ID) ? 'active' : '';
+// Helper: active state by slug.
+if (!function_exists('_bitcore_nav_active')) {
+    function _bitcore_nav_active($slug) {
+        $page = get_page_by_path($slug);
+        return $page && is_page($page->ID) ? 'active' : '';
+    }
 }
 
 // Canonical ASHI pages. P2.7 consolidates legacy page sprawl into this surface.

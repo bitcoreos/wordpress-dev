@@ -167,6 +167,13 @@ if (!is_user_logged_in()) {
             text-align: center; padding: 20px;
             color: var(--text-muted); font-size: 13px;
         }
+        .empty-action { display: inline-block; margin-top: 10px; color: var(--accent-primary); text-decoration: none; font-weight: 600; }
+        .control-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .control-tile { display: block; padding: 14px; border: 1px solid var(--border-default); border-radius: 10px; background: var(--bg-tertiary); color: var(--text-primary); text-decoration: none; }
+        .control-tile:hover { border-color: var(--accent-primary); }
+        .control-tile strong { display: block; margin-bottom: 4px; }
+        .control-tile span { color: var(--text-muted); font-size: 12px; }
+        @media (max-width: 900px) { .control-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body <?php body_class(); ?>>
@@ -223,6 +230,21 @@ if (!is_user_logged_in()) {
                 <a href="/my-posts/" class="action-btn"><span class="action-icon">📝</span><span>New Post</span></a>
             </div>
         </div>
+
+        <div class="dashboard-card wide">
+            <div class="card-header">
+                <span class="card-icon">🧭</span>
+                <h2>Control Center</h2>
+            </div>
+            <div class="control-grid">
+                <a href="/my-posts/?type=bitcore_prompt" class="control-tile"><strong>Prompts</strong><span>Write reusable instructions for ASHI and BIThub context.</span></a>
+                <a href="/work/" class="control-tile"><strong>Research Requests</strong><span>Create tasks, goals, milestones, and agent-dispatched work.</span></a>
+                <a href="/knowledge/" class="control-tile"><strong>BIThub Graph</strong><span>Browse prompts, skills, artifacts, and guide-derived context.</span></a>
+                <a href="/chat/" class="control-tile"><strong>Swarm Chat</strong><span>Talk to Aria, Forge, or Muse with session-aware context.</span></a>
+                <a href="/my-posts/?type=bitcore_artifact" class="control-tile"><strong>Artifacts</strong><span>Review outputs, social posts, and shareable research objects.</span></a>
+                <a href="/dashboard/#credits-text" class="control-tile"><strong>Credits & Limits</strong><span>Track daily usage now; checkout, x402, and provider-key controls belong here next.</span></a>
+            </div>
+        </div>
         
         <div class="dashboard-card wide">
             <div class="card-header">
@@ -252,8 +274,8 @@ if (!is_user_logged_in()) {
     async function loadTasks() {
         const data = await api('kanban?limit=5');
         const list = document.getElementById('my-tasks');
-        const items = Array.isArray(data) ? data : [];
-        if (!items.length) { list.innerHTML = '<li class="loading-state">No tasks yet</li>'; return; }
+        const items = Array.isArray(data) ? data : (data && Array.isArray(data.tasks) ? data.tasks : (data && Array.isArray(data.data) ? data.data : []));
+        if (!items.length) { list.innerHTML = '<li class="loading-state">No tasks yet<br><a class="empty-action" href="/work/">Create your first task →</a></li>'; return; }
         list.innerHTML = items.slice(0, 5).map(t => {
             const s = t.status || 'inbox';
             return '<li><span class="status-dot ' + s + '"></span><span class="item-title">' + (t.title || 'Untitled') + '</span><span class="item-meta">' + s + '</span></li>';
@@ -263,8 +285,8 @@ if (!is_user_logged_in()) {
     async function loadPosts() {
         const data = await api('my-posts?limit=5');
         const list = document.getElementById('my-posts-list');
-        const items = (data && data.posts) ? data.posts : (Array.isArray(data) ? data : []);
-        if (!items.length) { list.innerHTML = '<li class="loading-state">No posts yet</li>'; return; }
+        const items = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : (data && Array.isArray(data.posts) ? data.posts : []));
+        if (!items.length) { list.innerHTML = '<li class="loading-state">No posts yet<br><a class="empty-action" href="/my-posts/">Draft a post or prompt →</a></li>'; return; }
         list.innerHTML = items.slice(0, 5).map(p => {
             return '<li><span class="item-title">' + (p.title || 'Untitled') + '</span><span class="item-meta">' + (p.type || 'post') + '</span></li>';
         }).join('');
@@ -274,7 +296,7 @@ if (!is_user_logged_in()) {
         const data = await api('eliza/agents');
         const container = document.getElementById('my-agents');
         const items = Array.isArray(data) ? data : (data && data.agents ? data.agents : []);
-        if (!items.length) { container.innerHTML = '<div class="loading-state">No agents configured</div>'; return; }
+        if (!items.length) { container.innerHTML = '<div class="loading-state">Aria, Forge, and Muse are ready to configure<br><a class="empty-action" href="/agents/">Open agent directory →</a></div>'; return; }
         container.innerHTML = items.map(a => {
             const active = (a.status || '').toLowerCase() === 'active';
             return '<div class="agent-item"><span class="agent-avatar">' + (a.emoji || '🤖') + '</span><span class="agent-name">' + (a.name || 'Agent') + '</span><span class="agent-status ' + (active ? 'active' : 'inactive') + '">' + (active ? 'Active' : 'Idle') + '</span></div>';
@@ -297,10 +319,11 @@ if (!is_user_logged_in()) {
         const [tasks, posts] = await Promise.all([api('kanban?limit=3'), api('my-posts?limit=3')]);
         const list = document.getElementById('activity-list');
         const items = [];
-        (Array.isArray(tasks) ? tasks : []).slice(0, 3).forEach(t => items.push('<li><span>📋</span><span class="item-title">Task: ' + (t.title || 'Untitled') + '</span><span class="item-meta">' + (t.status || 'inbox') + '</span></li>'));
-        const pItems = (posts && posts.posts) ? posts.posts : [];
+        const taskItems = Array.isArray(tasks) ? tasks : (tasks && Array.isArray(tasks.tasks) ? tasks.tasks : (tasks && Array.isArray(tasks.data) ? tasks.data : []));
+        taskItems.slice(0, 3).forEach(t => items.push('<li><span>📋</span><span class="item-title">Task: ' + (t.title || 'Untitled') + '</span><span class="item-meta">' + (t.status || 'inbox') + '</span></li>'));
+        const pItems = Array.isArray(posts) ? posts : (posts && Array.isArray(posts.items) ? posts.items : (posts && Array.isArray(posts.posts) ? posts.posts : []));
         pItems.slice(0, 3).forEach(p => items.push('<li><span>📝</span><span class="item-title">Post: ' + (p.title || 'Untitled') + '</span></li>'));
-        list.innerHTML = items.length ? items.join('') : '<li class="loading-state">No recent activity</li>';
+        list.innerHTML = items.length ? items.join('') : '<li class="loading-state">No recent activity yet<br><a class="empty-action" href="/chat/">Start with Aria →</a></li>';
     }
     
     document.addEventListener('DOMContentLoaded', function() {

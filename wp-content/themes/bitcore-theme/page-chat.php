@@ -357,6 +357,26 @@ if (!is_user_logged_in()) {
         }
         .btn-danger:hover { background: rgba(239, 68, 68, 0.1); }
 
+        .starter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 18px;
+            width: min(760px, 100%);
+        }
+        .starter-btn {
+            border: 1px solid var(--border-default);
+            border-radius: 10px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            padding: 12px;
+            text-align: left;
+            cursor: pointer;
+            font: inherit;
+        }
+        .starter-btn:hover { border-color: var(--accent-primary); }
+        .starter-btn span { display: block; color: var(--text-muted); font-size: 0.78rem; margin-top: 4px; }
+
         /* Toast */
         .toast {
             position: fixed;
@@ -402,6 +422,7 @@ if (!is_user_logged_in()) {
             .chat-messages {
                 padding: var(--space-md);
             }
+            .starter-grid { grid-template-columns: 1fr; }
             .chat-input-area {
                 padding: var(--space-sm) var(--space-md);
             }
@@ -451,6 +472,11 @@ if (!is_user_logged_in()) {
                 <div class="empty-emoji" id="empty-emoji">🤖</div>
                 <h3 id="empty-title">Start a conversation</h3>
                 <p>Send a message to begin chatting with this agent. Each session maintains its own conversation history.</p>
+                <div class="starter-grid" aria-label="Starter messages">
+                    <button class="starter-btn" data-starter="Help me understand what I can do in ASHI today.">Orient me<span>Show the useful parts of the surface.</span></button>
+                    <button class="starter-btn" data-starter="Turn my current idea into an actionable task list.">Plan work<span>Create tasks and next steps.</span></button>
+                    <button class="starter-btn" data-starter="Research this topic and return a structured brief with sources.">Research brief<span>Ask for a sourced synthesis.</span></button>
+                </div>
             </div>
             <div class="thinking-indicator" id="thinking">
                 <div class="thinking-dots">
@@ -661,7 +687,7 @@ if (!is_user_logged_in()) {
             }
         }
 
-        async function createSession() {
+        async function createSessionInternal(silent) {
             try {
                 const data = await apiPost('/sessions', { agentId: agent.id });
                 currentSessionId = data.id || data.sessionId || '';
@@ -669,11 +695,20 @@ if (!is_user_logged_in()) {
                 if (currentSessionId) {
                     sessionSelect.value = currentSessionId;
                 }
-                showToast('New session started', 'success');
+                if (!silent) { showToast('New session started', 'success'); }
             } catch (e) {
                 // If session creation fails, continue without session ID
                 currentSessionId = null;
             }
+        }
+
+        async function createSession() {
+            await createSessionInternal(false);
+        }
+
+        async function autoStartSession() {
+            if (currentSessionId) return;
+            await createSessionInternal(true);
         }
 
         async function clearSession() {
@@ -932,6 +967,14 @@ if (!is_user_logged_in()) {
             loadSessions();
         });
 
+        document.querySelectorAll('.starter-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                chatInput.value = btn.getAttribute('data-starter') || '';
+                autoResizeInput();
+                chatInput.focus();
+            });
+        });
+
         sessionSelect.addEventListener('change', function() {
             currentSessionId = sessionSelect.value || null;
             if (currentSessionId) {
@@ -951,7 +994,7 @@ if (!is_user_logged_in()) {
         updateRateDisplay();
         loadRateLimit();
         checkAgentStatus();
-        loadSessions();
+        loadSessions().then(autoStartSession);
         connectRealtime();
 
         // Auto-focus input

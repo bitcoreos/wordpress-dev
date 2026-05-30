@@ -106,6 +106,24 @@ if (!is_user_logged_in()) {
         .status-label strong { color: var(--text-primary); }
         .status-details { margin-left: auto; color: var(--text-muted); font-family: 'SF Mono', monospace; font-size: 0.8rem; }
 
+        .agent-onboarding {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+        .agent-onboarding a {
+            display: block;
+            padding: var(--space-md);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .agent-onboarding strong { display: block; margin-bottom: 4px; }
+        .agent-onboarding span { color: var(--text-muted); font-size: 0.8rem; }
+
         /* Agent Grid */
         .agent-grid {
             display: grid;
@@ -284,7 +302,7 @@ if (!is_user_logged_in()) {
 
         /* Mobile responsive */
         @media (max-width: 900px) {
-            .agent-grid {
+            .agent-grid, .agent-onboarding {
                 grid-template-columns: 1fr;
             }
             .agents-header {
@@ -316,6 +334,12 @@ if (!is_user_logged_in()) {
             <span class="status-dot" id="status-dot"></span>
             <span class="status-label" id="status-label"><strong>Checking server...</strong></span>
             <span class="status-details" id="status-details"></span>
+        </div>
+
+        <div class="agent-onboarding" aria-label="Agent next actions">
+            <a href="/chat/?agent=aria"><strong>Start with Aria</strong><span>Research, summarize, and structure evidence.</span></a>
+            <a href="/chat/?agent=forge"><strong>Start with Forge</strong><span>Turn ideas into tasks and executable work.</span></a>
+            <a href="/chat/?agent=muse"><strong>Start with Muse</strong><span>Explore concepts, strategy, and creative directions.</span></a>
         </div>
 
         <!-- Agent Grid -->
@@ -436,6 +460,9 @@ if (!is_user_logged_in()) {
                 const data = await apiGet('/agents');
                 // data may be array or object with agents
                 const agents = Array.isArray(data) ? data : (data.agents || []);
+                if (data && data.source === 'wordpress_config') {
+                    showToast('Using configured ASHI agent roster while live ElizaOS status is degraded', 'warning');
+                }
 
                 // Determine active agent from user meta or agent status
                 let activeId = null;

@@ -20,6 +20,8 @@ final class DashboardCreditsContractTest {
         $this->test_dashboard_has_credits_badge();
         $this->test_dashboard_uses_canonical_credits_api_not_budget();
         $this->test_dashboard_displays_normalized_credits_status_fields();
+        $this->test_dashboard_normalizes_rest_collection_shapes();
+        $this->test_dashboard_surfaces_control_center();
         printf("\nAssertions passed: %d\nAssertions failed: %d\n", $this->passed, $this->failed);
         return $this->failed > 0 ? 1 : 0;
     }
@@ -42,6 +44,20 @@ final class DashboardCreditsContractTest {
             $this->assert_contains($field, $body, 'dashboard_credits_uses_' . $field);
         }
         $this->assert_contains('Credits unavailable', $body, 'dashboard_credits_keeps_failure_fallback');
+    }
+
+
+    private function test_dashboard_normalizes_rest_collection_shapes(): void {
+        $this->assert_contains('Array.isArray(data.tasks)', $this->source, 'dashboard_reads_kanban_tasks_shape');
+        $this->assert_contains('Array.isArray(data.items)', $this->source, 'dashboard_reads_my_posts_items_shape');
+        $this->assert_contains('Create your first task', $this->source, 'dashboard_task_empty_state_has_action');
+        $this->assert_contains('Draft a post or prompt', $this->source, 'dashboard_posts_empty_state_has_action');
+    }
+
+    private function test_dashboard_surfaces_control_center(): void {
+        foreach (['Control Center', 'Prompts', 'Research Requests', 'BIThub Graph', 'Swarm Chat', 'Artifacts', 'Credits & Limits'] as $label) {
+            $this->assert_contains($label, $this->source, 'dashboard_control_center_' . preg_replace('/[^a-z0-9]+/i', '_', strtolower($label)));
+        }
     }
 
     private function function_body(string $name): string {
