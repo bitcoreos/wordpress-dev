@@ -70,7 +70,7 @@ $nav_pages = [
             Open ASHI →
         </a>
         <?php else: ?>
-        <a href="<?php echo esc_url(wp_login_url(home_url('/dashboard/'))); ?>" class="nav-btn primary">
+        <a href="<?php echo esc_url(bitcore_get_login_url(home_url('/dashboard/'))); ?>" class="nav-btn primary">
             Log in with Discourse →
         </a>
         <?php endif; ?>

@@ -78,8 +78,9 @@ final class DiscoursePermissionCaptureStandaloneTest {
         $hooks = array_map(fn($row) => $row[0], $GLOBALS['bitcore_test_state']['actions']);
         $filters = array_map(fn($row) => $row[0], $GLOBALS['bitcore_test_state']['filters']);
         $this->assert_true(in_array('wp_login', $hooks, true), 'registers_wp_login_action');
-        $this->assert_true(in_array('wpdc_sso_provider_before_sso_redirect', $hooks, true), 'registers_provider_redirect_action');
-        $this->assert_true(in_array('wpdc_sso_client_updated_user', $filters, true), 'registers_client_updated_user_filter');
+        $this->assert_true(in_array('wpdc_sso_client_after_create_user', $hooks, true), 'registers_client_create_user_action');
+        $this->assert_true(in_array('wpdc_after_sso_client_user_update', $hooks, true), 'registers_client_user_update_action');
+        $this->assert_true(in_array('wpdc_sso_provider_before_sso_redirect', $hooks, true), 'registers_provider_redirect_action_for_legacy_provider_mode');
     }
 
     private function test_capture_without_discourse_metadata_is_noop(): void {

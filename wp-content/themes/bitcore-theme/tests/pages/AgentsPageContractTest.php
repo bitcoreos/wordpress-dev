@@ -33,7 +33,7 @@ final class AgentsPageContractTest {
     private function test_template_and_auth_contract(): void {
         $this->assert_contains('Template Name: Agent Directory', $this->source, 'agents_template_name_present');
         $this->assert_contains('is_user_logged_in()', $this->source, 'agents_requires_logged_in_user');
-        $this->assert_contains('wp_login_url($_SERVER[\'REQUEST_URI\'])', $this->source, 'agents_redirects_to_login_with_return_url');
+        $this->assert_contains('bitcore_get_login_url($_SERVER[\'REQUEST_URI\'])', $this->source, 'agents_redirects_to_bitcore_login_adapter_with_return_url');
         $this->assert_contains('wp_create_nonce("wp_rest")', $this->source, 'agents_uses_wp_rest_nonce');
         $this->assert_contains("'X-WP-Nonce': NONCE", $this->source, 'agents_fetch_sends_nonce');
     }

@@ -5,8 +5,8 @@ declare(strict_types=1);
  * ASHI canonical app route auth contract.
  *
  * The six WordPress user-surface pages are app routes, not public marketing pages.
- * SSO remains owned by WP-Discourse; templates must use WordPress login redirect
- * so the existing WP-Discourse plugin can handle the login flow as configured.
+ * SSO remains owned by WP-Discourse; templates must use the BITCORE login
+ * adapter so the official WP-Discourse plugin handles the flow as configured.
  */
 final class AppRouteAuthContractTest {
     private string $themeRoot;
@@ -33,7 +33,7 @@ final class AppRouteAuthContractTest {
             $base = basename($file);
             $this->contains('is_user_logged_in()', $source, "$base requires logged-in user");
             $this->contains('wp_redirect(', $source, "$base redirects unauthenticated users");
-            $this->contains('wp_login_url(', $source, "$base uses WordPress login URL");
+            $this->contains('bitcore_get_login_url(', $source, "$base uses BITCORE login adapter");
             $this->contains('exit;', $source, "$base exits after redirect");
         }
     }
@@ -42,7 +42,7 @@ final class AppRouteAuthContractTest {
         foreach ($this->canonicalTemplates() as $file) {
             $source = $this->read($file);
             $base = basename($file);
-            $this->contains('wp_login_url($_SERVER[\'REQUEST_URI\'])', $source, "$base preserves request URI return target");
+            $this->contains('bitcore_get_login_url($_SERVER[\'REQUEST_URI\'])', $source, "$base preserves request URI return target");
             $this->notContains('hub.bitwiki.org/session/sso', $source, "$base does not hardcode Discourse SSO endpoint");
             $this->notContains('discourse_sso_secret', $source, "$base does not handle SSO secrets");
             $this->notContains('wpdc_sso_secret', $source, "$base does not handle WP-Discourse secret");
@@ -70,7 +70,7 @@ final class AppRouteAuthContractTest {
         $source = $this->read($this->themeRoot . '/front-page.php');
         $this->contains('ASHI · personal swarm manager', $source, 'front page identifies ASHI as personal swarm manager');
         $this->contains('BIThub is the shared Discourse forum', $source, 'front page explains BIThub role');
-        $this->contains('wp_login_url(home_url(\'/dashboard/\'))', $source, 'front page uses WordPress login URL to dashboard');
+        $this->contains('bitcore_get_login_url(home_url(\'/dashboard/\'))', $source, 'front page uses BITCORE login adapter to dashboard');
         $this->contains('nav-header.php', $source, 'front page includes shared navigation');
         $this->notContains('wp-json/bitcore/v1/', $source, 'front page does not call private BITCORE REST APIs');
         $this->notContains('discourse_sso_secret', $source, 'front page does not handle SSO secrets');

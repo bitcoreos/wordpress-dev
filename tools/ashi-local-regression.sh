@@ -56,7 +56,7 @@ while IFS= read -r file; do
     */bootstrap.php)
       printf '%s\treason=wordpress_phpunit_bootstrap_requires_WP_TESTS_DIR\n' "$file" >> "$INTEGRATION_TESTS"
       ;;
-    *StandaloneTest.php|*ContractTest.php|*FunctionalTest.php|*ScalabilityTest.php|*HooksTest.php|*RouteOwnershipTest.php|*MessageContractTest.php|*RateLimitTest.php|*DashboardStatsEndpointTest.php|*DiscoursePermissionCaptureTest.php|*PrivacyRetentionTest.php|*X402CoreBootstrapTest.php|*X402FacilitatorClientTest.php|*X402VerifierTest.php|*/sanitization.php|*/test-rest-api.php|*/test-sanitization.php)
+    *StandaloneTest.php|*ContractTest.php|*FunctionalTest.php|*ScalabilityTest.php|*HooksTest.php|*RouteOwnershipTest.php|*MessageContractTest.php|*RateLimitTest.php|*DashboardStatsEndpointTest.php|*DiscoursePermissionCaptureTest.php|*WPDiscourseAdapterTest.php|*PrivacyRetentionTest.php|*X402CoreBootstrapTest.php|*X402FacilitatorClientTest.php|*X402VerifierTest.php|*/sanitization.php|*/test-rest-api.php|*/test-sanitization.php)
       printf '%s\n' "$file" >> "$EXEC_TESTS"
       ;;
     *)

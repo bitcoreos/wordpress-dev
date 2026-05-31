@@ -112,6 +112,9 @@ function bitcore_cli_init(): void {
 }
 add_action('init', 'bitcore_cli_init');
 
+// === FROM HYPERION: WP Discourse Adapter ===
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/wp-discourse-adapter.php';
+
 // === FROM HYPERION: Discourse SSO Client Redirect Fix ===
 // Validates redirect_to parameter during SSO flow to ensure
 // return_sso_url is always a WordPress domain URL, not Discourse.

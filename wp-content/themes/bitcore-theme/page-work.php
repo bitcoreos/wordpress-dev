@@ -6,7 +6,7 @@
  * @since 1.0.0
  */
 if (!is_user_logged_in()) {
-    wp_redirect(wp_login_url($_SERVER['REQUEST_URI']));
+    wp_redirect(bitcore_get_login_url($_SERVER['REQUEST_URI']));
     exit;
 }
 ?>

@@ -2,8 +2,8 @@
 /**
  * ASHI public entry surface.
  *
- * Public page explains the product and routes members through WordPress login.
- * WP-Discourse owns SSO; this template only calls wp_login_url().
+ * Public page explains the product and routes members through BITCORE/WP Discourse login.
+ * WP-Discourse owns SSO; this template only calls the BITCORE login adapter.
  *
  * @package bitcore-theme
  */
@@ -64,7 +64,7 @@
                 <?php if (is_user_logged_in()): ?>
                     <a class="btn primary" href="<?php echo esc_url(home_url('/dashboard/')); ?>">Open Dashboard</a>
                 <?php else: ?>
-                    <a class="btn primary" href="<?php echo esc_url(wp_login_url(home_url('/dashboard/'))); ?>">Log in with Discourse</a>
+                    <a class="btn primary" href="<?php echo esc_url(bitcore_get_login_url(home_url('/dashboard/'))); ?>">Log in with Discourse</a>
                 <?php endif; ?>
                 <a class="btn secondary" href="https://hub.bitwiki.org/c/platform/guides/28" target="_blank" rel="noopener">Read BIThub Guides</a>
             </div>

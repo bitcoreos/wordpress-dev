@@ -26,6 +26,8 @@ final class BITCORE_Discourse_Permission_Capture {
 
     public static function register_hooks(): void {
         add_action('wp_login', [self::class, 'capture_on_wp_login'], 10, 2);
+        add_action('wpdc_sso_client_after_create_user', [self::class, 'capture_from_client_create_user'], 10, 2);
+        add_action('wpdc_after_sso_client_user_update', [self::class, 'capture_from_client_update'], 10, 2);
         add_action('wpdc_sso_provider_before_sso_redirect', [self::class, 'capture_from_provider_redirect'], 10, 2);
         add_action('wpdc_sso_provider_before_create_user', [self::class, 'capture_from_provider_create_user'], 10, 2);
         add_filter('wpdc_sso_client_updated_user', [self::class, 'capture_from_client_update'], 10, 2);
@@ -48,6 +50,17 @@ final class BITCORE_Discourse_Permission_Capture {
         $user_id = self::extract_user_id($user);
         if ($user_id > 0) {
             self::capture_user($user_id);
+        }
+    }
+
+    public static function capture_from_client_create_user(mixed $user, mixed $payload = null): void {
+        $user_id = self::extract_user_id($user);
+        if ($user_id === 0 && is_numeric($user)) {
+            $user_id = (int) $user;
+        }
+        $payload_array = is_array($payload) ? $payload : [];
+        if ($user_id > 0) {
+            self::capture_user($user_id, $payload_array);
         }
     }
 

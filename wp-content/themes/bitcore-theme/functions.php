@@ -80,8 +80,8 @@ add_action( 'wp_enqueue_scripts', 'bitcore_enqueue_assets' );
  * Require authentication for canonical ASHI app routes before templates render.
  *
  * WP-Discourse remains the SSO authority. This guard only routes unauthenticated
- * WordPress visitors to the normal WordPress login URL, where WP-Discourse adds
- * the Discourse SSO flow.
+ * WordPress visitors to the BITCORE login adapter, which hands off to
+ * the official WP Discourse client flow.
  */
 function bitcore_require_auth_for_app_routes(): void {
     if ( is_user_logged_in() || is_admin() || wp_doing_ajax() || wp_is_json_request() ) {
@@ -99,7 +99,7 @@ function bitcore_require_auth_for_app_routes(): void {
 
     foreach ( $protected_slugs as $slug ) {
         if ( is_page( $slug ) ) {
-            wp_safe_redirect( wp_login_url( home_url( '/' . $slug . '/' ) ) );
+            wp_safe_redirect( bitcore_get_login_url( home_url( '/' . $slug . '/' ) ) );
             exit;
         }
     }

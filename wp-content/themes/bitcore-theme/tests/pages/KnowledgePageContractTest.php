@@ -35,7 +35,7 @@ final class KnowledgePageContractTest {
     private function test_template_auth_and_nonce_contract(): void {
         $this->assert_contains('Template Name: Knowledge', $this->source, 'knowledge_template_name_present');
         $this->assert_contains('is_user_logged_in()', $this->source, 'knowledge_requires_logged_in_user');
-        $this->assert_contains('wp_login_url($_SERVER[\'REQUEST_URI\'])', $this->source, 'knowledge_redirects_to_login_with_return_url');
+        $this->assert_contains('bitcore_get_login_url($_SERVER[\'REQUEST_URI\'])', $this->source, 'knowledge_redirects_to_bitcore_login_adapter_with_return_url');
         $this->assert_contains('wp_create_nonce("wp_rest")', $this->source, 'knowledge_uses_wp_rest_nonce');
         $this->assert_contains("'X-WP-Nonce': nonce", $this->source, 'knowledge_fetch_sends_nonce');
     }

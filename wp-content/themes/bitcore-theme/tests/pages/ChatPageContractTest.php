@@ -33,7 +33,7 @@ final class ChatPageContractTest {
     private function test_template_auth_and_nonce_contract(): void {
         $this->assert_contains('Template Name: Agent Chat', $this->source, 'chat_template_name_present');
         $this->assert_contains('is_user_logged_in()', $this->source, 'chat_requires_logged_in_user');
-        $this->assert_contains('wp_login_url($_SERVER[\'REQUEST_URI\'])', $this->source, 'chat_redirects_to_login_with_return_url');
+        $this->assert_contains('bitcore_get_login_url($_SERVER[\'REQUEST_URI\'])', $this->source, 'chat_redirects_to_bitcore_login_adapter_with_return_url');
         $this->assert_contains('wp_create_nonce("wp_rest")', $this->source, 'chat_uses_wp_rest_nonce');
         $this->assert_contains("'X-WP-Nonce': NONCE", $this->source, 'chat_fetch_sends_nonce');
     }
