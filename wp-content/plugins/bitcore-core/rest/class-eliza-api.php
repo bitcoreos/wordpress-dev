@@ -792,21 +792,19 @@ class BITCORE_Rest_Eliza_Api {
     }
 
     /**
-     * POST /eliza/chat — Send a message to the active agent.
+     * POST /eliza/chat — Send a message to an ElizaOS session.
      *
-     * Uses ElizaOS 1.7.2 messaging API:
-     * POST /api/messaging/channels/{channelId}/messages
+     * Uses the documented ElizaOS Sessions API for user-to-agent chat:
+     *   1. POST /api/messaging/sessions when the client has no sessionId.
+     *   2. POST /api/messaging/sessions/{sessionId}/messages for message delivery.
      *
-     * Payload shape:
-     *   message_server_id: 00000000-0000-0000-0000-000000000000 (fixed server ID)
-     *   author_id: UUID from user meta (stable per user)
-     *   raw_message: {text: message} (object, not string)
-     *   transport: websocket (immediate 201 response)
-     *   metadata.targetAgentId: agent UUID for routing
+     * This avoids the lower-level channel endpoint, which requires pre-existing
+     * server/channel/participant state and was returning vague 400 errors in
+     * production.
      */
     public function send_message(WP_REST_Request $request): WP_REST_Response|WP_Error {
-        $params   = $request->get_json_params();
-        $message  = wp_kses_post($params['message'] ?? '');
+        $params     = $request->get_json_params();
+        $message    = wp_kses_post($params['message'] ?? '');
         $session_id = isset($params['sessionId']) ? sanitize_text_field($params['sessionId']) : '';
         $agent_id   = isset($params['agentId']) ? sanitize_text_field($params['agentId']) : '';
 
@@ -818,39 +816,54 @@ class BITCORE_Rest_Eliza_Api {
             );
         }
 
-        // ElizaOS 1.7.2: /api/messaging/channels/{channelId}/messages
-        $channel_id = !empty($session_id) ? $session_id : wp_generate_uuid4();
-        $user_id    = get_current_user_id();
-        $author_id  = $this->get_request_author_uuid($user_id, $channel_id);
-        $body = [
-            'channelId'         => $channel_id,
-            'message_server_id' => '00000000-0000-0000-0000-000000000000',
-            'author_id'         => $author_id,
-            'content'           => $message,
-            'raw_message'       => ['text' => $message],
-            'transport'         => 'websocket',
-            'metadata'          => ['isDm' => true],
-        ];
-
-        // Route to a specific agent and include DM participant metadata.
-        // ElizaOS 1.7.2 auto-creates DM channels using recipientId/targetUserId,
-        // then routes processing through targetAgentId. Omitting these fields can
-        // create a channel with only the human author and fail with
-        // "No agent found in channel participants".
+        $user_id         = get_current_user_id();
         $target_agent_id = $this->resolve_message_agent_id($agent_id, $user_id);
-        if (!empty($target_agent_id)) {
-            $body['metadata']['targetAgentId'] = $target_agent_id;
-            $body['metadata']['recipientId']    = $target_agent_id;
-            $body['metadata']['targetUserId']  = $target_agent_id;
+        if (empty($target_agent_id)) {
+            return new WP_Error(
+                'invalid_agent_id',
+                __('A valid ElizaOS agent ID is required.'),
+                ['status' => 400]
+            );
+        }
+        $author_id       = $this->get_request_author_uuid($user_id, $session_id ?: $target_agent_id);
+
+        if (empty($session_id)) {
+            $session_result = $this->create_eliza_session($target_agent_id, $author_id, $user_id);
+            if (is_wp_error($session_result)) {
+                return $session_result;
+            }
+
+            $session_data = $session_result->get_data();
+            $session_id   = sanitize_text_field($session_data['sessionId'] ?? ($session_data['id'] ?? ''));
+
+            if (empty($session_id)) {
+                return new WP_Error(
+                    'eliza_session_error',
+                    __('ElizaOS did not return a session ID.'),
+                    ['status' => 502]
+                );
+            }
         }
 
-        $result = $this->proxy_request('POST', '/messaging/channels/' . $channel_id . '/messages', $body);
+        $body = [
+            'content'  => $message,
+            'metadata' => [
+                'platform'      => 'ashi',
+                'source_type'   => 'user_message',
+                'author_id'     => $author_id,
+                'targetAgentId' => $target_agent_id,
+                'raw_message'   => ['text' => $message],
+            ],
+        ];
 
-        // Attach the channel_id to the response for client session tracking
+        $result = $this->proxy_request('POST', '/messaging/sessions/' . $session_id . '/messages', $body);
+
         if (!is_wp_error($result)) {
             $data = $result->get_data();
             if (is_array($data)) {
-                $data['channel_id'] = $channel_id;
+                $data['session_id'] = $session_id;
+                $data['channel_id'] = $session_id; // Backward-compatible frontend key.
+                $data['agent_id']   = $target_agent_id;
             }
             return new WP_REST_Response($data, $result->get_status());
         }
@@ -869,13 +882,41 @@ class BITCORE_Rest_Eliza_Api {
      * POST /eliza/sessions — Create a new chat session.
      */
     public function create_session(WP_REST_Request $request): WP_REST_Response|WP_Error {
-        $params   = $request->get_json_params();
-        $agent_id = isset($params['agentId']) ? sanitize_text_field($params['agentId']) : '';
-
-        $body = [];
-        if (!empty($agent_id)) {
-            $body['agentId'] = $agent_id;
+        $params          = $request->get_json_params();
+        $requested_agent = isset($params['agentId']) ? sanitize_text_field($params['agentId']) : '';
+        $user_id         = get_current_user_id();
+        $target_agent_id = $this->resolve_message_agent_id($requested_agent, $user_id);
+        if (empty($target_agent_id)) {
+            return new WP_Error(
+                'invalid_agent_id',
+                __('A valid ElizaOS agent ID is required.'),
+                ['status' => 400]
+            );
         }
+        $author_id       = $this->get_request_author_uuid($user_id, $target_agent_id);
+
+        return $this->create_eliza_session($target_agent_id, $author_id, $user_id);
+    }
+
+    /**
+     * Create an ElizaOS session using the documented required fields.
+     */
+    private function create_eliza_session(string $agent_id, string $author_id, int $wp_user_id): WP_REST_Response|WP_Error {
+        $body = [
+            'agentId' => $agent_id,
+            'userId'  => $author_id,
+            'metadata' => [
+                'platform'      => 'ashi',
+                'wp_user_id'    => $wp_user_id,
+                'targetAgentId' => $agent_id,
+            ],
+            'timeoutConfig' => [
+                'timeoutMinutes'          => 60,
+                'autoRenew'               => true,
+                'maxDurationMinutes'      => 720,
+                'warningThresholdMinutes' => 10,
+            ],
+        ];
 
         return $this->proxy_request('POST', '/messaging/sessions', $body);
     }
