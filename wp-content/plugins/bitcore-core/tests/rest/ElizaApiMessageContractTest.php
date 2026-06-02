@@ -123,6 +123,7 @@ function is_user_logged_in(): bool { return $GLOBALS['bitcore_test_state']['curr
 function current_user_can(string $capability): bool { return false; }
 function get_current_user_id(): int { return $GLOBALS['bitcore_test_state']['current_user_id']; }
 function sanitize_text_field(mixed $value): string { return trim(strip_tags((string) $value)); }
+function absint(mixed $value): int { return abs((int) $value); }
 function wp_unslash(mixed $value): mixed { return is_string($value) ? stripslashes($value) : $value; }
 function wp_kses_post(mixed $value): string { return (string) $value; }
 function wp_json_encode(mixed $value): string { return json_encode($value, JSON_UNESCAPED_SLASHES); }
@@ -188,6 +189,8 @@ final class ElizaApiMessageContractStandaloneTest {
         $this->test_get_agents_success_passes_upstream_response_without_fallback();
         $this->test_get_sessions_proxy_error_returns_wp_error_not_type_error();
         $this->test_create_session_proxy_error_returns_wp_error_not_type_error();
+        $this->test_session_messages_route_proxies_documented_history_endpoint();
+        $this->test_send_message_marks_post_response_as_acknowledgement_not_agent_reply();
         $this->report();
     }
 
@@ -257,6 +260,7 @@ final class ElizaApiMessageContractStandaloneTest {
             'bitcore/v1/eliza/chat',
             'bitcore/v1/eliza/sessions',
             'bitcore/v1/eliza/sessions/(?P<id>[a-zA-Z0-9_-]+)',
+            'bitcore/v1/eliza/sessions/(?P<id>[a-zA-Z0-9_-]+)/messages',
             'bitcore/v1/eliza/rate-limit',
         ];
 
@@ -267,6 +271,7 @@ final class ElizaApiMessageContractStandaloneTest {
         $this->assert_same('GET', $routes['bitcore/v1/eliza/health']['methods'] ?? null, 'health_route_uses_get');
         $this->assert_same('POST', $routes['bitcore/v1/eliza/chat']['methods'] ?? null, 'chat_route_uses_post');
         $this->assert_same('DELETE', $routes['bitcore/v1/eliza/sessions/(?P<id>[a-zA-Z0-9_-]+)']['methods'] ?? null, 'delete_session_route_uses_delete');
+        $this->assert_same('GET', $routes['bitcore/v1/eliza/sessions/(?P<id>[a-zA-Z0-9_-]+)/messages']['methods'] ?? null, 'session_messages_route_uses_get');
         $this->assert_true(is_array($routes['bitcore/v1/eliza/sessions'] ?? null), 'sessions_route_supports_multiple_methods');
     }
 
@@ -559,6 +564,49 @@ final class ElizaApiMessageContractStandaloneTest {
         if ($result instanceof WP_Error) {
             $this->assert_same('eliza_error', $result->get_error_code(), 'create_session_proxy_error_code');
         }
+    }
+
+    private function test_session_messages_route_proxies_documented_history_endpoint(): void {
+        bitcore_test_reset_state(42);
+        $GLOBALS['bitcore_test_state']['remote_response_code'] = 200;
+        $GLOBALS['bitcore_test_state']['remote_response_body'] = [
+            'messages' => [
+                ['id' => 'agent-message-1', 'content' => 'assistant reply', 'isAgent' => true],
+            ],
+            'hasMore' => false,
+            'cursors' => ['after' => 1780428115051],
+        ];
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+        $request = new WP_REST_Request([], ['id' => 'session-abc', 'limit' => 25, 'after' => 1780428115000]);
+        $result = $api->get_session_messages($request);
+
+        $this->assert_true($result instanceof WP_REST_Response, 'session_messages_returns_rest_response');
+        $this->assert_same(200, $result->get_status(), 'session_messages_preserves_status');
+        $this->assert_same('http://172.17.0.1:3000/api/messaging/sessions/session-abc/messages?limit=25&after=1780428115000', $GLOBALS['bitcore_test_state']['remote_requests'][0]['url'] ?? null, 'session_messages_uses_documented_history_endpoint_with_query');
+        $this->assert_same('GET', $GLOBALS['bitcore_test_state']['remote_requests'][0]['args']['method'] ?? null, 'session_messages_uses_get');
+        $this->assert_same('assistant reply', $result->get_data()['messages'][0]['content'] ?? null, 'session_messages_passes_agent_message_payload');
+    }
+
+    private function test_send_message_marks_post_response_as_acknowledgement_not_agent_reply(): void {
+        bitcore_test_reset_state(42);
+        $GLOBALS['bitcore_test_state']['remote_response_body'] = [
+            'success' => true,
+            'userMessage' => ['id' => 'user-message-1', 'content' => 'test', 'isAgent' => false],
+            'sessionStatus' => ['wasRenewed' => true],
+        ];
+        $api = new BITCORE_Rest_Eliza_Api(new stdClass());
+        $result = $api->send_message(new WP_REST_Request([
+            'message' => 'test',
+            'sessionId' => 'session-ack',
+            'agentId' => 'aria',
+        ]));
+
+        $this->assert_true($result instanceof WP_REST_Response, 'send_ack_returns_rest_response');
+        $data = $result instanceof WP_REST_Response ? $result->get_data() : [];
+        $this->assert_same('acknowledgement', $data['response_type'] ?? null, 'send_ack_marks_response_type_acknowledgement');
+        $this->assert_same(true, $data['reply_pending'] ?? null, 'send_ack_marks_reply_pending');
+        $this->assert_same(true, $data['submitted_only'] ?? null, 'send_ack_marks_submitted_only');
+        $this->assert_same('session-ack', $data['session_id'] ?? null, 'send_ack_keeps_session_id');
     }
 
     private function capture_throwable(callable $callback): mixed {

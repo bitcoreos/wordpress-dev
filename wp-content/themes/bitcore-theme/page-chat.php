@@ -549,6 +549,8 @@ if (!is_user_logged_in()) {
         let realtimeSource = null;
         let rateUsed = 0;
         let rateLimit = 100;
+        let seenMessageIds = new Set();
+        let lastMessageCursor = 0;
 
         // ---- DOM Refs ----
         const chatMessages = document.getElementById('chat-messages');
@@ -691,6 +693,8 @@ if (!is_user_logged_in()) {
             try {
                 const data = await apiPost('/sessions', { agentId: agent.id });
                 currentSessionId = data.id || data.sessionId || '';
+                seenMessageIds = new Set();
+                lastMessageCursor = 0;
                 await loadSessions();
                 if (currentSessionId) {
                     sessionSelect.value = currentSessionId;
@@ -721,6 +725,8 @@ if (!is_user_logged_in()) {
             }
             currentSessionId = null;
             messages = [];
+            seenMessageIds = new Set();
+            lastMessageCursor = 0;
             renderMessages();
             chatEmpty.style.display = 'flex';
             sessionSelect.value = '';
@@ -732,6 +738,93 @@ if (!is_user_logged_in()) {
             if (!ts) return '';
             var d = new Date(ts);
             return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function getMessageId(msg) {
+            return msg && (msg.id || msg.messageId || msg.uuid || '');
+        }
+
+        function getMessageTimestamp(msg) {
+            var raw = msg && (msg.createdAt || msg.created_at || msg.timestamp || '');
+            if (typeof raw === 'number') return raw;
+            if (typeof raw === 'string' && raw !== '') {
+                var parsed = Date.parse(raw);
+                return Number.isNaN(parsed) ? 0 : parsed;
+            }
+            return 0;
+        }
+
+        function isAgentMessage(msg) {
+            if (!msg || typeof msg !== 'object') return false;
+            if (msg.isAgent === true) return true;
+            if (msg.role === 'agent' || msg.source_type === 'agent_response') return true;
+            var author = msg.authorId || msg.author_id || msg.senderId || msg.sender_id || '';
+            return Boolean(author && author === agent.id);
+        }
+
+        function normalizeSessionMessage(msg) {
+            return {
+                id: getMessageId(msg),
+                role: isAgentMessage(msg) ? 'agent' : 'user',
+                content: msg.content || msg.text || msg.message || msg.response || '',
+                timestamp: msg.createdAt || msg.created_at || msg.timestamp || new Date().toISOString()
+            };
+        }
+
+        function addSessionMessage(msg) {
+            var normalized = normalizeSessionMessage(msg);
+            if (!normalized.content) return false;
+            if (normalized.id && seenMessageIds.has(normalized.id)) return false;
+            if (normalized.id) seenMessageIds.add(normalized.id);
+            messages.push(normalized);
+            var cursor = getMessageTimestamp(msg);
+            if (cursor > lastMessageCursor) lastMessageCursor = cursor;
+            return true;
+        }
+
+        async function loadSessionMessages(limit) {
+            if (!currentSessionId) return false;
+            var data = await apiGet('/sessions/' + encodeURIComponent(currentSessionId) + '/messages?limit=' + encodeURIComponent(limit || 50));
+            var list = Array.isArray(data) ? data : (data.messages || []);
+            var changed = false;
+            list.forEach(function(item) {
+                if (addSessionMessage(item)) changed = true;
+            });
+            if (data && data.cursors && data.cursors.after) {
+                lastMessageCursor = Math.max(Number(data.cursors.after) || 0, lastMessageCursor);
+            }
+            if (changed) renderMessages();
+            return changed;
+        }
+
+        async function pollForAgentReply(previousCursor) {
+            if (!currentSessionId) return false;
+            var started = Date.now();
+            var attempts = 0;
+            while (Date.now() - started < 20000 && attempts < 10) {
+                attempts++;
+                var after = Math.max(Number(previousCursor) || 0, 0);
+                var path = '/sessions/' + encodeURIComponent(currentSessionId) + '/messages?limit=20' + (after ? '&after=' + encodeURIComponent(after) : '');
+                var data = await apiGet(path);
+                var list = Array.isArray(data) ? data : (data.messages || []);
+                var foundAgent = false;
+                list.forEach(function(item) {
+                    var cursor = getMessageTimestamp(item);
+                    if (cursor > lastMessageCursor) lastMessageCursor = cursor;
+                    if (isAgentMessage(item) && addSessionMessage(item)) {
+                        foundAgent = true;
+                    }
+                });
+                if (data && data.cursors && data.cursors.after) {
+                    lastMessageCursor = Math.max(Number(data.cursors.after) || 0, lastMessageCursor);
+                }
+                if (foundAgent) {
+                    renderMessages();
+                    return true;
+                }
+                await new Promise(function(resolve) { setTimeout(resolve, attempts < 3 ? 1000 : 2000); });
+            }
+            return false;
         }
 
         function renderMessages() {
@@ -804,39 +897,23 @@ if (!is_user_logged_in()) {
                 rateUsed++;
                 updateRateDisplay();
 
-                // Handle response - may vary by ElizaOS version
-                var agentText = '';
-                if (typeof response === 'string') {
-                    agentText = response;
-                } else if (response.content) {
-                    agentText = response.content;
-                } else if (response.text) {
-                    agentText = response.text;
-                } else if (response.message) {
-                    agentText = response.message;
-                } else if (response.response) {
-                    agentText = response.response;
-                } else if (Array.isArray(response)) {
-                    // ElizaOS may return array of responses
-                    agentText = response.map(function(r) {
-                        return r.content || r.text || r.message || '';
-                    }).filter(Boolean).join('\n\n');
-                } else {
-                    agentText = JSON.stringify(response);
-                }
-
-                // Capture session ID from response if provided
+                // The Sessions API POST response is a submitted-message acknowledgement.
+                // Capture session ID, then fetch actual assistant replies from session messages.
                 if (response.sessionId || response.session_id || response.channel_id) {
                     currentSessionId = response.sessionId || response.session_id || response.channel_id;
                     sessionSelect.value = currentSessionId;
                 }
 
-                messages.push({
-                    role: 'agent',
-                    content: agentText,
-                    timestamp: new Date().toISOString()
-                });
-                renderMessages();
+                var priorCursor = lastMessageCursor;
+                var gotReply = await pollForAgentReply(priorCursor);
+                if (!gotReply) {
+                    messages.push({
+                        role: 'agent',
+                        content: agent.name + ' accepted the message. Waiting for the reply stream...',
+                        timestamp: new Date().toISOString()
+                    });
+                    renderMessages();
+                }
                 loadSessions();
                 loadRateLimit();
             } catch (e) {
@@ -926,12 +1003,7 @@ if (!is_user_logged_in()) {
             if (type === 'messageComplete' || type === 'message_sent') {
                 thinkingEl.className = 'thinking-indicator';
                 const content = payload.content || payload.text || payload.message || payload.response || '';
-                if (content) {
-                    messages.push({
-                        role: payload.role === 'user' ? 'user' : 'agent',
-                        content: content,
-                        timestamp: payload.timestamp || new Date().toISOString()
-                    });
+                if (content && addSessionMessage(Object.assign({}, payload, { content: content }))) {
                     renderMessages();
                 }
             }
@@ -980,11 +1052,15 @@ if (!is_user_logged_in()) {
             if (currentSessionId) {
                 // Load messages for this session
                 messages = [];
+                seenMessageIds = new Set();
+                lastMessageCursor = 0;
                 renderMessages();
-                chatEmpty.style.display = 'flex';
+                loadSessionMessages(50);
                 showToast('Switched to session', 'success');
             } else {
                 messages = [];
+                seenMessageIds = new Set();
+                lastMessageCursor = 0;
                 renderMessages();
             }
         });

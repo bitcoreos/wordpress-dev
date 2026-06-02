@@ -20,6 +20,7 @@ final class ChatPageContractTest {
         $this->test_required_agent_and_rest_contract();
         $this->test_send_message_contract();
         $this->test_session_management_contract();
+        $this->test_session_message_history_contract();
         $this->test_realtime_sse_and_message_complete_contract();
         $this->test_rate_limit_is_loaded_from_endpoint_not_local_counter_only();
         $this->test_chat_has_starter_messages_and_autostarts_session();
@@ -61,13 +62,12 @@ final class ChatPageContractTest {
         $this->assert_contains("agentId: agent.id", $body, 'chat_send_body_includes_agent_id');
         $this->assert_contains('body.sessionId = currentSessionId;', $body, 'chat_send_body_includes_session_id_when_present');
         $this->assert_contains("apiPost('/chat', body)", $body, 'chat_posts_to_eliza_chat');
+        $this->assert_contains('pollForAgentReply', $body, 'chat_polls_for_agent_reply_after_acknowledgement');
         $this->assert_contains("thinkingEl.className = 'thinking-indicator visible';", $body, 'chat_shows_thinking_before_request');
         $this->assert_contains("thinkingEl.className = 'thinking-indicator';", $body, 'chat_hides_thinking_after_request');
-        $this->assert_contains("response.content", $body, 'chat_accepts_response_content');
-        $this->assert_contains("response.text", $body, 'chat_accepts_response_text');
-        $this->assert_contains("response.message", $body, 'chat_accepts_response_message');
-        $this->assert_contains("response.response", $body, 'chat_accepts_response_response');
-        $this->assert_contains('Array.isArray(response)', $body, 'chat_accepts_array_response');
+        $this->assert_not_contains('JSON.stringify(response)', $body, 'chat_does_not_render_ack_json_as_agent_text');
+        $this->assert_not_contains('response.content', $body, 'chat_does_not_render_ack_content_as_agent_text');
+        $this->assert_not_contains('Array.isArray(response)', $body, 'chat_does_not_treat_ack_as_response_array');
         $this->assert_contains('response.channel_id', $body, 'chat_captures_backend_channel_id');
     }
 
@@ -80,6 +80,17 @@ final class ChatPageContractTest {
         $this->assert_contains('function createSession()', $this->source, 'chat_create_session_function_present');
         $this->assert_contains('function clearSession()', $this->source, 'chat_clear_session_function_present');
         $this->assert_contains("sessionSelect.addEventListener('change'", $this->source, 'chat_session_change_listener_present');
+    }
+
+    private function test_session_message_history_contract(): void {
+        $this->assert_contains('function loadSessionMessages', $this->source, 'chat_load_session_messages_function_present');
+        $this->assert_contains('function pollForAgentReply', $this->source, 'chat_poll_for_agent_reply_function_present');
+        $this->assert_contains("'/sessions/' + encodeURIComponent(currentSessionId) + '/messages", $this->source, 'chat_uses_session_messages_proxy');
+        $this->assert_contains('function isAgentMessage', $this->source, 'chat_has_agent_message_filter');
+        $this->assert_contains('msg.isAgent === true', $this->source, 'chat_uses_isAgent_discriminator');
+        $this->assert_contains('seenMessageIds', $this->source, 'chat_deduplicates_session_messages');
+        $this->assert_contains('lastMessageCursor', $this->source, 'chat_tracks_message_cursor');
+        $this->assert_contains('loadSessionMessages(50)', $this->source, 'chat_loads_history_when_switching_sessions');
     }
 
     private function test_realtime_sse_and_message_complete_contract(): void {

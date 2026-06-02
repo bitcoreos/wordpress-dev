@@ -14,6 +14,7 @@
  *  - GET    /bitcore/v1/eliza/sessions              → User sessions
  *  - POST   /bitcore/v1/eliza/sessions              → Create session
  *  - DELETE /bitcore/v1/eliza/sessions/{id}          → Delete session
+ *  - GET    /bitcore/v1/eliza/sessions/{id}/messages → Session messages
  *  - GET    /bitcore/v1/eliza/rate-limit             → Rate limit status
  *
  * @package BITCORE
@@ -196,6 +197,35 @@ class BITCORE_Rest_Eliza_Api {
                     'validate_callback'  => function ($value) {
                         return preg_match('/^[a-zA-Z0-9_-]+$/', $value);
                     },
+                ],
+            ],
+        ]);
+
+        // Session messages — fetch actual assistant replies after submit acknowledgement.
+        register_rest_route($this->namespace, '/eliza/sessions/(?P<id>[a-zA-Z0-9_-]+)/messages', [
+            'methods'             => 'GET',
+            'callback'            => [$this, 'get_session_messages'],
+            'permission_callback' => [$this, 'check_anonymous_access'],
+            'args'                => [
+                'id' => [
+                    'type'              => 'string',
+                    'required'          => true,
+                    'sanitize_callback' => 'sanitize_text_field',
+                    'validate_callback'  => function ($value) {
+                        return preg_match('/^[a-zA-Z0-9_-]+$/', $value);
+                    },
+                ],
+                'limit' => [
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
+                ],
+                'after' => [
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
+                ],
+                'before' => [
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
                 ],
             ],
         ]);
@@ -861,9 +891,12 @@ class BITCORE_Rest_Eliza_Api {
         if (!is_wp_error($result)) {
             $data = $result->get_data();
             if (is_array($data)) {
-                $data['session_id'] = $session_id;
-                $data['channel_id'] = $session_id; // Backward-compatible frontend key.
-                $data['agent_id']   = $target_agent_id;
+                $data['session_id']     = $session_id;
+                $data['channel_id']     = $session_id; // Backward-compatible frontend key.
+                $data['agent_id']       = $target_agent_id;
+                $data['response_type']  = 'acknowledgement';
+                $data['reply_pending']  = true;
+                $data['submitted_only'] = true;
             }
             return new WP_REST_Response($data, $result->get_status());
         }
@@ -896,6 +929,40 @@ class BITCORE_Rest_Eliza_Api {
         $author_id       = $this->get_request_author_uuid($user_id, $target_agent_id);
 
         return $this->create_eliza_session($target_agent_id, $author_id, $user_id);
+    }
+
+    /**
+     * GET /eliza/sessions/{id}/messages — Fetch session messages.
+     *
+     * ElizaOS Sessions API message submission returns a user-message
+     * acknowledgement. Actual assistant replies are fetched from session
+     * messages or real-time events.
+     */
+    public function get_session_messages(WP_REST_Request $request): WP_REST_Response|WP_Error {
+        $session_id = sanitize_text_field($request['id']);
+
+        if (empty($session_id)) {
+            return new WP_Error(
+                'missing_session_id',
+                __('Session ID is required.'),
+                ['status' => 400]
+            );
+        }
+
+        $limit = isset($request['limit']) ? absint($request['limit']) : 20;
+        $query = [
+            'limit' => max(1, min($limit, 100)),
+        ];
+
+        foreach (['after', 'before'] as $cursor) {
+            if (isset($request[$cursor]) && (int) $request[$cursor] > 0) {
+                $query[$cursor] = (int) $request[$cursor];
+            }
+        }
+
+        $path = '/messaging/sessions/' . rawurlencode($session_id) . '/messages?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986);
+
+        return $this->proxy_request('GET', $path);
     }
 
     /**
