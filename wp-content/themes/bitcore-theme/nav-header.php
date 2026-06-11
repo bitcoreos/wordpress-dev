@@ -16,6 +16,9 @@ if (!function_exists('_bitcore_nav_url')) {
 // Helper: active state by slug.
 if (!function_exists('_bitcore_nav_active')) {
     function _bitcore_nav_active($slug) {
+        if ('arena' === $slug) {
+            return get_query_var('bitmon_arena') ? 'active' : '';
+        }
         $page = get_page_by_path($slug);
         return $page && is_page($page->ID) ? 'active' : '';
     }
@@ -25,6 +28,7 @@ if (!function_exists('_bitcore_nav_active')) {
 $nav_pages = [
     'dashboard'   => ['icon' => '📊', 'label' => 'Dashboard'],
     'work'        => ['icon' => '💼', 'label' => 'Work'],
+    'arena'       => ['icon' => '⚔️', 'label' => 'Arena', 'url' => home_url('/arena/'), 'public' => true],
     'chat'        => ['icon' => '💬', 'label' => 'Chat'],
     'agents'      => ['icon' => '🤖', 'label' => 'Agents'],
     'knowledge'   => ['icon' => '📚', 'label' => 'Knowledge'],
@@ -47,7 +51,7 @@ $nav_pages = [
         </a>
 
         <?php foreach ($nav_pages as $slug => $meta):
-            $url = _bitcore_nav_url($slug);
+            $url = $meta['url'] ?? _bitcore_nav_url($slug);
             if (!$url) continue;
         ?>
         <a href="<?php echo esc_url($url); ?>" class="nav-link <?php echo _bitcore_nav_active($slug); ?>">

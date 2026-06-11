@@ -395,14 +395,16 @@ add_action('rest_api_init', function() {
     require_once BITCORE_PATH . '/rest/class-sessions-api.php';
     require_once BITCORE_PATH . '/rest/class-kanban-api.php';
     require_once BITCORE_PATH . '/rest/class-my-posts-api.php';
+    require_once BITCORE_PATH . '/rest/class-bitmon-api.php';
     $apis = [
-        'BITCORE\\Rest\\Checkout_Api',
-        'BITCORE\\Rest\\Org_Chart_Api',
-        'BITCORE\\Rest\\Credits_Api',
-        'BITCORE\\Rest\\Approvals_Api',
-        'BITCORE\\Rest\\Sessions_Api',
+        'BITCORE\Rest\Checkout_Api',
+        'BITCORE\Rest\Org_Chart_Api',
+        'BITCORE\Rest\Credits_Api',
+        'BITCORE\Rest\Approvals_Api',
+        'BITCORE\Rest\Sessions_Api',
         'BITCORE_Rest_Kanban_API',
         'BITCORE_Rest_My_Posts_API',
+        'BITCORE\Rest\Bitmon_Api',
     ];
     foreach ($apis as $api_class) {
         if (class_exists($api_class)) {
@@ -429,6 +431,37 @@ function bitcore_register_post_types(): void {
         'menu_icon'          => 'dashicons-format-chat',
         'rewrite'            => false,
     ]);
+
+    $bitmon_common = [
+        'public'             => false,
+        'publicly_queryable' => false,
+        'show_ui'            => true,
+        'show_in_rest'       => true,
+        'capability_type'    => 'post',
+        'map_meta_cap'       => true,
+        'supports'           => ['title', 'editor', 'author', 'custom-fields', 'revisions'],
+        'rewrite'            => false,
+    ];
+    register_post_type('bitmon_battle', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Battles', 'bitcore-core'), 'singular_name' => __('BITmon Battle', 'bitcore-core')],
+        'menu_icon' => 'dashicons-shield-alt',
+        'taxonomies' => ['bitmon_format', 'bitmon_event_type', 'bitmon_visibility'],
+    ]));
+    register_post_type('bitmon_tournament', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Tournaments', 'bitcore-core'), 'singular_name' => __('BITmon Tournament', 'bitcore-core')],
+        'menu_icon' => 'dashicons-awards',
+        'taxonomies' => ['bitmon_format', 'bitmon_event_type', 'bitmon_visibility'],
+    ]));
+    register_post_type('bitmon_agent_profile', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Agents', 'bitcore-core'), 'singular_name' => __('BITmon Agent', 'bitcore-core')],
+        'menu_icon' => 'dashicons-games',
+        'taxonomies' => ['bitmon_event_type', 'bitmon_visibility'],
+    ]));
+    register_post_type('bitmon_result', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Benchmark Results', 'bitcore-core'), 'singular_name' => __('BITmon Benchmark Result', 'bitcore-core')],
+        'menu_icon' => 'dashicons-chart-line',
+        'taxonomies' => ['bitmon_format', 'bitmon_event_type', 'bitmon_visibility'],
+    ]));
     register_post_type('bitcore_artifact', [
         'labels'             => [
             'name'          => __('Artifacts', 'bitcore-core'),
@@ -449,6 +482,16 @@ function bitcore_register_post_types(): void {
 add_action('init', 'bitcore_register_post_types', 5);
 
 function bitcore_register_taxonomies(): void {
+
+    foreach (['bitmon_format' => 'BITmon Formats', 'bitmon_event_type' => 'BITmon Event Types', 'bitmon_visibility' => 'BITmon Visibility'] as $taxonomy => $label) {
+        register_taxonomy($taxonomy, ['bitmon_battle', 'bitmon_tournament', 'bitmon_agent_profile', 'bitmon_result'], [
+            'labels'       => ['name' => __($label, 'bitcore-core'), 'singular_name' => __($label, 'bitcore-core')],
+            'public'       => false,
+            'hierarchical' => true,
+            'show_ui'      => true,
+            'show_in_rest' => true,
+        ]);
+    }
     register_taxonomy('bitcore_channel', ['agent_task', 'bitcore_artifact', 'post'], [
         'labels'       => [
             'name'          => __('Channels', 'bitcore-core'),

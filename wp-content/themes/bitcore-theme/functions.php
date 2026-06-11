@@ -95,6 +95,7 @@ function bitcore_require_auth_for_app_routes(): void {
         'chat',
         'knowledge',
         'my-posts',
+        // /arena/ remains public by design: it is ASHI's AI Village content surface.
     );
 
     foreach ( $protected_slugs as $slug ) {
@@ -383,9 +384,10 @@ function bitcore_enqueue_page_scripts() {
     // Canonical ASHI page scripts. Legacy task/goal/session pages are consolidated into /work/.
     $all_scripts = array(
         'work' => 'work.js',
+        'arena' => 'arena.js',
     );
 
-    $slug = get_post_field('post_name', get_queried_object_id());
+    $slug = get_query_var('bitmon_arena') ? 'arena' : get_post_field('post_name', get_queried_object_id());
     
     if (isset($all_scripts[$slug])) {
         $js_file = $all_scripts[$slug];
@@ -413,3 +415,34 @@ function bitcore_enqueue_core_css() {
     wp_enqueue_style('bitcore-template-bridge-css', get_template_directory_uri() . '/assets/css/template-bridge.css', array('bitcore-design-system-css'), '1.0.0');
 }
 add_action('wp_enqueue_scripts', 'bitcore_enqueue_core_css');
+
+
+/**
+ * Public BITmon Arena route.
+ * Serves /arena/ without requiring a manually-created WordPress page.
+ */
+function bitcore_register_arena_route(): void {
+    add_rewrite_rule('^arena/?$', 'index.php?bitmon_arena=1', 'top');
+}
+add_action('init', 'bitcore_register_arena_route');
+
+function bitcore_register_arena_query_var(array $vars): array {
+    $vars[] = 'bitmon_arena';
+    return $vars;
+}
+if (function_exists('add_filter')) {
+    add_filter('query_vars', 'bitcore_register_arena_query_var');
+}
+
+function bitcore_load_arena_template(string $template): string {
+    if (get_query_var('bitmon_arena')) {
+        $arena_template = get_template_directory() . '/template-arena.php';
+        if (is_file($arena_template)) {
+            return $arena_template;
+        }
+    }
+    return $template;
+}
+if (function_exists('add_filter')) {
+    add_filter('template_include', 'bitcore_load_arena_template');
+}
