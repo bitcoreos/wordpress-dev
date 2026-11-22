@@ -119,29 +119,6 @@ class Feeds_Loader
             'permission_callback' => [__CLASS__, 'check_write_permission'],
         ]);
         
-        register_rest_route('bitcore/v1', '/rag/workspaces', [
-            'methods' => 'GET',
-            'callback' => [__CLASS__, 'get_rag_workspaces'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
-        ]);
-        
-        register_rest_route('bitcore/v1', '/rag/workspaces', [
-            'methods' => 'POST',
-            'callback' => [__CLASS__, 'create_rag_workspace'],
-            'permission_callback' => [__CLASS__, 'check_write_permission'],
-        ]);
-        
-        register_rest_route('bitcore/v1', '/rag/workspaces/(?P<id>\d+)/documents', [
-            'methods' => 'POST',
-            'callback' => [__CLASS__, 'store_rag_document'],
-            'permission_callback' => [__CLASS__, 'check_write_permission'],
-        ]);
-        
-        register_rest_route('bitcore/v1', '/rag/workspaces/(?P<id>\d+)/query', [
-            'methods' => 'POST',
-            'callback' => [__CLASS__, 'query_rag_workspace'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
-        ]);
     }
     
     public static function register_admin_menu(): void

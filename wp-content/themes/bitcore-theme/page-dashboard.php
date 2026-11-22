@@ -1,17 +1,21 @@
 <?php
 /**
- * Template Name: System Dashboard
- * Description: System health monitoring and status overview
- * @package bitcore-librarian-theme
- * @since 1.0.0
+ * Template Name: Dashboard
+ * Personal SaaS dashboard — my tasks, posts, agents, and activity.
+ * @package bitcore-theme
+ * @since 1.2.1
  */
+if (!is_user_logged_in()) {
+    wp_redirect(bitcore_get_login_url($_SERVER['REQUEST_URI']));
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php wp_title('|', true, 'right'); ?> - System Dashboard</title>
+    <title><?php wp_title('|', true, 'right'); ?> - Dashboard</title>
     <?php wp_head(); ?>
     <style>
         :root {
@@ -26,7 +30,6 @@
             --accent-secondary: #6366f1;
             --accent-warning: #f59e0b;
             --accent-danger: #ef4444;
-            --accent-success: #22c55e;
             --border-default: #2a2a3a;
             --radius-md: 10px;
             --radius-lg: 16px;
@@ -41,297 +44,293 @@
             color: var(--text-primary);
             min-height: 100vh;
         }
-        .dash-container { max-width: 1400px; margin: 0 auto; padding: var(--space-lg); }
-        .dash-header {
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+        .dashboard-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--space-lg);
-            padding: var(--space-lg);
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-default);
+        }
+        .dashboard-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .credits-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+        }
+        .dashboard-card {
             background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-default);
-        }
-        .dash-title { display: flex; align-items: center; gap: var(--space-md); }
-        .dash-icon {
-            width: 48px; height: 48px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: var(--radius-md);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 24px;
-        }
-        .system-badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .system-badge.healthy { background: var(--accent-success); color: #000; }
-        .system-badge.degraded { background: var(--accent-warning); color: #000; }
-        .system-badge.critical { background: var(--accent-danger); color: #fff; }
-        .health-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
-        .health-card {
-            background: var(--bg-secondary);
             border: 1px solid var(--border-default);
             border-radius: var(--radius-lg);
-            padding: var(--space-lg);
+            padding: 24px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        .health-card.ok { border-left: 4px solid var(--accent-success); }
-        .health-card.warn { border-left: 4px solid var(--accent-warning); }
-        .health-card.error { border-left: 4px solid var(--accent-danger); }
-        .health-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); }
-        .health-name { font-weight: 600; }
-        .health-status { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; }
-        .health-status.ok { background: rgba(34, 197, 94, 0.2); color: var(--accent-success); }
-        .health-status.warn { background: rgba(245, 158, 11, 0.2); color: var(--accent-warning); }
-        .health-status.error { background: rgba(239, 68, 68, 0.2); color: var(--accent-danger); }
-        .health-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
-        .metric { text-align: center; padding: var(--space-sm); background: var(--bg-tertiary); border-radius: 6px; }
-        .metric-value { font-size: 1.25rem; font-weight: 700; font-family: 'SF Mono', monospace; }
-        .metric-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
-        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-lg); }
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-default);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .dashboard-card.wide {
+            grid-column: 1 / -1;
         }
         .card-header {
-            padding: var(--space-md) var(--space-lg);
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-default);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .card-title { font-weight: 600; }
-        .card-body { padding: var(--space-md); }
-        .queue-item {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: var(--space-sm) var(--space-md);
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-            margin-bottom: var(--space-sm);
+            gap: 12px;
+            margin-bottom: 16px;
         }
-        .queue-name { font-size: 0.9rem; }
-        .queue-count { font-family: 'SF Mono', monospace; font-size: 0.85rem; color: var(--accent-primary); }
-        .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
+        .card-icon {
+            font-size: 20px;
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+        }
+        .card-header h2 { margin: 0; font-size: 17px; font-weight: 600; flex: 1; }
+        .card-link { font-size: 13px; color: var(--accent-primary); text-decoration: none; }
+        .card-link:hover { text-decoration: underline; }
+        .item-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 8px; min-height: 120px; margin-bottom: 16px; }
+        .item-list li {
+            padding: 10px 12px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
+        .status-dot.inbox { background: var(--text-muted); }
+        .status-dot.doing { background: #3b82f6; }
+        .status-dot.done { background: #22c55e; }
+        .item-title { flex: 1; }
+        .item-meta { font-size: 11px; color: var(--text-muted); }
+        .agent-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .agent-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+        }
+        .agent-name { font-size: 13px; font-weight: 500; }
+        .agent-status {
+            margin-left: auto; font-size: 11px; padding: 2px 8px; border-radius: 4px;
+        }
+        .agent-status.active { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .agent-status.inactive { background: rgba(107,114,128,0.2); color: #6b7280; }
+        .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         .action-btn {
-            padding: var(--space-md);
-            background: var(--bg-tertiary);
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px;
+            background: var(--bg-elevated);
             border: 1px solid var(--border-default);
             border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: center;
-        }
-        .action-btn:hover { border-color: var(--accent-primary); transform: translateY(-2px); }
-        .action-icon { font-size: 1.5rem; margin-bottom: var(--space-xs); }
-        .action-label { font-size: 0.85rem; color: var(--text-secondary); }
-        .log-container {
-            max-height: 300px;
-            overflow-y: auto;
-            font-family: 'SF Mono', monospace;
-            font-size: 0.8rem;
-        }
-        .log-entry {
-            padding: var(--space-xs) 0;
-            border-bottom: 1px solid var(--border-default);
-            display: flex;
-            gap: var(--space-sm);
-        }
-        .log-time { color: var(--text-muted); min-width: 70px; }
-        .log-level { min-width: 50px; font-weight: 600; }
-        .log-level.info { color: var(--accent-primary); }
-        .log-level.warn { color: var(--accent-warning); }
-        .log-level.error { color: var(--accent-danger); }
-        .btn {
-            padding: var(--space-sm) var(--space-md);
-            border-radius: 6px;
-            border: 1px solid var(--border-default);
-            background: var(--bg-tertiary);
             color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85rem;
+            text-decoration: none;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
         }
-        .btn:hover { background: var(--bg-elevated); border-color: var(--accent-primary); }
-        .btn-primary { background: var(--accent-primary); border-color: var(--accent-primary); color: #000; }
-        .status-dot {
-            width: 8px; height: 8px;
-            border-radius: 50%;
+        .action-btn:hover { border-color: rgba(99,102,241,0.4); }
+        .action-icon { font-size: 18px; }
+        .card-cta {
             display: inline-block;
-            margin-right: var(--space-xs);
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: #fff; text-decoration: none; border-radius: 8px;
+            font-size: 14px; font-weight: 500;
         }
-        .status-dot.ok { background: var(--accent-success); }
-        .status-dot.warn { background: var(--accent-warning); }
-        .status-dot.error { background: var(--accent-danger); }
-        @media (max-width: 1024px) {
-            .health-grid { grid-template-columns: repeat(2, 1fr); }
-            .main-grid { grid-template-columns: 1fr; }
+        .loading-state {
+            text-align: center; padding: 20px;
+            color: var(--text-muted); font-size: 13px;
         }
-        @media (max-width: 768px) {
-            .health-grid { grid-template-columns: 1fr; }
-            .quick-actions { grid-template-columns: 1fr; }
-        }
+        .empty-action { display: inline-block; margin-top: 10px; color: var(--accent-primary); text-decoration: none; font-weight: 600; }
+        .control-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .control-tile { display: block; padding: 14px; border: 1px solid var(--border-default); border-radius: 10px; background: var(--bg-tertiary); color: var(--text-primary); text-decoration: none; }
+        .control-tile:hover { border-color: var(--accent-primary); }
+        .control-tile strong { display: block; margin-bottom: 4px; }
+        .control-tile span { color: var(--text-muted); font-size: 12px; }
+        @media (max-width: 900px) { .control-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
-<body>
-    <div class="dash-container">
-        <header class="dash-header">
-            <div class="dash-title">
-                <div class="dash-icon">📊</div>
-                <div>
-                    <h1>System Dashboard</h1>
-                    <p style="color: var(--text-muted);">Health & Status Overview</p>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: var(--space-md);">
-                <span class="system-badge healthy" id="system-badge">HEALTHY</span>
-                <button class="btn" id="refresh-btn">⟳ Refresh</button>
-            </div>
-        </header>
-
-        <div class="health-grid">
-            <div class="health-card ok" id="db-health">
-                <div class="health-header">
-                    <span class="health-name">🗄️ Database</span>
-                    <span class="health-status ok">OK</span>
-                </div>
-                <div class="health-metrics">
-                    <div class="metric">
-                        <div class="metric-value" id="db-connections">--</div>
-                        <div class="metric-label">Connections</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="db-latency">--</div>
-                        <div class="metric-label">Latency</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="health-card ok" id="cache-health">
-                <div class="health-header">
-                    <span class="health-name">💾 Cache</span>
-                    <span class="health-status ok">OK</span>
-                </div>
-                <div class="health-metrics">
-                    <div class="metric">
-                        <div class="metric-value" id="cache-hit">--</div>
-                        <div class="metric-label">Hit Rate</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="cache-keys">--</div>
-                        <div class="metric-label">Keys</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="health-card ok" id="queue-health">
-                <div class="health-header">
-                    <span class="health-name">📨 Queue</span>
-                    <span class="health-status ok">OK</span>
-                </div>
-                <div class="health-metrics">
-                    <div class="metric">
-                        <div class="metric-value" id="queue-pending">--</div>
-                        <div class="metric-label">Pending</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="queue-workers">--</div>
-                        <div class="metric-label">Workers</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="main-grid">
-            <div>
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">Queue Monitor</span>
-                    </div>
-                    <div class="card-body" id="queue-list">
-                        <div class="queue-item">
-                            <span class="queue-name">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: var(--space-lg);">
-                    <div class="card-header">
-                        <span class="card-title">System Log</span>
-                        <button class="btn" id="clear-log">Clear</button>
-                    </div>
-                    <div class="card-body">
-                        <div class="log-container" id="system-log">
-                            <div class="log-entry">
-                                <span class="log-time">--:--:--</span>
-                                <span class="log-level info">INFO</span>
-                                <span>Initializing...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">Quick Actions</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="quick-actions">
-                            <div class="action-btn" onclick="runAction('flush-cache')">
-                                <div class="action-icon">🗑️</div>
-                                <div class="action-label">Flush Cache</div>
-                            </div>
-                            <div class="action-btn" onclick="runAction('restart-workers')">
-                                <div class="action-icon">🔄</div>
-                                <div class="action-label">Restart Workers</div>
-                            </div>
-                            <div class="action-btn" onclick="runAction('clear-queue')">
-                                <div class="action-icon">🧹</div>
-                                <div class="action-label">Clear Queue</div>
-                            </div>
-                            <div class="action-btn" onclick="runAction('export-logs')">
-                                <div class="action-icon">📥</div>
-                                <div class="action-label">Export Logs</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card" style="margin-top: var(--space-lg);">
-                    <div class="card-header">
-                        <span class="card-title">System Stats</span>
-                    </div>
-                    <div class="card-body">
-                        <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">Version</span>
-                                <span id="sys-version">1.0.0</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">Uptime</span>
-                                <span id="sys-uptime">--</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">Memory</span>
-                                <span id="sys-memory">--</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: var(--text-muted);">PHP</span>
-                                <span id="sys-php"><?php echo phpversion(); ?></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<body <?php body_class(); ?>>
+<?php include(get_template_directory() . "/nav-header.php"); ?>
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome, <?php echo esc_html(wp_get_current_user()->display_name); ?></h1>
+        <div class="credits-badge">
+            <span>⚡</span>
+            <span id="credits-text">Loading...</span>
         </div>
     </div>
+    
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h2>My Tasks</h2>
+                <a href="/work/" class="card-link">View all</a>
+            </div>
+            <ul class="item-list" id="my-tasks"><li class="loading-state">Loading...</li></ul>
+            <a href="/work/" class="card-cta">Go to Work</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span class="card-icon">📝</span>
+                <h2>My Posts</h2>
+                <a href="/my-posts/" class="card-link">View all</a>
+            </div>
+            <ul class="item-list" id="my-posts-list"><li class="loading-state">Loading...</li></ul>
+            <a href="/my-posts/" class="card-cta">New Post</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span class="card-icon">🤖</span>
+                <h2>My Agents</h2>
+                <a href="/agents/" class="card-link">Manage</a>
+            </div>
+            <div class="agent-list" id="my-agents"><div class="loading-state">Loading...</div></div>
+            <a href="/agents/" class="card-cta">Go to Agents</a>
+        </div>
+        
+        <div class="dashboard-card">
+            <div class="card-header">
+                <span class="card-icon">⚡</span>
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="action-grid">
+                <a href="/chat/" class="action-btn"><span class="action-icon">💬</span><span>Start Chat</span></a>
+                <a href="/knowledge/" class="action-btn"><span class="action-icon">📚</span><span>New Prompt</span></a>
+                <a href="/work/" class="action-btn"><span class="action-icon">📋</span><span>New Task</span></a>
+                <a href="/my-posts/" class="action-btn"><span class="action-icon">📝</span><span>New Post</span></a>
+            </div>
+        </div>
 
-    <?php wp_footer(); ?>
+        <div class="dashboard-card wide">
+            <div class="card-header">
+                <span class="card-icon">🧭</span>
+                <h2>Control Center</h2>
+            </div>
+            <div class="control-grid">
+                <a href="/my-posts/?type=bitcore_prompt" class="control-tile"><strong>Prompts</strong><span>Write reusable instructions for ASHI and BIThub context.</span></a>
+                <a href="/work/" class="control-tile"><strong>Research Requests</strong><span>Create tasks, goals, milestones, and agent-dispatched work.</span></a>
+                <a href="/knowledge/" class="control-tile"><strong>BIThub Graph</strong><span>Browse prompts, skills, artifacts, and guide-derived context.</span></a>
+                <a href="/chat/" class="control-tile"><strong>Swarm Chat</strong><span>Talk to Aria, Forge, or Muse with session-aware context.</span></a>
+                <a href="/my-posts/?type=bitcore_artifact" class="control-tile"><strong>Artifacts</strong><span>Review outputs, social posts, and shareable research objects.</span></a>
+                <a href="/dashboard/#credits-text" class="control-tile"><strong>Credits & Limits</strong><span>Track daily usage now; checkout, x402, and provider-key controls belong here next.</span></a>
+            </div>
+        </div>
+        
+        <div class="dashboard-card wide">
+            <div class="card-header">
+                <span class="card-icon">📊</span>
+                <h2>Recent Activity</h2>
+            </div>
+            <ul class="item-list" id="activity-list"><li class="loading-state">Loading...</li></ul>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const restUrl = '/wp-json/bitcore/v1/';
+    const nonce = '<?php echo wp_create_nonce("wp_rest"); ?>';
+    
+    async function api(endpoint) {
+        try {
+            const res = await fetch(restUrl + endpoint.replace(/^\//, ''), {
+                headers: { 'Accept': 'application/json', 'X-WP-Nonce': nonce }
+            });
+            if (!res.ok) throw new Error(res.statusText);
+            return await res.json().catch(() => null);
+        } catch (e) { return null; }
+    }
+    
+    async function loadTasks() {
+        const data = await api('kanban?limit=5');
+        const list = document.getElementById('my-tasks');
+        const items = Array.isArray(data) ? data : (data && Array.isArray(data.tasks) ? data.tasks : (data && Array.isArray(data.data) ? data.data : []));
+        if (!items.length) { list.innerHTML = '<li class="loading-state">No tasks yet<br><a class="empty-action" href="/work/">Create your first task →</a></li>'; return; }
+        list.innerHTML = items.slice(0, 5).map(t => {
+            const s = t.status || 'inbox';
+            return '<li><span class="status-dot ' + s + '"></span><span class="item-title">' + (t.title || 'Untitled') + '</span><span class="item-meta">' + s + '</span></li>';
+        }).join('');
+    }
+    
+    async function loadPosts() {
+        const data = await api('my-posts?limit=5');
+        const list = document.getElementById('my-posts-list');
+        const items = Array.isArray(data) ? data : (data && Array.isArray(data.items) ? data.items : (data && Array.isArray(data.posts) ? data.posts : []));
+        if (!items.length) { list.innerHTML = '<li class="loading-state">No posts yet<br><a class="empty-action" href="/my-posts/">Draft a post or prompt →</a></li>'; return; }
+        list.innerHTML = items.slice(0, 5).map(p => {
+            return '<li><span class="item-title">' + (p.title || 'Untitled') + '</span><span class="item-meta">' + (p.type || 'post') + '</span></li>';
+        }).join('');
+    }
+    
+    async function loadAgents() {
+        const data = await api('eliza/agents');
+        const container = document.getElementById('my-agents');
+        const items = Array.isArray(data) ? data : (data && data.agents ? data.agents : []);
+        if (!items.length) { container.innerHTML = '<div class="loading-state">Aria, Forge, and Muse are ready to configure<br><a class="empty-action" href="/agents/">Open agent directory →</a></div>'; return; }
+        container.innerHTML = items.map(a => {
+            const active = (a.status || '').toLowerCase() === 'active';
+            return '<div class="agent-item"><span class="agent-avatar">' + (a.emoji || '🤖') + '</span><span class="agent-name">' + (a.name || 'Agent') + '</span><span class="agent-status ' + (active ? 'active' : 'inactive') + '">' + (active ? 'Active' : 'Idle') + '</span></div>';
+        }).join('');
+    }
+    
+    async function loadCredits() {
+        const data = await api('credits/eliza');
+        const target = document.getElementById('credits-text');
+        if (!data || typeof data.remaining_today === 'undefined' || typeof data.daily_limit === 'undefined') {
+            target.textContent = 'Credits unavailable';
+            return;
+        }
+
+        const tier = data.tier || 'core';
+        target.textContent = data.remaining_today + ' / ' + data.daily_limit + ' credits · ' + tier;
+    }
+    
+    async function loadActivity() {
+        const [tasks, posts] = await Promise.all([api('kanban?limit=3'), api('my-posts?limit=3')]);
+        const list = document.getElementById('activity-list');
+        const items = [];
+        const taskItems = Array.isArray(tasks) ? tasks : (tasks && Array.isArray(tasks.tasks) ? tasks.tasks : (tasks && Array.isArray(tasks.data) ? tasks.data : []));
+        taskItems.slice(0, 3).forEach(t => items.push('<li><span>📋</span><span class="item-title">Task: ' + (t.title || 'Untitled') + '</span><span class="item-meta">' + (t.status || 'inbox') + '</span></li>'));
+        const pItems = Array.isArray(posts) ? posts : (posts && Array.isArray(posts.items) ? posts.items : (posts && Array.isArray(posts.posts) ? posts.posts : []));
+        pItems.slice(0, 3).forEach(p => items.push('<li><span>📝</span><span class="item-title">Post: ' + (p.title || 'Untitled') + '</span></li>'));
+        list.innerHTML = items.length ? items.join('') : '<li class="loading-state">No recent activity yet<br><a class="empty-action" href="/chat/">Start with Aria →</a></li>';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        loadTasks(); loadPosts(); loadAgents(); loadCredits(); loadActivity();
+    });
+})();
+</script>
+<?php wp_footer(); ?>
 </body>
 </html>

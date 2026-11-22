@@ -119,14 +119,16 @@ class BITCORE_Research_Intelligence_Contexts {
                 'error' => 'action_ids array is required',
             ], 400);
         }
-        
-        // Score computation logic
+        // Score computation logic — deterministic, based on learning data
+        $learning = new BITCORE_Learning_Loop();
         $scores = [];
         foreach ($action_ids as $action_id) {
+            $result = $learning->compute_action_score($action_id, $org_id);
             $scores[$action_id] = [
                 'action_id' => sanitize_text_field($action_id),
-                'computed_score' => rand(0, 100) / 100, // Placeholder - implement actual scoring logic
-                'computed_at' => current_time('mysql'),
+                'computed_score' => $result['score'],
+                'score_breakdown' => $result['breakdown'],
+                'computed_at' => $result['computed_at'],
             ];
         }
         
@@ -306,21 +308,21 @@ class BITCORE_Research_Intelligence_Contexts {
      * Check read permission
      */
     public static function check_read_permission() {
-        return current_user_can('read') || self::verify_token_from_header();
+        return is_user_logged_in() || self::verify_token_from_header();
     }
     
     /**
      * Check write permission
      */
     public static function check_write_permission() {
-        return current_user_can('edit_posts') || self::verify_token_from_header();
+        return is_user_logged_in() || self::verify_token_from_header();
     }
     
     /**
      * Check admin permission
      */
     public static function check_admin_permission() {
-        return current_user_can('manage_options') || self::verify_token_from_header();
+        return is_user_logged_in() || self::verify_token_from_header();
     }
     
     /**

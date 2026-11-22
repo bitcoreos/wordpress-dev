@@ -171,7 +171,7 @@ class BudgetManager {
         if ($existing) {
             $wpdb->update(
                 $this->policies_table,
-                ['limit' => $limit, 'period' => $period, 'updated_at' => current_time('mysql')],
+                ['limit_amount' => $limit, 'period' => $period, 'updated_at' => current_time('mysql')],
                 ['id' => $existing->id]
             );
             return $existing->id;
@@ -180,7 +180,7 @@ class BudgetManager {
         $wpdb->insert($this->policies_table, [
             'agent_id' => $agent_id,
             'resource_type' => $resource_type,
-            'limit' => $limit,
+            'limit_amount' => $limit,
             'period' => $period,
             'is_active' => 1,
             'created_at' => current_time('mysql')
@@ -255,7 +255,7 @@ class BudgetManager {
         global $wpdb;
 
         $policies = $wpdb->get_results($wpdb->prepare(
-            "SELECT * FROM {$this->policies_table} WHERE agent_id = %s AND is_active = 1",
+            "SELECT *, limit_amount AS `limit` FROM {$this->policies_table} WHERE agent_id = %s AND is_active = 1",
             $agent_id
         ));
 
@@ -272,5 +272,37 @@ class BudgetManager {
         }
 
         return $status;
+    }
+
+    /**
+     * Get all agent budgets (for dashboard listing)
+     *
+     * @return array List of agent budget summaries
+     */
+    public function get_all_budgets(): array {
+        global $wpdb;
+
+        $policies = $wpdb->get_results(
+            "SELECT DISTINCT agent_id FROM {$this->policies_table} WHERE is_active = 1"
+        );
+
+        $budgets = [];
+        foreach ($policies as $policy) {
+            $status = $this->get_status($policy->agent_id);
+            foreach ($status as $resource_type => $info) {
+                $budgets[] = [
+                    'agent' => $policy->agent_id,
+                    'name' => $policy->agent_id,
+                    'spent' => $info['consumed'] ?? 0,
+                    'limit' => $info['limit'] ?? 100,
+                    'budget' => $info['limit'] ?? 100,
+                    'resource_type' => $resource_type,
+                    'period' => $info['period'] ?? 'daily',
+                    'percentage_used' => $info['percentage_used'] ?? 0
+                ];
+            }
+        }
+
+        return $budgets;
     }
 }

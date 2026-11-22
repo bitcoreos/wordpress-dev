@@ -1,95 +1,68 @@
-// Approvals Page JavaScript
-(function() {
-    console.log('ApprovalsPage initializing...');
-    
-    const container = document.getElementById('approvals-container');
-    if (!container) {
-        console.error('Approvals container not found');
-        return;
-    }
-    
-    const restUrl = (typeof bitcoreData !== 'undefined' && bitcoreData.restUrl) 
-        ? bitcoreData.restUrl 
-        : '/wp-json/bitcore/v1/';
-    
-    async function loadApprovals() {
-        try {
-            const response = await fetch(restUrl + 'approvals', {
-                method: 'GET',
-                headers: {'Content-Type': 'application/json'}
+/**
+ * BITCORE Approvals Queue Controller
+ * Paperclip Integration - Pending Approvals
+ */
+(function(global) {
+    'use strict';
+    const ApprovalsPage = {
+        config: { endpoint: '/wp-json/bitcore/v1/approvals', nonce: null },
+        init: function() {
+            if (typeof bitcoreData !== 'undefined') this.config.nonce = bitcoreData.nonce;
+            console.log('ApprovalsPage initializing...');
+            this.bindEvents();
+            this.loadData();
+        },
+        bindEvents: function() {
+            var self = this;
+            document.getElementById('refresh-approvals')?.addEventListener('click', function() { self.loadData(); });
+        },
+        loadData: async function() {
+            try {
+                var response = await fetch(this.config.endpoint, { headers: { 'X-WP-Nonce': this.config.nonce || '' } });
+                var data = await response.json();
+                this.render(data);
+            } catch (error) {
+                console.error('Approvals error:', error);
+                document.getElementById('approval-list').innerHTML = '<div class="empty-state">No approval data available</div>';
+                this.updateStats(0, 0, 0);
+            }
+        },
+        render: function(data) {
+            var approvals = data.approvals || data || [];
+            var list = document.getElementById('approval-list');
+            if (!list) return;
+            var pending = approvals.filter(function(a) { return a.status === 'pending'; });
+            if (pending.length === 0) {
+                list.innerHTML = '<div class="empty-state">No pending approvals</div>';
+                this.updateStats(0, 0, 0);
+                return;
+            }
+            var html = '';
+            pending.forEach(function(a) {
+                html += '<div class="approval-card"><div class="approval-header"><span class="approval-type">' + (a.type || 'Request') + '</span><span class="approval-agent">' + (a.agent || 'System') + '</span></div>';
+                html += '<div class="approval-body">' + (a.description || a.message || 'No description') + '</div>';
+                html += '<div class="approval-actions"><button class="btn btn-success btn-sm" onclick="ApprovalsPage.respond(\'' + a.id + '\', \'approve\')">✓ Approve</button>';
+                html += '<button class="btn btn-danger btn-sm" onclick="ApprovalsPage.respond(\'' + a.id + '\', \'reject\')">✗ Reject</button></div></div>';
             });
-            
-            if (!response.ok) throw new Error('API returned ' + response.status);
-            
-            let data = await response.json();
-            if (data && data.approvals) data = data.approvals;
-            
-            renderApprovals(data);
-        } catch (error) {
-            console.error('Load approvals error:', error);
-            container.innerHTML = '<p class="error">Error loading approvals: ' + error.message + '</p>';
+            list.innerHTML = html;
+            this.updateStats(pending.length, 0, 0);
+        },
+        respond: async function(id, action) {
+            try {
+                await fetch(this.config.endpoint + '/' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': this.config.nonce || '' },
+                    body: JSON.stringify({ action: action })
+                });
+                this.loadData();
+            } catch (error) { console.error('Response error:', error); }
+        },
+        updateStats: function(pending, approved, rejected) {
+            if (document.getElementById('pending-approvals')) document.getElementById('pending-approvals').textContent = pending;
+            if (document.getElementById('approved-count')) document.getElementById('approved-count').textContent = approved;
+            if (document.getElementById('rejected-count')) document.getElementById('rejected-count').textContent = rejected;
         }
-    }
-    
-    function renderApprovals(data) {
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p class="empty">No pending approvals found.</p>';
-            return;
-        }
-        
-        let html = '<div class="approvals-list">';
-        
-        if (Array.isArray(data)) {
-            data.forEach(function(item) {
-                html += '<div class="approval-card">';
-                html += '<div class="approval-header">';
-                html += '<h3>' + (item.title || 'Approval Request') + '</h3>';
-                html += '<span class="status">' + (item.status || 'pending') + '</span>';
-                html += '</div>';
-                if (item.description) html += '<p>' + item.description + '</p>';
-                html += '<div class="approval-meta">';
-                if (item.requester) html += '<span>Requested by: ' + item.requester + '</span>';
-                if (item.created_at) html += '<span>Date: ' + item.created_at + '</span>';
-                html += '</div>';
-                html += '<div class="approval-actions">';
-                html += '<button class="btn-approve" data-id="' + item.id + '">Approve</button>';
-                html += '<button class="btn-reject" data-id="' + item.id + '">Reject</button>';
-                html += '</div>';
-                html += '</div>';
-            });
-        }
-        
-        html += '</div>';
-        container.innerHTML = html;
-        
-        // Add event listeners
-        document.querySelectorAll('.btn-approve').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                handleApproval(this.getAttribute('data-id'), 'approve');
-            });
-        });
-        
-        document.querySelectorAll('.btn-reject').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                handleApproval(this.getAttribute('data-id'), 'reject');
-            });
-        });
-    }
-    
-    window.handleApproval = function(id, action) {
-        fetch(restUrl + 'approvals/' + id + '/' + action, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'}
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Approval ' + action + 'd successfully');
-            loadApprovals();
-        })
-        .catch(error => {
-            alert('Error: ' + error.message);
-        });
     };
-    
-    loadApprovals();
-})();
+    document.addEventListener('DOMContentLoaded', function() { ApprovalsPage.init(); });
+    global.ApprovalsPage = ApprovalsPage;
+})(window);

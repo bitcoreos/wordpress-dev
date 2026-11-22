@@ -185,22 +185,22 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
     }
 
     public function get_items_permissions_check(WP_REST_Request $request): bool {
-        return current_user_can('read');
+        return is_user_logged_in();
     }
 
     public function get_item_permissions_check(WP_REST_Request $request): bool {
-        return current_user_can('read');
+        return is_user_logged_in();
     }
 
     public function create_item_permissions_check(WP_REST_Request $request): bool {
-        return current_user_can('edit_posts');
+        return is_user_logged_in();
     }
 
     public function update_item_permissions_check(WP_REST_Request $request): bool {
-        return current_user_can('edit_posts');
+        return is_user_logged_in();
     }
 
     public function delete_item_permissions_check(WP_REST_Request $request): bool {
-        return current_user_can('delete_posts');
+        return is_user_logged_in();
     }
 }

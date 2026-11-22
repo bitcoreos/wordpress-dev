@@ -26,7 +26,7 @@ class BITCORE_Coordination_ConsensusProtocol {
 
     public function __construct(
         string $type = self::TYPE_MAJORITY,
-        array $agent_weights = ['hyperion' => 2, 'coraline' => 1, 'hermes' => 1],
+        array $agent_weights = ['hyperion' => 2, 'coraline' => 1, 'eliza' => 1],
         float $threshold = 0.5
     ) {
         $this->type = $type;

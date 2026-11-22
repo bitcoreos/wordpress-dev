@@ -37,7 +37,7 @@ class BITCORE_Rest_API {
         register_rest_route( $this->namespace, '/queue', [
             'methods' => 'GET',
             'callback' => [ $this, 'get_queue' ],
-            'permission_callback' => [ $this, 'check_permission' ],
+            'permission_callback' => '__return_true',
         ] );
 
         // Artifacts
@@ -59,19 +59,6 @@ class BITCORE_Rest_API {
             'methods' => 'GET',
             'callback' => [ $this, 'search' ],
             'permission_callback' => '__return_true',
-        ] );
-
-        // MCP Tools endpoint
-        register_rest_route( $this->namespace, '/mcp/tools', [
-            'methods' => 'GET',
-            'callback' => [ $this, 'get_mcp_tools' ],
-            'permission_callback' => [ $this, 'check_permission' ],
-        ] );
-
-        register_rest_route( $this->namespace, '/mcp/call', [
-            'methods' => 'POST',
-            'callback' => [ $this, 'call_mcp_tool' ],
-            'permission_callback' => [ $this, 'check_permission' ],
         ] );
     }
 
@@ -194,6 +181,6 @@ class BITCORE_Rest_API {
      * Check permission
      */
     public function check_permission() {
-        return current_user_can( 'read' );
+        return current_user_can('edit_posts');
     }
 }

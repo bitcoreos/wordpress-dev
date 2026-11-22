@@ -225,7 +225,7 @@ class BITCORE_MCP_Core {
 
         return [
             'content' => [
-                [ 'type' => 'text', 'text' => $this->format_result( $result ) ],
+                [ 'type' => 'string', 'text' => $this->format_result( $result ) ],
             ],
             'isError' => false,
         ];
@@ -464,27 +464,38 @@ class BITCORE_MCP_Core {
     }
 
     private function parse_resource_uri( $uri ) {
-        // Parse bitcore://resource/params format
-        if ( ! preg_match( '/^bitcore:\/\/([^\/]+)\/(.*)$/', $uri, $matches ) ) {
+        // Parse bitcore://resource/params format. The path part is optional so
+        // bitcore://bitwiki can resolve to an index resource.
+        if ( ! preg_match( '/^bitcore:\/\/([^\/]+)(?:\/(.*))?$/', $uri, $matches ) ) {
             return new WP_Error( 'invalid_uri', 'Invalid resource URI format', [ 'status' => 400 ] );
         }
 
         $resource = $matches[1];
-        $path = $matches[2];
+        $path = $matches[2] ?? '';
+        $path = trim( $path, '/' );
 
-        // Parse path params
-        $params = [];
-        if ( strpos( $path, '/' ) !== false ) {
+        $params = [
+            'path' => $path,
+        ];
+
+        if ( $path !== '' ) {
             $parts = explode( '/', $path );
-            $params['path'] = $path;
             $params['segments'] = $parts;
-            
-            // Map common patterns
-            if ( is_numeric( $parts[0] ) ) {
-                $params['id'] = (int) $parts[0];
+            $params['id'] = is_numeric( $parts[0] ) ? (int) $parts[0] : $parts[0];
+
+            // Resource callbacks expect semantic identifiers, not only a
+            // generic path. Map the first URI segment to the callback contract.
+            switch ( $resource ) {
+                case 'bithub':
+                    $params['topic_id'] = $params['id'];
+                    break;
+                case 'artifacts':
+                    $params['artifact_id'] = $params['id'];
+                    break;
+                case 'swarm':
+                    $params['agent_id'] = $params['id'];
+                    break;
             }
-        } else {
-            $params['path'] = $path;
         }
 
         return [
@@ -515,7 +526,7 @@ class BITCORE_MCP_Core {
         
         return [
             'content' => [
-                [ 'type' => 'text', 'text' => 'Streaming started. Use stream_id: ' . $stream_id ],
+                [ 'type' => 'string', 'text' => 'Streaming started. Use stream_id: ' . $stream_id ],
             ],
             'stream_id' => $stream_id,
             'isError' => false,

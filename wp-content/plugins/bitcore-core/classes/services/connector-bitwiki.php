@@ -32,9 +32,50 @@ class BITCORE_Services_Connector_BITwiki {
             return [];
         }
 
+        if ( ! $this->is_success_response( $response ) ) {
+            return [];
+        }
+
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         return $body['query']['search'] ?? [];
+    }
+
+    /**
+     * Get BITwiki page index
+     */
+    public function get_index() {
+        $url = add_query_arg( [
+            'action' => 'query',
+            'list' => 'allpages',
+            'apnamespace' => 0,
+            'aplimit' => 50,
+            'format' => 'json',
+        ], $this->api_url );
+
+        $response = wp_remote_get( $url, [ 'timeout' => 30 ] );
+
+        if ( is_wp_error( $response ) ) {
+            return [];
+        }
+
+        if ( ! $this->is_success_response( $response ) ) {
+            return [];
+        }
+
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+        return $body['query']['allpages'] ?? [];
+    }
+
+    /**
+     * Get BITwiki article content by path/title
+     */
+    public function get_article( $path ) {
+        $title = str_replace( '_', ' ', urldecode( trim( (string) $path, '/' ) ) );
+        if ( $title === '' ) {
+            return null;
+        }
+        return $this->get_page( $title );
     }
 
     /**
@@ -51,6 +92,10 @@ class BITCORE_Services_Connector_BITwiki {
         $response = wp_remote_get( $url, [ 'timeout' => 30 ] );
 
         if ( is_wp_error( $response ) ) {
+            return null;
+        }
+
+        if ( ! $this->is_success_response( $response ) ) {
             return null;
         }
 
@@ -76,8 +121,20 @@ class BITCORE_Services_Connector_BITwiki {
             return [];
         }
 
+        if ( ! $this->is_success_response( $response ) ) {
+            return [];
+        }
+
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
         return $body['query']['recentchanges'] ?? [];
+    }
+
+    /**
+     * Check whether an HTTP response status is successful.
+     */
+    private function is_success_response( array $response ): bool {
+        $code = wp_remote_retrieve_response_code( $response );
+        return $code >= 200 && $code < 300;
     }
 }

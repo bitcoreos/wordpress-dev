@@ -11,7 +11,6 @@ spl_autoload_register(function ($class) {
     // PSR-4 prefix to directory mapping
     $maps = array(
         'BITCORE\\Infrastructure\\Budget\\' => BITCORE_PATH . '/infrastructure/budget/',
-        'BITCORE\\Infrastructure\\Goals\\' => BITCORE_PATH . '/infrastructure/goals/',
         'BITCORE\\Infrastructure\\Governance\\' => BITCORE_PATH . '/infrastructure/governance/',
         'BITCORE\\Infrastructure\\Heartbeat\\' => BITCORE_PATH . '/infrastructure/heartbeat/',
         'BITCORE\\Infrastructure\\Coordination\\' => BITCORE_PATH . '/infrastructure/coordination/',

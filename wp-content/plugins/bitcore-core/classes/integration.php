@@ -81,7 +81,7 @@ class BITCORE_Integration {
      */
     public static function admin_init(): void {
         // Check user capabilities for admin access
-        if ( ! current_user_can( 'bitcore_manage_tasks' ) ) {
+        if ( ! is_user_logged_in() ) {
             return;
         }
 

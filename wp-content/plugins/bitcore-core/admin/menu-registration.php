@@ -2,7 +2,7 @@
 declare(strict_types=1);
 /**
  * BITCORE Admin Menu Registration
- * Backend Configuration Pages ONLY
+ * Consolidated: Dashboard, Settings, API & Tools, Agents & Models, MCP, ElizaOS
  */
 
 add_action('admin_menu', function() {
@@ -30,6 +30,13 @@ add_action('admin_menu', function() {
     
     add_submenu_page('bitcore', 'MCP', 'MCP', 'manage_options', 'bitcore-mcp',
         function() { require_once BITCORE_PATH . 'admin/mcp.php'; });
+
+    add_submenu_page('bitcore', 'ElizaOS', 'ElizaOS', 'manage_options', 'bitcore-eliza',
+        function() {
+            require_once BITCORE_PATH . 'admin/class-eliza-settings.php';
+            $settings = new BITCORE_Eliza_Settings();
+            $settings->render_settings_page();
+        });
 });
 
 add_action('admin_enqueue_scripts', function($hook) {

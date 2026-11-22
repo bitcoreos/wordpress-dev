@@ -59,12 +59,6 @@ class BITCORE_Activity_Feed {
             'ts_col' => 'created_at',
             'cols' => 'id, summary, direction, created_at',
         ],
-        [
-            'key' => 'goals',
-            'table' => 'bitcore_goals',
-            'ts_col' => 'created_at',
-            'cols' => 'id, title, progress, status, created_at',
-        ],
     ];
 
     /**

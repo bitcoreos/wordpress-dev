@@ -96,18 +96,20 @@ abstract class BITCORE_Abstract_Connector {
         $response = wp_remote_request($url, $args);
         $duration = round((microtime(true) - $start_time) * 1000, 2);
 
-        $this->log_request($endpoint, $method, $duration, is_wp_error($response));
-
         if (is_wp_error($response)) {
+            $this->log_request($endpoint, $method, $duration, true);
             $this->last_error = $response->get_error_message();
             return $response;
         }
 
         $code = wp_remote_retrieve_response_code($response);
         if ($code < 200 || $code >= 300) {
+            $this->log_request($endpoint, $method, $duration, true);
             $this->last_error = "HTTP {$code}: " . wp_remote_retrieve_body($response);
             return new \WP_Error('http_error', $this->last_error);
         }
+
+        $this->log_request($endpoint, $method, $duration, false);
 
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);

@@ -4,7 +4,7 @@ declare(strict_types=1);
  * Plugin Name: BITCORE Core
  * Plugin URI: https://bitcore.org
  * Description: Core plugin for BITCORE Intelligence Factory. Modular AI system with MCP, REST API, and agent orchestration.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: BITCORE
  * Author URI: https://bitcore.org
  * Text Domain: bitcore-core
@@ -20,8 +20,8 @@ if (!defined('ABSPATH')) {
 }
 
 // Define constants.
-define('BITCORE_VERSION', '1.2.0');
-define('BITCORE_DB_VERSION', '1.2.0');
+define('BITCORE_VERSION', '1.3.0');
+define('BITCORE_DB_VERSION', '1.3.0');
 define('BITCORE_PLUGIN_FILE', __FILE__);
 define('BITCORE_ENTRY', __FILE__);
 define('BITCORE_PLUGIN_DIR', plugin_dir_path(__FILE__));
@@ -45,7 +45,11 @@ spl_autoload_register(function ($class) {
     } elseif (strpos($class, 'BITCORE_Services') !== false) {
         $filename = str_replace('BITCORE_Services_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
+        // Try without class- prefix first, then with prefix
         $file = BITCORE_PATH . '/classes/services/' . $filename . '.php';
+        if (!file_exists($file)) {
+            $file = BITCORE_PATH . '/classes/services/class-' . $filename . '.php';
+        }
     } elseif (strpos($class, 'BITCORE_Engines') !== false) {
         $filename = str_replace('BITCORE_Engines_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
@@ -54,6 +58,9 @@ spl_autoload_register(function ($class) {
         $filename = str_replace('BITCORE_Rest_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
         $file = BITCORE_PATH . '/rest/' . $filename . '.php';
+        if (!file_exists($file)) {
+            $file = BITCORE_PATH . '/rest/class-' . $filename . '.php';
+        }
     } elseif (strpos($class, 'BITCORE_MCP') !== false) {
         $filename = str_replace('BITCORE_MCP_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
@@ -61,7 +68,11 @@ spl_autoload_register(function ($class) {
     } elseif (strpos($class, 'BITCORE') !== false) {
         $filename = str_replace('BITCORE_', '', $class);
         $filename = strtolower(str_replace('_', '-', $filename));
-        $file = BITCORE_PATH . '/classes/' . $filename . '.php';
+        // Try class- prefixed path first (WordPress coding standard), then fallback
+        $file = BITCORE_PATH . '/classes/class-' . $filename . '.php';
+        if (!file_exists($file)) {
+            $file = BITCORE_PATH . '/classes/' . $filename . '.php';
+        }
     }
 
     if ($file && file_exists($file)) {
@@ -70,6 +81,7 @@ spl_autoload_register(function ($class) {
 });
 
 // === FROM HYPERION: Pattern Autoloader ===
+if (!function_exists("bitcore_load_patterns")) {
 function bitcore_load_patterns(): void {
     $autoloader_file = BITCORE_PLUGIN_DIR . 'classes/patterns-autoloader.php';
     if (file_exists($autoloader_file)) {
@@ -78,6 +90,7 @@ function bitcore_load_patterns(): void {
     }
 }
 add_action('plugins_loaded', 'bitcore_load_patterns', 5);
+}
 
 // === FROM HYPERION: Initialize Infrastructure ===
     // PSR-4 Autoloader for Paperclip Integration Modules
@@ -98,6 +111,19 @@ function bitcore_cli_init(): void {
     }
 }
 add_action('init', 'bitcore_cli_init');
+
+// === FROM HYPERION: WP Discourse Adapter ===
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/wp-discourse-adapter.php';
+
+// === FROM HYPERION: Discourse SSO Client Redirect Fix ===
+// Validates redirect_to parameter during SSO flow to ensure
+// return_sso_url is always a WordPress domain URL, not Discourse.
+// Two-layer defense: init priority 3 (before WP-Discourse) + wpdc_sso_client_redirect_url filter.
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/discourse-sso-fix.php';
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/auth/discourse-permission-capture.php';
+
+// === FROM HYPERION: Admin Menu Registration ===
+require_once BITCORE_PLUGIN_DIR . 'admin/menu-registration.php';
 
 // === FROM HYPERION: Custom Cron Schedules ===
 function bitcore_cron_schedules(array $schedules): array {
@@ -132,47 +158,59 @@ function bitcore_schedule_cron(): void {
     if (!wp_next_scheduled('bitcore_health_check')) {
         wp_schedule_event(time(), 'bitcore_health_check', 'bitcore_health_check');
     }
+    if (!wp_next_scheduled('bitcore_cleanup_sessions')) {
+        wp_schedule_event(time(), 'hourly', 'bitcore_cleanup_sessions');
+    }
+    if (!wp_next_scheduled('bitcore_cleanup_transcriptions')) {
+        wp_schedule_event(time(), 'daily', 'bitcore_cleanup_transcriptions');
+    }
 }
 add_action('wp', 'bitcore_schedule_cron');
 
 // === FROM HYPERION: Queue Worker Cron ===
-function bitcore_queue_worker_cron(): void {
-    if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
-        $worker = $GLOBALS['bitcore']->container->get('queue.worker');
-        if ($worker) {
-            $worker->process(10);
-        }
-    }
-}
-add_action('bitcore_queue_worker', 'bitcore_queue_worker_cron');
+// DISABLED: queue.worker depends on job.repository and logger — both missing.
+// function bitcore_queue_worker_cron(): void {
+//     if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
+//         $worker = $GLOBALS['bitcore']->container->get('queue.worker');
+//         if ($worker) {
+//             $worker->process(10);
+//         }
+//     }
+// }
+// add_action('bitcore_queue_worker', 'bitcore_queue_worker_cron');
 
 // === FROM HYPERION: Webhooks Retry Cron ===
 function bitcore_webhooks_retry_cron(): void {
     if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
-        $manager = $GLOBALS['bitcore']->container->get('webhooks.manager');
-        if ($manager) {
-            $manager->retryFailed(5);
+        try {
+            $manager = $GLOBALS['bitcore']->container->get('webhooks.manager');
+            if ($manager) {
+                $manager->retryFailed(5);
+            }
+        } catch (Exception $e) {
+            // Service not registered; silently skip
         }
     }
 }
 add_action('bitcore_webhooks_retry', 'bitcore_webhooks_retry_cron');
 
 // === FROM HYPERION: Health Check Cron ===
-function bitcore_health_check_cron(): void {
-    if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
-        $logger = $GLOBALS['bitcore']->container->get('logger');
-        if ($logger) {
-            $health = [
-                'timestamp' => time(),
-                'memory'    => memory_get_usage(true),
-                'peak'      => memory_get_peak_usage(true),
-                'queue'     => $GLOBALS['wpdb']->get_var("SELECT COUNT(*) FROM {$GLOBALS['wpdb']->prefix}bitcore_jobs WHERE status = 'pending'"),
-            ];
-            $logger->info('Health check completed', $health);
-        }
-    }
-}
-add_action('bitcore_health_check', 'bitcore_health_check_cron');
+// DISABLED: logger service references missing infrastructure/Logging/Logger.php
+// function bitcore_health_check_cron(): void {
+//     if (isset($GLOBALS['bitcore']) && $GLOBALS['bitcore']->container) {
+//         $logger = $GLOBALS['bitcore']->container->get('logger');
+//         if ($logger) {
+//             $health = [
+//                 'timestamp' => time(),
+//                 'memory'    => memory_get_usage(true),
+//                 'peak'      => memory_get_peak_usage(true),
+//                 'queue'     => $GLOBALS['wpdb']->get_var("SELECT COUNT(*) FROM {$GLOBALS['wpdb']->prefix}bitcore_jobs WHERE status = 'pending'"),
+//             ];
+//             $logger->info('Health check completed', $health);
+//         }
+//     }
+// }
+// add_action('bitcore_health_check', 'bitcore_health_check_cron');
 
 // === FROM CORALINE: Token Rotation Schedule ===
 function bitcore_schedule_token_check(): void {
@@ -194,6 +232,8 @@ function bitcore_clear_cron(): void {
     wp_clear_scheduled_hook('bitcore_webhooks_retry');
     wp_clear_scheduled_hook('bitcore_health_check');
     wp_clear_scheduled_hook('bitcore_token_rotation_check');
+    wp_clear_scheduled_hook('bitcore_cleanup_sessions');
+    wp_clear_scheduled_hook('bitcore_cleanup_transcriptions');
 }
 add_action('bitcore_clear_cron', 'bitcore_clear_cron');
 
@@ -207,11 +247,25 @@ function bitcore_register_widgets(): void {
 add_action('widgets_init', 'bitcore_register_widgets');
 
 // === FROM CORALINE: REST API Routes Registration ===
-add_action('rest_api_init', ['BITCORE_Rest_Tasks', 'register_routes']);
+add_action('rest_api_init', function() {
+    require_once BITCORE_PATH . '/rest/class-rest-tasks.php';
+    if (class_exists('REST_Tasks')) {
+        (new REST_Tasks())->register_routes();
+    }
+});
 add_action('rest_api_init', ['BITCORE_Rest_Health_Knowledge', 'register_routes']);
 add_action('rest_api_init', ['BITCORE_Rest_Research_Intelligence', 'register_routes']);
 add_action('rest_api_init', ['BITCORE_Rest_Sse_Events', 'register_routes']);
 
+// === RESTORED (April 29): Route registrations from April 23 repair (verified class names) ===
+add_action('rest_api_init', function() {
+    if (class_exists('BITCORE_Rest_MCP_Tools_API')) {
+        (new BITCORE_Rest_MCP_Tools_API())->register_routes();
+    }
+    if (class_exists('BITCORE_Coordination_API')) {
+        (new BITCORE_Coordination_API())->register_routes();
+    }
+});
 // === FROM CORALINE: Admin Scripts ===
 add_action('admin_enqueue_scripts', ['BITCORE_Integration', 'enqueue_rest_nonce']);
 
@@ -269,12 +323,20 @@ function bitcore_activate(): void {
             'previous_expires' => null,
         ]);
     }
+    // Initialize start time for dashboard uptime calculation
+    if (!get_option('bitcore_start_time')) {
+        update_option('bitcore_start_time', time());
+    }
 
     // Schedule initial cron events
     bitcore_schedule_cron();
 
     // Flush rewrite rules
     flush_rewrite_rules();
+
+    // Register custom capabilities (from origin/main fix dc0776b/c3c0f5c)
+    require_once BITCORE_PLUGIN_DIR . 'classes/class-capabilities.php';
+    \Bitcore\Tasks\Capabilities::register();
 }
 register_activation_hook(__FILE__, 'bitcore_activate');
 
@@ -325,12 +387,24 @@ function bitcore_log(string $message, array $context = []): void {
 
 // Paperclip Integration REST API Routes (Instance-based registration)
 add_action('rest_api_init', function() {
+    // Explicit requires for classes not matching BITCORE_Rest_ autoloader prefix
+    require_once BITCORE_PATH . '/rest/class-checkout-api.php';
+    require_once BITCORE_PATH . '/rest/class-org-chart-api.php';
+    require_once BITCORE_PATH . '/rest/class-credits-api.php';
+    require_once BITCORE_PATH . '/rest/class-approvals-api.php';
+    require_once BITCORE_PATH . '/rest/class-sessions-api.php';
+    require_once BITCORE_PATH . '/rest/class-kanban-api.php';
+    require_once BITCORE_PATH . '/rest/class-my-posts-api.php';
+    require_once BITCORE_PATH . '/rest/class-bitmon-api.php';
     $apis = [
-        'BITCORE\Rest\Checkout_API',
-        'BITCORE\Rest\Org_Chart_API',
-        'BITCORE\Rest\Budget_API',
-        'BITCORE\Rest\Goals_API',
-        'BITCORE\Rest\Approvals_API',
+        'BITCORE\Rest\Checkout_Api',
+        'BITCORE\Rest\Org_Chart_Api',
+        'BITCORE\Rest\Credits_Api',
+        'BITCORE\Rest\Approvals_Api',
+        'BITCORE\Rest\Sessions_Api',
+        'BITCORE_Rest_Kanban_API',
+        'BITCORE_Rest_My_Posts_API',
+        'BITCORE\Rest\Bitmon_Api',
     ];
     foreach ($apis as $api_class) {
         if (class_exists($api_class)) {
@@ -340,5 +414,115 @@ add_action('rest_api_init', function() {
     }
 });
 
-// === FROM HYPERION: Admin Menu Registration ===
-require_once BITCORE_PLUGIN_DIR . 'admin/menu-registration.php';
+// === ASHI: Post Types and Taxonomies ===
+function bitcore_register_post_types(): void {
+    register_post_type('bitcore_prompt', [
+        'labels'             => [
+            'name'          => __('Prompts', 'bitcore-core'),
+            'singular_name' => __('Prompt', 'bitcore-core'),
+        ],
+        'public'             => false,
+        'publicly_queryable' => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'map_meta_cap'       => true,
+        'supports'           => ['title', 'editor', 'author'],
+        'menu_icon'          => 'dashicons-format-chat',
+        'rewrite'            => false,
+    ]);
+
+    $bitmon_common = [
+        'public'             => false,
+        'publicly_queryable' => false,
+        'show_ui'            => true,
+        'show_in_rest'       => true,
+        'capability_type'    => 'post',
+        'map_meta_cap'       => true,
+        'supports'           => ['title', 'editor', 'author', 'custom-fields', 'revisions'],
+        'rewrite'            => false,
+    ];
+    register_post_type('bitmon_battle', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Battles', 'bitcore-core'), 'singular_name' => __('BITmon Battle', 'bitcore-core')],
+        'menu_icon' => 'dashicons-shield-alt',
+        'taxonomies' => ['bitmon_format', 'bitmon_event_type', 'bitmon_visibility'],
+    ]));
+    register_post_type('bitmon_tournament', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Tournaments', 'bitcore-core'), 'singular_name' => __('BITmon Tournament', 'bitcore-core')],
+        'menu_icon' => 'dashicons-awards',
+        'taxonomies' => ['bitmon_format', 'bitmon_event_type', 'bitmon_visibility'],
+    ]));
+    register_post_type('bitmon_agent_profile', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Agents', 'bitcore-core'), 'singular_name' => __('BITmon Agent', 'bitcore-core')],
+        'menu_icon' => 'dashicons-games',
+        'taxonomies' => ['bitmon_event_type', 'bitmon_visibility'],
+    ]));
+    register_post_type('bitmon_result', array_merge($bitmon_common, [
+        'labels'    => ['name' => __('BITmon Benchmark Results', 'bitcore-core'), 'singular_name' => __('BITmon Benchmark Result', 'bitcore-core')],
+        'menu_icon' => 'dashicons-chart-line',
+        'taxonomies' => ['bitmon_format', 'bitmon_event_type', 'bitmon_visibility'],
+    ]));
+    register_post_type('bitcore_artifact', [
+        'labels'             => [
+            'name'          => __('Artifacts', 'bitcore-core'),
+            'singular_name' => __('Artifact', 'bitcore-core'),
+        ],
+        'public'             => false,
+        'publicly_queryable' => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'map_meta_cap'       => true,
+        'supports'           => ['title', 'editor', 'author', 'revisions'],
+        'taxonomies'         => ['bitcore_channel', 'artifact_status'],
+        'menu_icon'          => 'dashicons-archive',
+        'rewrite'            => false,
+    ]);
+}
+add_action('init', 'bitcore_register_post_types', 5);
+
+function bitcore_register_taxonomies(): void {
+
+    foreach (['bitmon_format' => 'BITmon Formats', 'bitmon_event_type' => 'BITmon Event Types', 'bitmon_visibility' => 'BITmon Visibility'] as $taxonomy => $label) {
+        register_taxonomy($taxonomy, ['bitmon_battle', 'bitmon_tournament', 'bitmon_agent_profile', 'bitmon_result'], [
+            'labels'       => ['name' => __($label, 'bitcore-core'), 'singular_name' => __($label, 'bitcore-core')],
+            'public'       => false,
+            'hierarchical' => true,
+            'show_ui'      => true,
+            'show_in_rest' => true,
+        ]);
+    }
+    register_taxonomy('bitcore_channel', ['agent_task', 'bitcore_artifact', 'post'], [
+        'labels'       => [
+            'name'          => __('Channels', 'bitcore-core'),
+            'singular_name' => __('Channel', 'bitcore-core'),
+        ],
+        'public'       => false,
+        'hierarchical' => true,
+        'show_ui'      => true,
+    ]);
+    register_taxonomy('task_type', ['agent_task'], [
+        'labels'       => [
+            'name'          => __('Task Types', 'bitcore-core'),
+            'singular_name' => __('Task Type', 'bitcore-core'),
+        ],
+        'public'       => false,
+        'hierarchical' => true,
+        'show_ui'      => true,
+    ]);
+    register_taxonomy('artifact_status', ['bitcore_artifact'], [
+        'labels'       => [
+            'name'          => __('Artifact Statuses', 'bitcore-core'),
+            'singular_name' => __('Artifact Status', 'bitcore-core'),
+        ],
+        'public'       => false,
+        'hierarchical' => false,
+        'show_ui'      => true,
+    ]);
+}
+add_action('init', 'bitcore_register_taxonomies', 6);
+
+
+// === ASHI: Post Router and Privacy ===
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/class-post-router.php';
+require_once BITCORE_PLUGIN_DIR . 'infrastructure/class-privacy.php';

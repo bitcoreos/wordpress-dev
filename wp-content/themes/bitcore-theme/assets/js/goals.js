@@ -1,69 +1,82 @@
 /**
- * Goals - Goal Hierarchy Display
- * Fetches data from /wp-json/bitcore/v1/goals
+ * BITCORE Goals Hierarchy Controller
+ * Paperclip Integration - Mission → Objective → Task
  */
-(function() {
-    const container = document.getElementById('goals-container');
-    if (!container) return;
-
-    const apiEndpoint = (typeof bitcoreData !== 'undefined' ? bitcoreData.restUrl : '/wp-json/bitcore/v1/') + 'goals';
-
-    function renderLoading() {
-        container.innerHTML = '<div class="loading-state"><span class="spinner"></span><p>Loading goals...</p></div>';
-    }
-
-    function renderError(message) {
-        container.innerHTML = '<div class="error-state"><p>Error: ' + message + '</p><button onclick="fetchGoals()">Retry</button></div>';
-    }
-
-    function renderGoals(data) {
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-            container.innerHTML = '<div class="empty-state"><p>No goals defined.</p></div>';
-            return;
-        }
-
-        let html = '<div class="goals-list">';
-
-        if (Array.isArray(data)) {
-            data.forEach(function(goal) {
-                const progress = goal.progress || 0;
-                const statusClass = progress >= 100 ? 'complete' : progress > 0 ? 'in-progress' : 'not-started';
-                html += '<div class="goal-card ' + statusClass + '">';
-                html += '<div class="goal-header"><h3>' + (goal.title || goal.name || 'Unnamed Goal') + '</h3>';
-                if (goal.priority) html += '<span class="priority priority-' + goal.priority + '">' + goal.priority + '</span>';
+(function(global) {
+    'use strict';
+    const GoalsPage = {
+        config: { endpoint: '/wp-json/bitcore/v1/tasks?task_type=goal', nonce: null },
+        init: function() {
+            if (typeof bitcoreData !== 'undefined') {
+                this.config.nonce = bitcoreData.nonce;
+                if (bitcoreData.restUrl) this.config.endpoint = bitcoreData.restUrl + 'tasks?task_type=goal';
+            }
+            console.log('GoalsPage initializing...');
+            this.bindEvents();
+            this.loadData();
+        },
+        bindEvents: function() {
+            var self = this;
+            document.getElementById('refresh-goals')?.addEventListener('click', function() { self.loadData(); });
+        },
+        loadData: async function() {
+            try {
+                var response = await fetch(this.config.endpoint, { headers: { 'X-WP-Nonce': this.config.nonce || '' } });
+                var data = await response.json();
+                this.render(data);
+            } catch (error) {
+                console.error('Goals error:', error);
+                document.getElementById('goal-tree').innerHTML = '<div class="empty-state">No goals data available</div>';
+                this.updateStats(0, 0, 0);
+            }
+        },
+        render: function(data) {
+            var goals = this.normalizeTaskCollection(data);
+            var tree = document.getElementById('goal-tree');
+            if (!tree) return;
+            if (goals.length === 0) {
+                tree.innerHTML = '<div class="empty-state">No goals defined</div>';
+                this.updateStats(0, 0, 0);
+                return;
+            }
+            var html = '<div class="goal-list">';
+            var missions = 0, objectives = 0, tasks = 0;
+            goals.forEach(function(g) {
+                var level = GoalsPage.getGoalLevel(g);
+                var description = g.description || g.content || '';
+                html += '<div class="goal-node level-' + level + '">';
+                html += '<span class="goal-icon">' + (level === 'mission' ? '🎯' : level === 'objective' ? '📋' : '✅') + '</span>';
+                html += '<span class="goal-title">' + (g.title || g.name || 'Untitled goal') + '</span>';
+                if (description) html += '<span class="goal-desc">' + description + '</span>';
                 html += '</div>';
-                if (goal.description) html += '<p class="goal-description">' + goal.description + '</p>';
-                html += '<div class="goal-progress">';
-                html += '<div class="progress-bar"><div class="progress-fill" style="width: ' + progress + '%"></div></div>';
-                html += '<span class="progress-text">' + progress + '%</span>';
-                html += '</div>';
-                if (goal.agent_id) html += '<p class="goal-agent">Assigned to: ' + goal.agent_id + '</p>';
-                html += '</div>';
+                if (level === 'mission') missions++;
+                else if (level === 'objective') objectives++;
+                else tasks++;
             });
+            html += '</div>';
+            tree.innerHTML = html;
+            this.updateStats(missions, objectives, tasks);
+        },
+        normalizeTaskCollection: function(data) {
+            if (Array.isArray(data)) return data;
+            if (data && Array.isArray(data.data)) return data.data;
+            if (data && Array.isArray(data.tasks)) return data.tasks;
+            if (data && Array.isArray(data.goals)) return data.goals;
+            if (data && Array.isArray(data.items)) return data.items;
+            return [];
+        },
+        getGoalLevel: function(goal) {
+            if (goal.level) return goal.level;
+            if (goal.task_type === 'milestone') return 'mission';
+            if (goal.task_type === 'goal') return 'objective';
+            return 'task';
+        },
+        updateStats: function(missions, objectives, tasks) {
+            if (document.getElementById('total-missions')) document.getElementById('total-missions').textContent = missions;
+            if (document.getElementById('total-objectives')) document.getElementById('total-objectives').textContent = objectives;
+            if (document.getElementById('total-goal-tasks')) document.getElementById('total-goal-tasks').textContent = tasks;
         }
-
-        html += '</div>';
-        container.innerHTML = html;
-    }
-
-    async function fetchGoals() {
-        renderLoading();
-        try {
-            const response = await fetch(apiEndpoint);
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-            let data = await response.json();
-            // Handle {"goals": []} format
-            if (data && data.goals) data = data.goals;
-            renderGoals(data);
-        } catch (error) {
-            console.error('Goals fetch error:', error);
-            renderError(error.message);
-        }
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', fetchGoals);
-    } else {
-        fetchGoals();
-    }
-})();
+    };
+    document.addEventListener('DOMContentLoaded', function() { GoalsPage.init(); });
+    global.GoalsPage = GoalsPage;
+})(window);

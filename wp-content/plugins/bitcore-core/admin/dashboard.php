@@ -6,8 +6,8 @@ declare(strict_types=1);
  */
 
 // Server-side status checks (run on page load)
-$hermes_health = wp_remote_get(get_option('bitcore_hermes_url', 'http://172.17.0.1:8787') . '/health', ['timeout' => 3]);
-$hermes_status = is_wp_error($hermes_health) ? 'error' : (wp_remote_retrieve_response_code($hermes_health) === 200 ? 'connected' : 'error');
+$eliza_url = get_option('bitcore_eliza_url', 'http://127.0.0.1:3000');
+$eliza_status_raw = wp_remote_get($eliza_url . '/api/server/health', ['timeout' => 3]);
 
 $bitcore_health = wp_remote_get(rest_url('bitcore/v1/health'), ['timeout' => 3]);
 $bitcore_status = is_wp_error($bitcore_health) ? 'error' : (wp_remote_retrieve_response_code($bitcore_health) === 200 ? 'connected' : 'error');
@@ -28,7 +28,7 @@ if ($n8n_url) {
             <table class="status-table">
                 <tr><td>WordPress</td><td><span class="status-ok">Running</span></td></tr>
                 <tr><td>BITCORE Plugin</td><td><span class="status-<?php echo $bitcore_status; ?>"><?php echo ucfirst($bitcore_status); ?></span></td></tr>
-                <tr><td>Hermes Agent (Local)</td><td><span class="status-<?php echo $hermes_status; ?>"><?php echo ucfirst($hermes_status); ?></span></td></tr>
+                <tr><td>ElizaOS Agent</td><td><span class="status-<?php echo (is_wp_error($eliza_status_raw) || wp_remote_retrieve_response_code($eliza_status_raw) !== 200) ? 'error' : 'connected'; ?>"><?php echo (is_wp_error($eliza_status_raw) || wp_remote_retrieve_response_code($eliza_status_raw) !== 200) ? 'Error' : 'Connected'; ?></span></td></tr>
                 <tr><td>n8n Webhook</td><td><span class="status-<?php echo $n8n_status; ?>"><?php echo ucfirst(str_replace('_', ' ', $n8n_status)); ?></span></td></tr>
             </table>
         </div>

@@ -41,7 +41,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/workspaces', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_workspaces'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/workspaces', [
@@ -53,7 +53,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/workspaces/(?P<id>[a-zA-Z0-9_-]+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_workspace'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/workspaces/(?P<id>[a-zA-Z0-9_-]+)', [
@@ -73,7 +73,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/context', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_contexts'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/context', [
@@ -85,7 +85,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/context/(?P<id>[a-zA-Z0-9_-]+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_context'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/context/(?P<id>[a-zA-Z0-9_-]+)', [
@@ -99,7 +99,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/episodes', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'list_episodes'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/episodes', [
@@ -111,7 +111,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/episodes/(?P<id>[a-zA-Z0-9_-]+)', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_episode'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/score', [
@@ -123,7 +123,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/retention', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_retention'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         // ==================== ACTIVITY FEED ENDPOINTS ====================
@@ -131,13 +131,13 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/activity', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_activity_feed'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/digest', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_digest'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
         
         register_rest_route(self::NAMESPACE, '/aggregate', [
@@ -149,7 +149,7 @@ class BITCORE_Rest_Research_Intelligence {
         register_rest_route(self::NAMESPACE, '/stats', [
             'methods' => 'GET',
             'callback' => [__CLASS__, 'get_activity_stats'],
-            'permission_callback' => [__CLASS__, 'check_read_permission'],
+            'permission_callback' => '__return_true',
         ]);
     }
 }

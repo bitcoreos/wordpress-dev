@@ -153,7 +153,7 @@ class BITCORE_Rest_Tasks {
 
         foreach ( $posts as $post ) {
             $response = self::prepare_item_for_response( $post, $request );
-            $data[]   = self::prepare_response_for_collection( $response );
+            $data[]   = $response->get_data();
         }
 
         $response = rest_ensure_response( $data );
@@ -346,7 +346,7 @@ class BITCORE_Rest_Tasks {
                 array( 'status' => 403 )
             );
         }
-        return current_user_can( 'bitcore_read_tasks' );
+        return current_user_can( 'read' );
     }
 
     /**
@@ -376,7 +376,7 @@ class BITCORE_Rest_Tasks {
                 array( 'status' => 403 )
             );
         }
-        return current_user_can( 'bitcore_create_tasks' );
+        return current_user_can( 'edit_posts' );
     }
 
     /**
@@ -395,7 +395,7 @@ class BITCORE_Rest_Tasks {
                 array( 'status' => 403 )
             );
         }
-        return current_user_can( 'bitcore_edit_tasks' );
+        return current_user_can( 'edit_posts' );
     }
 
     /**
@@ -414,7 +414,7 @@ class BITCORE_Rest_Tasks {
                 array( 'status' => 403 )
             );
         }
-        return current_user_can( 'bitcore_delete_tasks' );
+        return current_user_can( 'delete_posts' );
     }
 
     /**
@@ -433,7 +433,7 @@ class BITCORE_Rest_Tasks {
                 array( 'status' => 403 )
             );
         }
-        return current_user_can( 'bitcore_dispatch_tasks' );
+        return current_user_can( 'edit_posts' );
     }
 
     /**

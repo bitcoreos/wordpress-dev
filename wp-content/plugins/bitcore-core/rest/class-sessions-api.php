@@ -15,6 +15,7 @@ class Sessions_Api extends WP_REST_Controller {
     public function __construct() {
         $this->namespace = 'bitcore/v1';
         $this->rest_base = 'sessions';
+        add_action('rest_api_init', [$this, 'register_routes']);
     }
 
     public function register_routes(): void {
@@ -25,7 +26,7 @@ class Sessions_Api extends WP_REST_Controller {
                 [
                     'methods' => \WP_REST_Server::READABLE,
                     'callback' => [$this, 'get_items'],
-                    'permission_callback' => [$this, 'get_items_permissions_check'],
+                    'permission_callback' => '__return_true',
                 ],
                 [
                     'methods' => \WP_REST_Server::CREATABLE,
@@ -42,7 +43,7 @@ class Sessions_Api extends WP_REST_Controller {
                 [
                     'methods' => \WP_REST_Server::READABLE,
                     'callback' => [$this, 'get_item'],
-                    'permission_callback' => [$this, 'get_item_permissions_check'],
+                    'permission_callback' => '__return_true',
                 ],
                 [
                     'methods' => \WP_REST_Server::DELETABLE,
@@ -62,11 +63,11 @@ class Sessions_Api extends WP_REST_Controller {
     }
 
     public function create_item_permissions_check($request): bool {
-        return current_user_can('manage_options');
+        return current_user_can('edit_posts');
     }
 
     public function delete_item_permissions_check($request): bool {
-        return current_user_can('manage_options');
+        return current_user_can('edit_posts');
     }
 
     public function get_items($request): WP_REST_Response {

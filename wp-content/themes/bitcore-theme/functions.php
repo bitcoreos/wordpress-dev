@@ -3,7 +3,7 @@
  * BITCORE Theme Functions
  *
  * @package BITCORE_Theme
- * @version 1.1.0
+ * @version 2.0.0
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -30,46 +30,14 @@ function bitcore_theme_setup(): void {
 add_action( 'after_setup_theme', 'bitcore_theme_setup' );
 
 /**
- * Register Scripts (called early for dependency resolution)
+ * Register Scripts
  */
 function bitcore_register_scripts(): void {
     $version = wp_get_theme()->get( 'Version' );
     
     wp_register_script(
-        'bitcore-feed',
-        get_template_directory_uri() . '/assets/js/feed.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    
-    wp_register_script(
-        'bitcore-artifacts',
-        get_template_directory_uri() . '/assets/js/artifacts.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    
-    wp_register_script(
         'bitcore-chat',
         get_template_directory_uri() . '/assets/js/chat.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    
-    wp_register_script(
-        'bitcore-intent',
-        get_template_directory_uri() . '/assets/js/intent.js',
-        array( 'bitcore-theme-js' ),
-        $version,
-        true
-    );
-    
-    wp_register_script(
-        'bitcore-dashboard-js',
-        get_template_directory_uri() . '/assets/js/dashboard.js',
         array( 'bitcore-theme-js' ),
         $version,
         true
@@ -107,6 +75,38 @@ function bitcore_enqueue_assets(): void {
 }
 add_action( 'wp_enqueue_scripts', 'bitcore_enqueue_assets' );
 
+
+/**
+ * Require authentication for canonical ASHI app routes before templates render.
+ *
+ * WP-Discourse remains the SSO authority. This guard only routes unauthenticated
+ * WordPress visitors to the BITCORE login adapter, which hands off to
+ * the official WP Discourse client flow.
+ */
+function bitcore_require_auth_for_app_routes(): void {
+    if ( is_user_logged_in() || is_admin() || wp_doing_ajax() || wp_is_json_request() ) {
+        return;
+    }
+
+    $protected_slugs = array(
+        'dashboard',
+        'work',
+        'agents',
+        'chat',
+        'knowledge',
+        'my-posts',
+        // /arena/ remains public by design: it is ASHI's AI Village content surface.
+    );
+
+    foreach ( $protected_slugs as $slug ) {
+        if ( is_page( $slug ) ) {
+            wp_safe_redirect( bitcore_get_login_url( home_url( '/' . $slug . '/' ) ) );
+            exit;
+        }
+    }
+}
+add_action( 'template_redirect', 'bitcore_require_auth_for_app_routes', 1 );
+
 /**
  * Register Block Patterns
  */
@@ -115,15 +115,8 @@ function bitcore_register_block_patterns(): void {
         'bitcore-theme',
         array( 'label' => __( 'BITCORE Theme', 'bitcore-theme' ) )
     );
-    
-    $patterns = array( 'stat-cards', 'agent-grid', 'chat-widget', 'feed-list' );
-    
-    foreach ( $patterns as $pattern ) {
-        $file = get_template_directory() . "/patterns/{$pattern}.php";
-        if ( file_exists( $file ) ) {
-            require_once $file;
-        }
-    }
+    // Pattern files are auto-discovered by WordPress from /patterns.
+    // Keep this function limited to category registration to avoid duplicate registration notices.
 }
 add_action( 'init', 'bitcore_register_block_patterns' );
 
@@ -166,7 +159,7 @@ function bitcore_shortcode_dashboard( $atts = array() ): string {
     wp_enqueue_script( 'bitcore-dashboard-js' );
     wp_localize_script( 'bitcore-dashboard-js', 'bitcoreData', array(
         'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-        'nonce'   => wp_create_nonce( 'bitcore_dashboard' ),
+        'nonce'   => wp_create_nonce( 'wp_rest' ),
         'restUrl' => rest_url( 'bitcore/v1/' ),
     ) );
     
@@ -303,82 +296,68 @@ function bitcore_shortcode_chat( $atts = array() ): string {
 add_shortcode( 'bitcore-chat', 'bitcore_shortcode_chat' );
 
 /**
- * Shortcode: BITCORE Intent Form
+ * Count agent_task items assigned to one or more task_status terms.
+ *
+ * @param array<int, string> $slugs Task status slugs.
+ * @return int Real term count, or 0 when taxonomy data is unavailable.
  */
-function bitcore_shortcode_intent_form( $atts = array() ): string {
-    $atts = shortcode_atts( array(
-        'redirect' => '',
-    ), $atts, 'bitcore-intent-form' );
-    
-    wp_enqueue_script( 'bitcore-intent' );
-    
-    ob_start();
-    ?>
-    <div class="bitcore-intent-form-container" style="max-width:640px;">
-        <form id="bitcore-intent-form" class="bitcore-form">
-            <div class="bitcore-form__header" style="margin-bottom:var(--space-6);">
-                <h2 class="bitcore-form__title"><?php esc_html_e( 'Submit Research Intent', 'bitcore-theme' ); ?></h2>
-                <p class="bitcore-form__description" style="color:var(--text-secondary);font-size:0.875rem;margin:var(--space-2) 0 0;">
-                    <?php esc_html_e( 'Describe what you want to research. The swarm will analyze and route your request.', 'bitcore-theme' ); ?>
-                </p>
-            </div>
-            <div class="bitcore-form__group" style="margin-bottom:var(--space-4);">
-                <label class="bitcore-label" for="intent-title"><?php esc_html_e( 'Intent Title', 'bitcore-theme' ); ?> <span style="color:var(--error);">*</span></label>
-                <input type="text" id="intent-title" class="bitcore-input" required placeholder="<?php esc_attr_e( 'Brief summary of your research goal', 'bitcore-theme' ); ?>">
-            </div>
-            <div class="bitcore-form__group" style="margin-bottom:var(--space-4);">
-                <label class="bitcore-label" for="intent-description"><?php esc_html_e( 'Detailed Description', 'bitcore-theme' ); ?></label>
-                <textarea id="intent-description" class="bitcore-input bitcore-textarea" rows="4" placeholder="<?php esc_attr_e( 'Provide detailed context and objectives...', 'bitcore-theme' ); ?>"></textarea>
-            </div>
-            <div class="bitcore-form__group" style="margin-bottom:var(--space-4);">
-                <label class="bitcore-label" for="intent-scope"><?php esc_html_e( 'Scope', 'bitcore-theme' ); ?></label>
-                <select id="intent-scope" class="bitcore-input">
-                    <option value="research"><?php esc_html_e( 'Research', 'bitcore-theme' ); ?></option>
-                    <option value="development"><?php esc_html_e( 'Development', 'bitcore-theme' ); ?></option>
-                    <option value="analysis"><?php esc_html_e( 'Analysis', 'bitcore-theme' ); ?></option>
-                    <option value="automation"><?php esc_html_e( 'Automation', 'bitcore-theme' ); ?></option>
-                </select>
-            </div>
-            <div class="bitcore-form__actions" style="display:flex;gap:var(--space-3);justify-content:flex-end;margin-top:var(--space-6);">
-                <button type="reset" class="bitcore-btn bitcore-btn--secondary"><?php esc_html_e( 'Clear', 'bitcore-theme' ); ?></button>
-                <button id="intent-submit" type="submit" class="bitcore-btn bitcore-btn--primary"><?php esc_html_e( 'Submit Request', 'bitcore-theme' ); ?></button>
-            </div>
-        </form>
-    </div>
-    <?php
-    return ob_get_clean();
+function bitcore_theme_count_task_status_terms( array $slugs ): int {
+    if ( ! function_exists( 'taxonomy_exists' ) || ! taxonomy_exists( 'task_status' ) ) {
+        return 0;
+    }
+
+    $slugs = array_values( array_filter( array_map( 'sanitize_key', $slugs ) ) );
+    if ( empty( $slugs ) || ! function_exists( 'get_terms' ) ) {
+        return 0;
+    }
+
+    $terms = get_terms( array(
+        'taxonomy'   => 'task_status',
+        'slug'       => $slugs,
+        'hide_empty' => false,
+    ) );
+
+    if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+        return 0;
+    }
+
+    $count = 0;
+    foreach ( $terms as $term ) {
+        $count += isset( $term->count ) ? max( 0, (int) $term->count ) : 0;
+    }
+
+    return $count;
 }
-add_shortcode( 'bitcore-intent-form', 'bitcore_shortcode_intent_form' );
 
 /**
- * Register Custom Post Type: Intent
+ * Get active agent count from the BITCORE health snapshot when available.
  */
-function bitcore_register_intent_cpt(): void {
-    register_post_type( 'bitcore_intent', array(
-        'labels' => array(
-            'name'               => __( 'Intents', 'bitcore-theme' ),
-            'singular_name'      => __( 'Intent', 'bitcore-theme' ),
-        ),
-        'public'        => true,
-        'has_archive'   => true,
-        'menu_icon'     => 'dashicons-lightbulb',
-        'supports'      => array( 'title', 'editor', 'author', 'custom-fields' ),
-        'show_in_rest'  => true,
-        'rewrite'       => array( 'slug' => 'intents' ),
-    ) );
+function bitcore_theme_get_agents_online_count(): int {
+    if ( ! class_exists( 'BITCORE_Health_Snapshot' ) || ! method_exists( 'BITCORE_Health_Snapshot', 'get_latest' ) ) {
+        return 0;
+    }
+
+    $snapshot = BITCORE_Health_Snapshot::get_latest( false );
+    if ( ! is_array( $snapshot ) ) {
+        return 0;
+    }
+
+    return max( 0, (int) ( $snapshot['active_agents'] ?? 0 ) );
 }
-add_action( 'init', 'bitcore_register_intent_cpt' );
 
 /**
  * REST API Endpoint: Get Dashboard Stats
  */
 function bitcore_rest_get_stats(): WP_REST_Response {
     $stats = array(
-        'active_tasks'  => rand( 5, 25 ),
-        'completed'     => rand( 100, 500 ),
-        'pending'       => rand( 10, 50 ),
-        'agents_online' => rand( 2, 8 ),
+        'active_tasks'  => bitcore_theme_count_task_status_terms( array( 'doing', 'review', 'running', 'active' ) ),
+        'completed'     => bitcore_theme_count_task_status_terms( array( 'done', 'completed' ) ),
+        'pending'       => bitcore_theme_count_task_status_terms( array( 'inbox', 'pending', 'backlog' ) ),
+        'agents_online' => bitcore_theme_get_agents_online_count(),
+        'source'        => 'real_counts',
+        'generated_at'  => current_time( 'mysql' ),
     );
+
     return new WP_REST_Response( $stats, 200 );
 }
 
@@ -392,50 +371,34 @@ function bitcore_register_rest_routes(): void {
 add_action( 'rest_api_init', 'bitcore_register_rest_routes' );
 
 /**
- * Enqueue Librarian Template CSS
- */
-function bitcore_enqueue_librarian_css() {
-    wp_enqueue_style('bitcore-base-css', get_template_directory_uri() . '/assets/css/base.css', array(), '1.0.0');
-    wp_enqueue_style('bitcore-dashboard-css', get_template_directory_uri() . '/assets/css/dashboard.css', array(), '1.0.0');
-    wp_enqueue_style('bitcore-template-bridge-css', get_template_directory_uri() . '/assets/css/template-bridge.css', array(), '1.0.0');
-    wp_enqueue_style('bitcore-librarian-css', get_template_directory_uri() . '/assets/css/librarian-expanded.css', array(), '1.0.0');
-}
-add_action('wp_enqueue_scripts', 'bitcore_enqueue_librarian_css');
-
-/**
- * Enqueue page-specific scripts for BITCORE pages
+ * Enqueue page-specific scripts for BITCORE SaaS pages
  */
 function bitcore_enqueue_page_scripts() {
     $nonce = wp_create_nonce('wp_rest');
     $bitcore_data = array(
         'restUrl' => rest_url('bitcore/v1/'),
-        'nonce' => $nonce,
-        'userId' => get_current_user_id(),
+        'nonce'   => $nonce,
+        'userId'  => get_current_user_id(),
     );
 
-    // Get current page slug
-    $slug = get_post_field('post_name', get_queried_object_id());
-    
-    $page_scripts = array(
-        'tasks' => 'tasks.js',
-        'workspaces' => 'workspaces.js',
-        'identities' => 'identities.js',
-        'knowledge-graph' => 'knowledge-graph.js',
-        'webhooks' => 'webhooks.js',
-        'abilities' => 'abilities.js',
-        'events' => 'events.js',
-        'mcp-tools' => 'mcp-tools.js',
-        'accelerate' => 'mcp-tools.js', // shares same JS
-        'office-suite' => 'office-suite.js',
+    // Canonical ASHI page scripts. Legacy task/goal/session pages are consolidated into /work/.
+    $all_scripts = array(
+        'work' => 'work.js',
+        'arena' => 'arena.js',
     );
+
+    $slug = get_query_var('bitmon_arena') ? 'arena' : get_post_field('post_name', get_queried_object_id());
     
-    if (isset($page_scripts[$slug])) {
-        $handle = 'bitcore-' . $slug . '-js';
+    if (isset($all_scripts[$slug])) {
+        $js_file = $all_scripts[$slug];
+        $handle = 'bitcore-' . str_replace('-', '', $slug) . '-js';
+        $js_path = get_template_directory() . '/assets/js/' . $js_file;
+        
         wp_enqueue_script(
             $handle,
-            get_template_directory_uri() . '/assets/js/' . $page_scripts[$slug],
+            get_template_directory_uri() . '/assets/js/' . $js_file,
             array('bitcore-theme-js'),
-            filemtime(get_template_directory() . '/assets/js/' . $page_scripts[$slug]),
+            file_exists($js_path) ? filemtime($js_path) : '1.0.0',
             true
         );
         wp_localize_script($handle, 'bitcoreData', $bitcore_data);
@@ -443,30 +406,43 @@ function bitcore_enqueue_page_scripts() {
 }
 add_action('wp_enqueue_scripts', 'bitcore_enqueue_page_scripts', 15);
 
-// Paperclip Integration Pages - JS Enqueue
-add_action('wp_enqueue_scripts', function() {
-    $paperclip_pages = array(
-        'org-chart' => 'org-chart.js',
-        'budget' => 'budget.js',
-        'goals' => 'goals.js',
-        'approvals' => 'approvals.js',
-        'checkout' => 'checkout.js',
-        'sessions' => 'sessions.js'
-    );
-    
-    foreach ($paperclip_pages as $slug => $js_file) {
-        if (is_page($slug)) {
-            wp_enqueue_script(
-                'bitcore-' . str_replace('-', '', $slug),
-                get_template_directory_uri() . '/assets/js/' . $js_file,
-                array(),
-                file_exists(get_template_directory() . '/assets/js/' . $js_file) ? filemtime(get_template_directory() . '/assets/js/' . $js_file) : '1.0.0',
-                true
-            );
-            wp_localize_script('bitcore-' . str_replace('-', '', $slug), 'bitcoreData', array(
-                'restUrl' => rest_url('bitcore/v1/'),
-                'nonce' => wp_create_nonce('wp_rest')
-            ));
+/**
+ * Enqueue Core CSS
+ */
+function bitcore_enqueue_core_css() {
+    wp_enqueue_style('bitcore-base-css', get_template_directory_uri() . '/assets/css/base.css', array(), '1.0.0');
+    wp_enqueue_style('bitcore-design-system-css', get_template_directory_uri() . '/assets/css/design-system.css', array('bitcore-base-css'), '1.0.0');
+    wp_enqueue_style('bitcore-template-bridge-css', get_template_directory_uri() . '/assets/css/template-bridge.css', array('bitcore-design-system-css'), '1.0.0');
+}
+add_action('wp_enqueue_scripts', 'bitcore_enqueue_core_css');
+
+
+/**
+ * Public BITmon Arena route.
+ * Serves /arena/ without requiring a manually-created WordPress page.
+ */
+function bitcore_register_arena_route(): void {
+    add_rewrite_rule('^arena/?$', 'index.php?bitmon_arena=1', 'top');
+}
+add_action('init', 'bitcore_register_arena_route');
+
+function bitcore_register_arena_query_var(array $vars): array {
+    $vars[] = 'bitmon_arena';
+    return $vars;
+}
+if (function_exists('add_filter')) {
+    add_filter('query_vars', 'bitcore_register_arena_query_var');
+}
+
+function bitcore_load_arena_template(string $template): string {
+    if (get_query_var('bitmon_arena')) {
+        $arena_template = get_template_directory() . '/template-arena.php';
+        if (is_file($arena_template)) {
+            return $arena_template;
         }
     }
-});
+    return $template;
+}
+if (function_exists('add_filter')) {
+    add_filter('template_include', 'bitcore_load_arena_template');
+}

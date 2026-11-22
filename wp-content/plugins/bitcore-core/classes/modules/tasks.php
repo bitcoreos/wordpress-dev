@@ -26,6 +26,16 @@ class BITCORE_Modules_Tasks {
     const TAX_STATUS = 'task_status';
 
     /**
+     * Channel taxonomy
+     */
+    const TAX_CHANNEL = 'bitcore_channel';
+
+    /**
+     * Task type taxonomy
+     */
+    const TAX_TYPE = 'task_type';
+
+    /**
      * Core instance
      */
     private $core;
@@ -42,8 +52,9 @@ class BITCORE_Modules_Tasks {
         add_action('save_post', [$this, 'save_meta'], 10, 2);
         add_action('transition_post_status', [$this, 'on_status_change'], 10, 3);
         
-        // Register default statuses on init
+        // Register default statuses and types on init
         add_action('init', [$this, 'register_default_statuses'], 20);
+        add_action('init', [$this, 'register_default_types'], 20);
     }
 
     /**
@@ -104,6 +115,32 @@ class BITCORE_Modules_Tasks {
         ];
 
         register_taxonomy(self::TAX_STATUS, self::POST_TYPE, $args);
+
+        // Channel taxonomy
+        $channel_labels = [
+            'name'          => _x('Channels', 'taxonomy general name', 'bitcore'),
+            'singular_name' => _x('Channel', 'taxonomy singular name', 'bitcore'),
+        ];
+        register_taxonomy(self::TAX_CHANNEL, [self::POST_TYPE, 'post'], [
+            'labels'       => $channel_labels,
+            'public'       => false,
+            'hierarchical' => true,
+            'show_ui'      => true,
+            'show_in_rest' => true,
+        ]);
+
+        // Task type taxonomy
+        $type_labels = [
+            'name'          => _x('Task Types', 'taxonomy general name', 'bitcore'),
+            'singular_name' => _x('Task Type', 'taxonomy singular name', 'bitcore'),
+        ];
+        register_taxonomy(self::TAX_TYPE, self::POST_TYPE, [
+            'labels'       => $type_labels,
+            'public'       => false,
+            'hierarchical' => true,
+            'show_ui'      => true,
+            'show_in_rest' => true,
+        ]);
     }
 
     /**
@@ -111,15 +148,41 @@ class BITCORE_Modules_Tasks {
      */
     public function register_default_statuses(): void {
         $statuses = [
+            // Legacy statuses
             'pending'   => 'Pending',
             'active'    => 'Active',
             'completed' => 'Completed',
             'failed'    => 'Failed',
+            // Kanban statuses
+            'inbox'     => 'Inbox',
+            'backlog'   => 'Backlog',
+            'doing'     => 'Doing',
+            'review'    => 'Review',
+            'done'      => 'Done',
+            'archived'  => 'Archived',
         ];
 
         foreach ($statuses as $slug => $name) {
             if (!term_exists($slug, self::TAX_STATUS)) {
                 wp_insert_term($name, self::TAX_STATUS, ['slug' => $slug]);
+            }
+        }
+    }
+
+    /**
+     * Register default task types
+     */
+    public function register_default_types(): void {
+        $types = [
+            'task'      => 'Task',
+            'goal'      => 'Goal',
+            'milestone' => 'Milestone',
+            'sprint'    => 'Sprint',
+        ];
+
+        foreach ($types as $slug => $name) {
+            if (!term_exists($slug, self::TAX_TYPE)) {
+                wp_insert_term($name, self::TAX_TYPE, ['slug' => $slug]);
             }
         }
     }

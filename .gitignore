@@ -1,20 +1,31 @@
-# Composer generated
-wp-content/plugins/bitcore-core/vendor/
-wp-content/plugins/bitcore-core/composer.lock
+# Binaries
+*.zip
+*.tar.gz
+*.rar
+*.7z
 
-# IDE
-.idea/
-.vscode/
-*.swp
+# Dependencies
+node_modules/
+vendor/
 
 # OS
 .DS_Store
 Thumbs.db
 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env
+.env
+.env.local
+
 # Logs
 *.log
-wp-content/debug.log
 
 # Cache
-wp-content/cache/
-wp-content/upgrade/
+*.cache
+.playwright-cli/
+MASTER-DOC.md

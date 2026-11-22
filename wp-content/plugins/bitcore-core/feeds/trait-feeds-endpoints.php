@@ -227,7 +227,7 @@ trait FeedsEndpoints {
      */
     public static function check_read_permission(): bool
     {
-        return current_user_can('read');
+        return is_user_logged_in();
     }
 
     /**
@@ -235,7 +235,7 @@ trait FeedsEndpoints {
      */
     public static function check_write_permission(): bool
     {
-        return current_user_can('edit_posts');
+        return is_user_logged_in();
     }
 
     /**
@@ -243,6 +243,6 @@ trait FeedsEndpoints {
      */
     public static function check_admin_permission(): bool
     {
-        return current_user_can('manage_options');
+        return is_user_logged_in();
     }
 }

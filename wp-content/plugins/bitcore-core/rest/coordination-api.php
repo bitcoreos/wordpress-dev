@@ -64,7 +64,7 @@ class BITCORE_Coordination_API {
     }
 
     public function permission_check(): bool {
-        return current_user_can('read') || $this->verify_agent_token();
+        return is_user_logged_in() || $this->verify_agent_token();
     }
 
     private function verify_agent_token(): bool {
@@ -193,7 +193,7 @@ class BITCORE_Coordination_API {
     public function evaluate_consensus(WP_REST_Request $request): WP_REST_Response {
         $protocol = new BITCORE_Coordination_ConsensusProtocol(
             $request->get_param('type') ?? 'majority',
-            $request->get_param('weights') ?? ['hyperion' => 2, 'coraline' => 1, 'hermes' => 1],
+            $request->get_param('weights') ?? ['hyperion' => 2, 'coraline' => 1, 'eliza' => 1],
             (float) ($request->get_param('threshold') ?? 0.5)
         );
         

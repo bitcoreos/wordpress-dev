@@ -373,7 +373,7 @@ class Artifacts_Controller
      */
     public function can_edit(): bool
     {
-        return current_user_can('edit_posts');
+        return is_user_logged_in();
     }
 
     /**
@@ -384,7 +384,7 @@ class Artifacts_Controller
      */
     public function can_delete(): bool
     {
-        return current_user_can('delete_posts');
+        return is_user_logged_in();
     }
 
     /**

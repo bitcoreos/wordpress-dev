@@ -9,6 +9,8 @@ use BITCORE\Infrastructure\Auth\Contracts\SessionManagerInterface;
 use InvalidArgumentException;
 use RuntimeException;
 
+require_once __DIR__ . '/TokenPayload.php';
+
 /**
  * Data Transfer Object for authentication results.
  *
@@ -23,26 +25,6 @@ final class AuthResult {
         readonly public ?string $error = null,
         readonly public array $metadata = []
     ) {}
-}
-
-/**
- * Data Transfer Object for token payload.
- *
- * @since 1.0.0
- * @package BITCORE\Infrastructure\Auth
- */
-final class TokenPayload {
-    public function __construct(
-        readonly public int $userId,
-        readonly public array $roles = [],
-        readonly public int $issuedAt = 0,
-        readonly public int $expiresAt = 0,
-        readonly public array $data = []
-    ) {}
-
-    public function isExpired(): bool {
-        return time() > $this->expiresAt;
-    }
 }
 
 /**

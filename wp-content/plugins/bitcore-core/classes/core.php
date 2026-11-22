@@ -41,8 +41,8 @@ class BITCORE_Core {
     public ?BITCORE_MCP_Core $mcp = null;
     public ?BITCORE_Rest_API $rest = null;
     public ?BITCORE_Rest_Tasks $rest_tasks = null;
-    public ?BITCORE_Rest_Hermes_Api $rest_hermes = null;
-    public ?BITCORE_Services_Connector_Hermes $connector_hermes = null;
+    public $eliza = null;
+    public $eliza_settings = null;
     public ?BITCORE_Modules_Search $search = null;
     public ?BITCORE_Modules_Forms $forms = null;
     public ?BITCORE_Modules_Tasks $tasks = null;
@@ -83,16 +83,28 @@ class BITCORE_Core {
         });
 
         // === Hyperion: Infrastructure Services ===
-        $this->container->register('auth.manager', function() { return new \BITCORE\Infrastructure\Auth\AuthManager(); });
-        $this->container->register('auth.capability', function() { return new \BITCORE\Infrastructure\Auth\CapabilityManager(); });
-        $this->container->register('tenant.resolver', function() { return new \BITCORE\Infrastructure\MultiTenancy\TenantResolver(); });
-        $this->container->register('cache.manager', function() { return new \BITCORE\Infrastructure\Cache\CacheManager(); });
-        require_once BITCORE_PATH . 'infrastructure/queue/QueueWorker.php';
-        $this->container->register('queue.worker', function() { return new \BITCORE\Infrastructure\Queue\QueueWorker(); });
-        $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
-        $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
+        // NOTE: Six infrastructure files are MISSING - commented out until built.
+        // Missing: Auth/AuthManager.php, Auth/CapabilityManager.php, MultiTenancy/TenantResolver.php,
+        //          Cache/CacheManager.php, Logging/Logger.php, RateLimit/RateLimitManager.php
+        // $this->container->register('auth.manager', function() { return new \BITCORE\Infrastructure\Auth\AuthManager(); });
+        // $this->container->register('auth.capability', function() { return new \BITCORE\Infrastructure\Auth\CapabilityManager(); });
+        // $this->container->register('tenant.resolver', function() { return new \BITCORE\Infrastructure\MultiTenancy\TenantResolver(); });
+        // $this->container->register('cache.manager', function() { return new \BITCORE\Infrastructure\Cache\CacheManager(); });
+        // QueueWorker requires Logger which is missing — commented out until built.
+        // require_once BITCORE_PATH . 'infrastructure/queue/QueueWorker.php';
+        // $this->container->register('queue.worker', function($c) {
+        //     require_once BITCORE_PATH . 'infrastructure/queue/JobRepository.php';
+        //     return new \BITCORE\Infrastructure\Queue\QueueWorker(
+        //         $c->get('job.repository'),
+        //         $c->get('logger')
+        //     );
+        // });
+        // $this->container->register('logger', function() { return new \BITCORE\Infrastructure\Logging\Logger(); });
+        // $this->container->register('ratelimit.manager', function() { return new \BITCORE\Infrastructure\RateLimit\RateLimitManager(); });
         require_once BITCORE_PATH . 'infrastructure/webhooks/WebhookManager.php';
-        $this->container->register('webhooks.manager', function() { return new \BITCORE\Infrastructure\Webhooks\WebhookManager(); });
+        // DISABLED: WebhookManager requires 4 constructor args (repository, httpClient, logger, signatureVerifier)
+        // which are not registered in the container. Re-enable after wiring dependencies.
+        // $this->container->register('webhooks.manager', function() { return new \BITCORE\Infrastructure\Webhooks\WebhookManager(); });
 
         // === Hyperion: Wave 4 Security Services ===
         require_once BITCORE_PATH . 'infrastructure/security/middleware-pipeline.php';
@@ -113,6 +125,16 @@ class BITCORE_Core {
 
         require_once BITCORE_PATH . 'infrastructure/swarm/health-monitor.php';
         $this->container->register('health.monitor', function() { return new \BITCORE\Infrastructure\Swarm\HealthMonitor(); });
+
+        // x402 Payment Verification
+        require_once BITCORE_PATH . 'infrastructure/class-x402.php';
+        require_once BITCORE_PATH . 'infrastructure/class-x402-facilitator.php';
+        $this->container->register('x402.verifier', function() {
+            return new \BITCORE\Infrastructure\X402_Verifier();
+        });
+        $this->container->register('x402.facilitator', function() {
+            return new \BITCORE\Infrastructure\X402_Facilitator_Client();
+        });
 
         // Initialize Wave 4 Services
         add_action('bitcore_init', [$this, 'init_wave4_services']);
@@ -143,12 +165,24 @@ class BITCORE_Core {
      * Early REST API initialization (runs before plugins_loaded)
      */
     public function init_rest(): void {
+
+        // Sessions API
+        require_once BITCORE_PATH . 'rest/class-sessions-api.php';
+        new \BITCORE\Rest\Sessions_Api();
+
+        // ElizaOS Bridge — constructor calls register_routes()
+        require_once BITCORE_PATH . 'rest/class-eliza-api.php';  // loaded once
+        new BITCORE_Rest_Eliza_Api($this);
+
+        // Knowledge API — constructor calls register_routes()
+        require_once BITCORE_PATH . 'rest/class-knowledge-api.php';
+        new \BITCORE\Rest\Knowledge_Api();
+
+        // Abstract connector for services
         require_once BITCORE_PATH . 'classes/services/abstract-connector.php';
-        require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
-        require_once BITCORE_PATH . 'rest/Hermes_Api.php';
-        $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
-        $this->rest_hermes = new BITCORE_Rest_Hermes_Api($this);
     }
+
+    
 
     public function init(): void {
         // Initialize Coraline pattern-based services
@@ -166,13 +200,17 @@ class BITCORE_Core {
             $this->rest_auth_filter = new BITCORE_Rest_Auth_Filter();
             $this->rest = new BITCORE_Rest_API($this);
             $this->rest_tasks = new BITCORE_Rest_Tasks($this);
-        // REST Hermes initialized in init_rest() for early hook timing
-        require_once BITCORE_PATH . 'classes/services/connector-hermes.php';
-        $this->connector_hermes = new BITCORE_Services_Connector_Hermes($this);
         }
 
         // Initialize Wave 4 security middleware
         $this->init_wave4();
+
+        // ElizaOS provisioning hooks (global — registration/login can happen outside admin)
+        add_action('user_register', [$this, 'eliza_user_registered']);
+        add_action('wp_login', [$this, 'eliza_user_login'], 10, 2);
+
+        // Subscription provisioning hook. Payment integrations must verify purchase first.
+        add_action('bitcore_subscription_purchase', [$this, 'provision_subscription_purchase'], 10, 3);
 
         // Admin
         if (is_admin()) {
@@ -194,6 +232,9 @@ class BITCORE_Core {
         $this->connector_n8n = $this->container->get('connector_n8n');
         $this->connector_bithub = $this->container->get('connector_bithub');
         $this->connector_bitwiki = $this->container->get('connector_bitwiki');
+        // x402 Payment Verification — instantiate to register filter hooks
+        $this->container->get('x402.verifier');
+        $this->container->get('x402.facilitator');
     }
 
     /**
@@ -285,9 +326,101 @@ class BITCORE_Core {
             $this->tasks = new BITCORE_Modules_Tasks($this);
         }
     }
-
     private function init_admin(): void {
         add_action('admin_init', [$this, 'admin_init']);
+
+        // ElizaOS Settings (admin context only)
+        require_once BITCORE_PATH . 'admin/class-eliza-settings.php';
+        $this->eliza_settings = new BITCORE_Eliza_Settings();
+    }
+
+    /**
+     * Provision new user with default ElizaOS session on registration.
+     *
+     * @param int $user_id WordPress user ID of newly registered user
+     */
+    public function eliza_user_registered(int $user_id): void {
+        // Skip if user has no read capability
+        if (!user_can($user_id, 'read')) {
+            return;
+        }
+
+        // Provision once only. Existing active-agent choices must survive re-fired hooks.
+        $active_agent = get_user_meta($user_id, 'bitcore_eliza_active_agent', true);
+        if (!empty($active_agent)) {
+            return;
+        }
+
+        [$default_agent, $agent_id] = $this->get_default_eliza_agent_assignment();
+
+        // Set active agent for the new user
+        update_user_meta($user_id, 'bitcore_eliza_active_agent', $agent_id);
+        update_user_meta($user_id, 'bitcore_eliza_active_agent_name', $default_agent);
+
+        // Credits usage is lazily initialized by Credits_Manager.
+    }
+
+    /**
+     * Resume user's active ElizaOS agent session on login.
+     *
+     * @param string $user_login Username
+     * @param WP_User $user User object
+     */
+    public function eliza_user_login(string $user_login, WP_User $user): void {
+        $user_id = $user->ID;
+
+        // Check if user has an active agent
+        $active_agent = get_user_meta($user_id, 'bitcore_eliza_active_agent', true);
+
+        if (empty($active_agent)) {
+            [$default_agent, $agent_id] = $this->get_default_eliza_agent_assignment();
+
+            update_user_meta($user_id, 'bitcore_eliza_active_agent', $agent_id);
+            update_user_meta($user_id, 'bitcore_eliza_active_agent_name', $default_agent);
+        }
+
+        // Credits usage is lazily initialized by Credits_Manager.
+    }
+
+    /**
+     * Provision subscription-derived agent quota after verified purchase.
+     *
+     * This method is deliberately provider-agnostic. Checkout, WooCommerce,
+     * PMPro, EDD, or x402 adapters should call `do_action(
+     * 'bitcore_subscription_purchase', $user_id, $tier, $metadata )` only
+     * after their own payment verification succeeds.
+     *
+     * @param array<string,mixed> $metadata Purchase metadata sanitized by Credits_Manager.
+     */
+    public function provision_subscription_purchase(int $user_id, string $tier, array $metadata = []): bool {
+        require_once BITCORE_PATH . 'infrastructure/class-credits.php';
+
+        if (!class_exists('\BITCORE\Infrastructure\Credits_Manager')) {
+            return false;
+        }
+
+        $credits = new \BITCORE\Infrastructure\Credits_Manager();
+        return $credits->provision_subscription_purchase($user_id, $tier, $metadata);
+    }
+
+    /**
+     * Return a normalized default ElizaOS agent assignment.
+     *
+     * @return array{0:string,1:string} Tuple of agent slug and agent UUID.
+     */
+    private function get_default_eliza_agent_assignment(): array {
+        $default_agent = (string) get_option('bitcore_eliza_default_agent', 'aria');
+        $agent_map = [
+            'aria'  => (string) get_option('bitcore_eliza_agent_aria', 'eac677dd-94c4-02ab-bfea-bc554e52b2a3'),
+            'forge' => (string) get_option('bitcore_eliza_agent_forge', '3ab11b75-ca36-0cee-a3d7-7bfcab3c27cd'),
+            'muse'  => (string) get_option('bitcore_eliza_agent_muse', 'cf0dee2b-9fc6-041b-83a0-90a644d26362'),
+        ];
+
+        if (!array_key_exists($default_agent, $agent_map)) {
+            $default_agent = 'aria';
+        }
+
+        return [$default_agent, $agent_map[$default_agent]];
     }
 
     public function admin_init(): void {}

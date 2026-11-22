@@ -1,71 +1,60 @@
 /**
- * Org Chart - Agent Hierarchy Visualization
- * Fetches data from /wp-json/bitcore/v1/org-chart
+ * BITCORE Org Chart Controller
+ * Paperclip Integration - Agent Hierarchy
  */
-(function() {
-    const container = document.getElementById('org-chart-container');
-    if (!container) return;
-
-    const apiEndpoint = (typeof bitcoreData !== 'undefined' ? bitcoreData.restUrl : '/wp-json/bitcore/v1/') + 'org-chart';
-
-    function renderLoading() {
-        container.innerHTML = '<div class="loading-state"><span class="spinner"></span><p>Loading agent hierarchy...</p></div>';
-    }
-
-    function renderError(message) {
-        container.innerHTML = '<div class="error-state"><p>Error: ' + message + '</p><button onclick="fetchOrgChart()">Retry</button></div>';
-    }
-
-    function renderOrgChart(data) {
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-            container.innerHTML = '<div class="empty-state"><p>No agents found in the hierarchy.</p></div>';
-            return;
-        }
-
-        let html = '<div class="org-chart-grid">';
-
-        if (Array.isArray(data)) {
-            data.forEach(function(agent) {
-                const statusClass = agent.status === 'active' ? 'status-active' : 'status-inactive';
-                html += '<div class="agent-card ' + statusClass + '">';
-                html += '<div class="agent-header"><h3>' + (agent.name || 'Unknown') + '</h3>';
-                html += '<span class="agent-role">' + (agent.role || 'Agent') + '</span></div>';
-                html += '<div class="agent-body">';
-                html += '<p><strong>ID:</strong> ' + (agent.id || 'N/A') + '</p>';
-                html += '<p><strong>Status:</strong> ' + (agent.status || 'Unknown') + '</p>';
-                html += '<p><strong>Level:</strong> ' + (agent.level || 'N/A') + '</p>';
-                if (agent.parent) {
-                    html += '<p><strong>Reports to:</strong> ' + agent.parent + '</p>';
-                }
-                html += '</div></div>';
-            });
-        }
-
-        html += '</div>';
-        container.innerHTML = html;
-    }
-
-    async function fetchOrgChart() {
-        renderLoading();
-
-        try {
-            const response = await fetch(apiEndpoint);
-            if (!response.ok) {
-                throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+(function(global) {
+    'use strict';
+    const OrgChartPage = {
+        config: {
+            endpoint: '/wp-json/bitcore/v1/org-chart',
+            nonce: null
+        },
+        init: function() {
+            if (typeof bitcoreData !== 'undefined') this.config.nonce = bitcoreData.nonce;
+            console.log('OrgChartPage initializing...');
+            this.bindEvents();
+            this.loadData();
+        },
+        bindEvents: function() {
+            var self = this;
+            document.getElementById('refresh-org')?.addEventListener('click', function() { self.loadData(); });
+        },
+        loadData: async function() {
+            try {
+                var response = await fetch(this.config.endpoint, { headers: { 'X-WP-Nonce': this.config.nonce || '' } });
+                var data = await response.json();
+                this.render(data);
+            } catch (error) {
+                console.error('Org chart error:', error);
+                document.getElementById('org-tree').innerHTML = '<div class="empty-state">No org chart data available</div>';
+                this.updateStats(0, 0, 0);
             }
-            let data = await response.json();
-            // Handle {"agents": []} format
-            if (data && data.agents) data = data.agents;
-            renderOrgChart(data);
-        } catch (error) {
-            console.error('Org chart fetch error:', error);
-            renderError(error.message);
+        },
+        render: function(data) {
+            var agents = data.agents || data || [];
+            var tree = document.getElementById('org-tree');
+            if (!tree) return;
+            if (agents.length === 0) {
+                tree.innerHTML = '<div class="empty-state">No agents configured</div>';
+                this.updateStats(0, 0, 0);
+                return;
+            }
+            var html = '<div class="org-level">';
+            agents.forEach(function(agent) {
+                html += '<div class="org-node"><span class="node-name">' + (agent.name || agent) + '</span>';
+                if (agent.role) html += '<span class="node-role">' + agent.role + '</span>';
+                html += '</div>';
+            });
+            html += '</div>';
+            tree.innerHTML = html;
+            this.updateStats(agents.length, agents.filter(function(a) { return a.status === 'active'; }).length, 1);
+        },
+        updateStats: function(total, active, teams) {
+            if (document.getElementById('total-agents')) document.getElementById('total-agents').textContent = total;
+            if (document.getElementById('active-agents')) document.getElementById('active-agents').textContent = active;
+            if (document.getElementById('teams-count')) document.getElementById('teams-count').textContent = teams;
         }
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', fetchOrgChart);
-    } else {
-        fetchOrgChart();
-    }
-})();
+    };
+    document.addEventListener('DOMContentLoaded', function() { OrgChartPage.init(); });
+    global.OrgChartPage = OrgChartPage;
+})(window);
