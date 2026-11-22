@@ -1,10 +1,19 @@
 <?php
 declare(strict_types=1);
 /**
- * BITCORE Chatbot Module
- * Advanced chatbot with BitFlux avatar and agent integration
+ * BITCORE_Modules_Chatbot class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Modules_Chatbot {
     private $core;
 

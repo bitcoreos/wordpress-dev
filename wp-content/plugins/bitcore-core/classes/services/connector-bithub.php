@@ -1,35 +1,62 @@
 <?php
 declare(strict_types=1);
 /**
- * BITCORE BIThub Connector Service
- * Handles communication with hub.bitwiki.org (Discourse)
+ * BITCORE_Services_Connector_BIThub implementation
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
-class BITCORE_Services_Connector_BIThub {
-    private $core;
-    private $api_url;
-    private $api_key;
+declare(strict_types=1);
 
-    public function __construct( $core ) {
-        $this->core = $core;
-        $this->api_url = get_option( 'bitcore_bithub_api_url', 'https://hub.bitwiki.org' );
-        $this->api_key = get_option( 'bitcore_bithub_api_key', '' );
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+/**
+ * BITCORE BIThub Connector Service
+ * Handles communication with hub.bitwiki.org (Discourse)
+ *
+ * @package BITCORE_Core
+ * @since 1.0.0
+ */
+
+/**
+ * Class BITCORE_Services_Connector_BIThub
+ * BIThub connector extending abstract base
+ */
+class BITCORE_Services_Connector_BIThub extends BITCORE_Abstract_Connector {
+
+    /**
+     * Get API key from options
+     */
+    protected function get_api_key(): ?string {
+        return get_option('bitcore_bithub_api_key') ?: null;
+    }
+
+    /**
+     * Get API URL from options
+     */
+    protected function get_api_url(): string {
+        return get_option('bitcore_bithub_api_url', 'https://hub.bitwiki.org');
+    }
+
+    /**
+     * Get connector name
+     */
+    public function get_name(): string {
+        return 'bithub';
     }
 
     /**
      * Get latest topics from BIThub
      */
-    public function get_latest_topics( $limit = 10 ) {
-        $url = $this->api_url . '/latest.json';
-
-        $args = [
-            'headers' => $this->get_headers(),
-            'timeout' => 30,
-        ];
-
-        $response = wp_remote_get( $url, $args );
-
-        if ( is_wp_error( $response ) ) {
+    public function get_latest_topics(int $limit = 10): array {
+        $response = $this->request('latest.json');
+        
+        if (is_wp_error($response)) {
             return [];
         }
 
@@ -49,17 +76,10 @@ class BITCORE_Services_Connector_BIThub {
     /**
      * Get categories from BIThub
      */
-    public function get_categories() {
-        $url = $this->api_url . '/categories.json';
-
-        $args = [
-            'headers' => $this->get_headers(),
-            'timeout' => 30,
-        ];
-
-        $response = wp_remote_get( $url, $args );
-
-        if ( is_wp_error( $response ) ) {
+    public function get_categories(): array {
+        $response = $this->request('categories.json');
+        
+        if (is_wp_error($response)) {
             return [];
         }
 
@@ -75,17 +95,10 @@ class BITCORE_Services_Connector_BIThub {
     /**
      * Get artifacts from Artifacts category
      */
-    public function get_artifacts() {
-        $url = $this->api_url . '/c/artifacts/6.json';
-
-        $args = [
-            'headers' => $this->get_headers(),
-            'timeout' => 30,
-        ];
-
-        $response = wp_remote_get( $url, $args );
-
-        if ( is_wp_error( $response ) ) {
+    public function get_artifacts(): array {
+        $response = $this->request('c/artifacts/6.json');
+        
+        if (is_wp_error($response)) {
             return [];
         }
 
@@ -197,8 +210,12 @@ class BITCORE_Services_Connector_BIThub {
     /**
      * Create topic on BIThub
      */
-    public function create_topic( $title, $content, $category_id = 1 ) {
-        $url = $this->api_url . '/posts.json';
+    public function create_topic(string $title, string $content, int $category_id = 1): array|\WP_Error {
+        $response = $this->request('posts.json', 'POST', [
+            'title' => $title,
+            'raw' => $content,
+            'category' => $category_id,
+        ]);
 
         $args = [
             'method' => 'POST',
@@ -226,15 +243,15 @@ class BITCORE_Services_Connector_BIThub {
     }
 
     /**
-     * Get headers for API requests
+     * Override default headers for Discourse API
      */
-    private function get_headers() {
+    protected function get_default_headers(): array {
         $headers = [
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
 
-        if ( ! empty( $this->api_key ) ) {
+        if ($this->api_key) {
             $headers['Api-Key'] = $this->api_key;
         }
 

@@ -1,10 +1,19 @@
 <?php
 declare(strict_types=1);
 /**
- * BITCORE REST API
- * Full REST API for external integrations
+ * BITCORE_Rest_API class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Rest_API {
     private $core;
     private $namespace = 'bitcore/v1';

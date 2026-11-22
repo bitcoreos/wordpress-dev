@@ -1,10 +1,19 @@
 <?php
 declare(strict_types=1);
 /**
- * BITCORE Message Builder Service
- * Constructs messages for agents with proper context
+ * BITCORE_Services_Message_Builder class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Services_Message_Builder {
     private $core;
 

@@ -1,10 +1,19 @@
 <?php
 declare(strict_types=1);
 /**
- * BITCORE Session Service
- * Manages user sessions and conversation state
+ * BITCORE_Services_Session class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Services_Session {
     private $core;
 

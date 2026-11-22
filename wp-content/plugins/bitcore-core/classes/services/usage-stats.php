@@ -1,10 +1,19 @@
 <?php
 declare(strict_types=1);
 /**
- * BITCORE Usage Stats Service
- * Tracks API usage and credits
+ * BITCORE_Services_Usage_Stats class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Services_Usage_Stats {
     private $core;
 

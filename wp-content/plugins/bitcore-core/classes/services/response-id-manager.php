@@ -1,10 +1,19 @@
 <?php
 declare(strict_types=1);
 /**
- * BITCORE Response ID Manager Service
- * Manages correlation IDs for tracking requests
+ * BITCORE_Services_Response_ID_Manager class for Bitcore
+ *
+ * @package    Bitcore
+ * @since      2026.03.01
+ * @version    1.3.0
+ * @author     hyperion
  */
 
+declare(strict_types=1);
+
+if (!defined('ABSPATH')) {
+    exit;
+}
 class BITCORE_Services_Response_ID_Manager {
     private $core;
 
