@@ -1,5 +1,8 @@
 <?php
 /**
+use BITCORE\Infrastructure\Queue\Job;
+use BITCORE\Infrastructure\RateLimit\RateLimitManager;
+use Psr\Log\LoggerInterface;
  * Supporting job runner logic for Bitcore
  *
  * @package    Bitcore

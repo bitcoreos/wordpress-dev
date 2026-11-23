@@ -6,6 +6,8 @@ declare(strict_types=1);
  * Unified feed of user's tasks, prompts, artifacts, and social posts.
  *
  * @package BITCORE
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Rest_My_Posts_API {

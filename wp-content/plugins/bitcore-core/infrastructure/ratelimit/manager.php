@@ -25,6 +25,7 @@ use DateInterval;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\RateLimit
+ * @version     1.0.0
  */
 class RateLimitManager
 {

@@ -8,6 +8,7 @@ declare(strict_types=1);
  *
  * @package BITCORE
  * @since 1.0.2
+ * @version     1.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

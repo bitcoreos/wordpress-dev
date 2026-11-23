@@ -12,6 +12,8 @@ declare(strict_types=1);
  * License: GPLv2+
  *
  * @package BITCORE
+ * @since       1.0.0
+ * @version     1.3.0
  */
 
 // Prevent direct access.

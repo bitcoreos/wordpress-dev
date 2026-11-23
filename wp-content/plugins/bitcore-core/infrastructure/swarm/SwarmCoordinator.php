@@ -7,12 +7,15 @@
  *
  * @package BITCORE\Infrastructure\Swarm
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);
 
 namespace BITCORE\Infrastructure\Swarm;
 
+use BITCORE\Infrastructure\Cache\CacheManager;
+use BITCORE\Infrastructure\Logging\Logger;
 
 // ============================================================================
 // SWARM COORDINATOR

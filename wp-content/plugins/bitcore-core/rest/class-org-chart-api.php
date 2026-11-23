@@ -6,6 +6,8 @@
  * Hierarchy tree operations were retired in P3.1.
  *
  * @package BITCORE\Rest
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Rest;

@@ -3,6 +3,9 @@ declare(strict_types=1);
 /**
  * BITCORE Admin Dashboard
  * Internal status checks via server-side REST calls
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 // Server-side status checks (run on page load)

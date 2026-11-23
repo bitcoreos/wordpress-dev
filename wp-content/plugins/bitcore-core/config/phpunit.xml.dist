@@ -1,28 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
-bootstrap="./vendor/autoload.php"
-backupGlobals="false"
-colors="true"
-convertErrorsToExceptions="true"
-convertNoticesToExceptions="true"
-convertWarningsToExceptions="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
+    bootstrap="../tests/bootstrap.php"
+    backupGlobals="false"
+    colors="true"
+    cacheDirectory="../.phpunit.cache"
 >
-<php>
-v name="WORDPRESS_TABLE_PREFIX" value="wptests_" />
-v name="WP_TESTS_PHPUNIT_VERSION" value="9" />
-</php>
-<testsuites>
-name="bitcore">
- suffix="Test.php">./tests</directory>
-includeUncoveredFiles="true">
-clude>
- suffix=".php">../patterns</directory>
- suffix=".php">../database</directory>
- suffix=".php">../domain</directory>
- suffix=".php">../validation</directory>
- suffix=".php">../classes</directory>
-clude>
-</coverage>
+    <testsuites>
+        <testsuite name="Core">
+            <directory suffix="Test.php">../tests/container/</directory>
+            <directory suffix="Test.php">../tests/multitenancy/</directory>
+            <directory suffix="Test.php">../tests/intelligence/</directory>
+        </testsuite>
+        <testsuite name="Auth">
+            <directory suffix="Test.php">../tests/auth/</directory>
+        </testsuite>
+        <testsuite name="Admin">
+            <directory suffix="Test.php">../tests/admin/</directory>
+        </testsuite>
+        <testsuite name="Connectors">
+            <directory suffix="Test.php">../tests/connectors/</directory>
+        </testsuite>
+        <testsuite name="Infrastructure">
+            <directory suffix="Test.php">../tests/infrastructure/</directory>
+        </testsuite>
+        <testsuite name="Queue">
+            <directory suffix="Test.php">../tests/queue/</directory>
+        </testsuite>
+        <testsuite name="Cache">
+            <directory suffix="Test.php">../tests/cache/</directory>
+        </testsuite>
+        <testsuite name="Webhooks">
+            <directory suffix="Test.php">../tests/webhooks/</directory>
+        </testsuite>
+        <testsuite name="REST">
+            <directory suffix="Test.php">../tests/rest/</directory>
+        </testsuite>
+        <testsuite name="MCP">
+            <directory suffix="Test.php">../tests/mcp/</directory>
+        </testsuite>
+        <testsuite name="Knowledge">
+            <directory suffix="Test.php">../tests/Knowledge/</directory>
+        </testsuite>
+    </testsuites>
+
+    <source restrictNotices="true" restrictWarnings="true">
+        <include>
+            <directory suffix=".php">../classes/</directory>
+            <directory suffix=".php">../infrastructure/</directory>
+        </include>
+    </source>
+
+    <php>
+        <const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="../vendor/yoast/phpunit-polyfills"/>
+        <const name="WP_TESTS_CONFIG_FILE_PATH" value="../tests/wp-config.php"/>
+    </php>
 </phpunit>

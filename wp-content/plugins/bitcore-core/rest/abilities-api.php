@@ -9,6 +9,9 @@ declare(strict_types=1);
  * - GET  /bitcore/v1/abilities/:name    - Get ability details
  * - POST /bitcore/v1/abilities/:name    - Execute ability
  * - GET  /bitcore/v1/abilities/categories - List categories
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Rest_Abilities_API {

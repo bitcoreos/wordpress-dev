@@ -6,6 +6,8 @@
  * Ported from Paperclip's budget enforcement patterns.
  *
  * @package BITCORE\Infrastructure\Budget
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Infrastructure\Budget;

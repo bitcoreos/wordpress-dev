@@ -1,5 +1,8 @@
 <?php
 /**
+use BITCORE\Infrastructure\Cache\CacheManager;
+use BITCORE\Infrastructure\Swarm\CheckType;
+use BITCORE\Infrastructure\Swarm\HealthCheckResult;
  * Supporting health check logic for Bitcore
  *
  * @package    Bitcore

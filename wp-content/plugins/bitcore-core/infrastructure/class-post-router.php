@@ -6,6 +6,8 @@ declare(strict_types=1);
  * Routes posts based on type, category, and channel taxonomy.
  *
  * @package BITCORE
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Post_Router {

@@ -8,6 +8,7 @@ declare(strict_types=1);
  * @package BITCORE\Artifacts
  * @since 1.0.0
  * @author hyperion
+ * @version     1.0.0
  */
 
 namespace BITCORE\Artifacts;

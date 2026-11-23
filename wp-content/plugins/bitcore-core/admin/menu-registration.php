@@ -3,6 +3,9 @@ declare(strict_types=1);
 /**
  * BITCORE Admin Menu Registration
  * Consolidated: Dashboard, Settings, API & Tools, Agents & Models, MCP, ElizaOS
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 add_action('admin_menu', function() {

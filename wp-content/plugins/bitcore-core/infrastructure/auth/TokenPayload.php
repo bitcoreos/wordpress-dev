@@ -12,6 +12,7 @@ namespace BITCORE\Infrastructure\Auth;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\Auth
+ * @version     1.0.0
  */
 final class TokenPayload {
     public function __construct(

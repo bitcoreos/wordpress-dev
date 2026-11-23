@@ -6,6 +6,9 @@ declare(strict_types=1);
  * 
  * User-facing features (Org Chart, Budget, Goals, Approvals) are handled by
  * Coraline's frontend pages in the theme.
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 add_action('admin_menu', function() {

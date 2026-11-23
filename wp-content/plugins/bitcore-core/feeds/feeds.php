@@ -5,6 +5,7 @@ declare(strict_types=1);
  *
  * @package BITCORE\Feeds
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 if (!defined('ABSPATH')) {

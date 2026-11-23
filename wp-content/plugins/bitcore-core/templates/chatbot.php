@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @author     hyperion
  */
 
-declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;
@@ -20,7 +19,6 @@ if (!defined('ABSPATH')) {
  */
 ?>
 <div class="bitcore-chatbot" data-agent="<?php echo esc_attr($atts['agent']); ?>" data-theme="<?php echo esc_attr($atts['theme']); ?>">
-declare(strict_types=1);
     <div class="chatbot-header">
         <div class="chatbot-avatar bitflux-avatar" data-state="welcome"></div>
         <div class="chatbot-info">

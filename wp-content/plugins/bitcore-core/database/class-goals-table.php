@@ -4,6 +4,8 @@
  *
  * @package BITCORE\Database
  * @deprecated Use the canonical /bitcore/v1/tasks endpoint and agent_task storage.
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Database;

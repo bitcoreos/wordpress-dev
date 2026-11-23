@@ -2,6 +2,9 @@
 /**
  * Template Name: BITCORE Full Width
  * Description: Full width template without theme wrapper
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 ?>
 <!DOCTYPE html>

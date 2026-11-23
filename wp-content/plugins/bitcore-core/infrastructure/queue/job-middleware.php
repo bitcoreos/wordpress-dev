@@ -4,17 +4,18 @@
  *
  * @package BITCORE\Infrastructure\Queue
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);
 
 namespace BITCORE\Infrastructure\Queue;
 
+use Psr\Log\LoggerInterface;
 use Throwable;
 use DateTimeImmutable;
 use wpdb;
 use BITCORE\Infrastructure\Logging\Logger;
-use BITCORE\Infrastructure\Logging\LoggerInterface;
 use BITCORE\Infrastructure\RateLimit\RateLimitManager;
 use BITCORE\Infrastructure\Auth\TenantContext;
 

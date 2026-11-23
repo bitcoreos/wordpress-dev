@@ -7,12 +7,14 @@
  *
  * @package BITCORE\Infrastructure\Cache
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);
 
 namespace BITCORE\Infrastructure\Cache;
 
+use BITCORE\Infrastructure\Auth\TenantContext;
 use Psr\SimpleCache\CacheInterface;
 use DateTime;
 

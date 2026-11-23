@@ -6,6 +6,8 @@
  * Ported from Paperclip's governance patterns.
  *
  * @package BITCORE\Infrastructure\Governance
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Infrastructure\Governance;

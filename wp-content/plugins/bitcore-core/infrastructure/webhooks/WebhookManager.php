@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace BITCORE\Infrastructure\Webhooks;
 
+use Psr\Log\LoggerInterface;
 if (!defined('ABSPATH')) {
     exit;
 

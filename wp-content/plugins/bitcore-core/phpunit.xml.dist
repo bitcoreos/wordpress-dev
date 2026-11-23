@@ -14,29 +14,49 @@
     </coverage>
 
     <testsuites>
-        <testsuite name="Auth">
-            <directory>tests/auth/</directory>
+        <testsuite name="Core">
+            <directory suffix="Test.php">tests/container/</directory>
+            <directory suffix="Test.php">tests/multitenancy/</directory>
+            <directory suffix="Test.php">tests/intelligence/</directory>
         </testsuite>
-        <testsuite name="Multitenancy">
-            <directory>tests/multitenancy/</directory>
+        <testsuite name="Auth">
+            <directory suffix="Test.php">tests/auth/</directory>
+        </testsuite>
+        <testsuite name="Admin">
+            <directory suffix="Test.php">tests/admin/</directory>
+        </testsuite>
+        <testsuite name="Connectors">
+            <directory suffix="Test.php">tests/connectors/</directory>
+        </testsuite>
+        <testsuite name="Infrastructure">
+            <directory suffix="Test.php">tests/infrastructure/</directory>
         </testsuite>
         <testsuite name="Queue">
-            <directory>tests/queue/</directory>
+            <directory suffix="Test.php">tests/queue/</directory>
         </testsuite>
         <testsuite name="Cache">
-            <directory>tests/cache/</directory>
+            <directory suffix="Test.php">tests/cache/</directory>
         </testsuite>
         <testsuite name="Logging">
-            <directory>tests/logging/</directory>
+            <directory suffix="Test.php">tests/logging/</directory>
         </testsuite>
         <testsuite name="Webhooks">
-            <directory>tests/webhooks/</directory>
+            <directory suffix="Test.php">tests/webhooks/</directory>
         </testsuite>
         <testsuite name="CLI">
-            <directory>tests/cli/</directory>
+            <directory suffix="Test.php">tests/cli/</directory>
         </testsuite>
         <testsuite name="Ratelimit">
-            <directory>tests/ratelimit/</directory>
+            <directory suffix="Test.php">tests/ratelimit/</directory>
+        </testsuite>
+        <testsuite name="REST">
+            <directory suffix="Test.php">tests/rest/</directory>
+        </testsuite>
+        <testsuite name="MCP">
+            <directory suffix="Test.php">tests/mcp/</directory>
+        </testsuite>
+        <testsuite name="Knowledge">
+            <directory suffix="Test.php">tests/Knowledge/</directory>
         </testsuite>
     </testsuites>
 

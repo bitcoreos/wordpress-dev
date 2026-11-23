@@ -5,6 +5,7 @@
  * @package BITCORE\Infrastructure\Queue
  * @since 1.0.0
  * @author hyperion
+ * @version     1.0.0
  */
 
 declare(strict_types=1);

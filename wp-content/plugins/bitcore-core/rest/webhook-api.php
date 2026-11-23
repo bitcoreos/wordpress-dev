@@ -14,6 +14,9 @@ declare(strict_types=1);
  * - post_publish, post_update, post_delete
  * - user_register, user_login
  * - comment_post
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Rest_Webhooks_API {

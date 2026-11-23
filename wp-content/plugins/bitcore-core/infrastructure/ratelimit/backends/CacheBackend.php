@@ -15,6 +15,7 @@ use Psr\SimpleCache\CacheInterface;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\RateLimit\Backends
+ * @version     1.0.0
  */
 class CacheBackend implements RateLimitBackendInterface
 {

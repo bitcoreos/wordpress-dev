@@ -5,6 +5,8 @@
  * Unified REST surface for subscription quotas, daily usage, and x402 paid access.
  *
  * @package BITCORE\Rest
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);

@@ -5,6 +5,8 @@
  * Represents a budget policy configuration for an agent.
  *
  * @package BITCORE\Infrastructure\Budget
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Infrastructure\Budget;

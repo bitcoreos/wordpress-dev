@@ -3,6 +3,9 @@
  * Template: Queue Status
  * Read-only view of research queue
  * NO API credentials - UI only
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 ?>
 <div class="bitcore-queue-container">

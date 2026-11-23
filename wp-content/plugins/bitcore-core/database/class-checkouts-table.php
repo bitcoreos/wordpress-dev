@@ -6,6 +6,8 @@
  * Ported from Paperclip's checkout mechanism.
  *
  * @package BITCORE\Database
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Database;

@@ -1,9 +1,19 @@
 <?php
 /**
+use BITCORE\Infrastructure\Webhooks\ExponentialBackoffStrategy;
+use BITCORE\Infrastructure\Webhooks\RetryStrategyInterface;
+use BITCORE\Infrastructure\Webhooks\SignatureVerifier;
+use BITCORE\Infrastructure\Webhooks\WebhookDelivery;
+use BITCORE\Infrastructure\Webhooks\WebhookDeliveryStatus;
+use BITCORE\Infrastructure\Webhooks\WebhookRepository;
+use BITCORE\Infrastructure\Webhooks\WebhookResult;
+use BITCORE\Infrastructure\Webhooks\WebhookSubscription;
+use Psr\Log\LoggerInterface;
  * Webhook Manager Class
  *
  * @package BITCORE\Infrastructure\Webhooks
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);

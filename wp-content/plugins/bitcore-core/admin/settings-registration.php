@@ -2,6 +2,9 @@
 /**
  * BITCORE Settings Registration
  * Must be loaded via admin_init hook
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 declare(strict_types=1);
 

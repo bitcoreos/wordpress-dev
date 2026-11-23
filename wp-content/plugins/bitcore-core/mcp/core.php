@@ -10,6 +10,7 @@ declare(strict_types=1);
  *
  * @package BITCORE
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 require_once __DIR__ . '/resources.php';

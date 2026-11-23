@@ -5,6 +5,8 @@ declare(strict_types=1);
  * Endpoints for Hermes AI Agent integration
  *
  * @package BITCORE
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Rest_Hermes_Api {

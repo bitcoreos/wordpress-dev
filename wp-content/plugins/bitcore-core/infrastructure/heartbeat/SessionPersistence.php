@@ -6,6 +6,8 @@
  * Ported from Paperclip's session patterns.
  *
  * @package BITCORE\Infrastructure\Heartbeat
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Infrastructure\Heartbeat;

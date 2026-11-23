@@ -4,6 +4,8 @@
  *
  * @package BITCORE\Infrastructure\Goals
  * @deprecated Use the canonical /bitcore/v1/tasks endpoint and task_type taxonomy.
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Infrastructure\Goals;

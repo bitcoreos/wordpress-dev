@@ -7,12 +7,14 @@
  *
  * @package BITCORE\Infrastructure\Webhooks
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);
 
 namespace BITCORE\Infrastructure\Webhooks;
 
+use Psr\Log\LoggerInterface;
 // Load component files
 require_once __DIR__ . '/value-objects.php';
 require_once __DIR__ . '/interfaces.php';
@@ -24,7 +26,6 @@ use DateTimeImmutable;
 use Throwable;
 use BITCORE\Infrastructure\Queue\JobInterface;
 use BITCORE\Infrastructure\Cache\CacheInterface;
-use BITCORE\Infrastructure\Log\LoggerInterface;
 use BITCORE\Infrastructure\Http\HttpClientInterface;
 
 /**

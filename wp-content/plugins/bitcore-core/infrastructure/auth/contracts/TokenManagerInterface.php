@@ -11,6 +11,7 @@ use BITCORE\Infrastructure\Auth\TokenPayload;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\Auth\Contracts
+ * @version     1.0.0
  */
 interface TokenManagerInterface {
 

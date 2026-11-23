@@ -6,6 +6,8 @@ declare(strict_types=1);
  * CRUD for tasks with kanban status moves.
  *
  * @package BITCORE
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Rest_Kanban_API {

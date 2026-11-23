@@ -9,6 +9,9 @@ use WP_Error;
 /**
  * Sessions API Controller
  * Handles session management endpoints for BITCORE
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 class Sessions_Api extends WP_REST_Controller {
 

@@ -20,6 +20,7 @@ require_once __DIR__ . '/contracts/TokenManagerInterface.php';
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\Auth
+ * @version     1.0.0
  */
 class JwtTokenManager implements TokenManagerInterface {
 

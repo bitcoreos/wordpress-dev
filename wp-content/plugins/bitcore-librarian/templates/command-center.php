@@ -9,6 +9,7 @@
  * @package BitCore
  * @since 1.0.0
  * @license MIT
+ * @version     1.0.0
  */
 
 defined('ABSPATH') || exit;

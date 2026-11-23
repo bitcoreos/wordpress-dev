@@ -3,6 +3,9 @@ declare(strict_types=1);
 /**
  * BITCORE Agents & Models - Unified Management
  * Single page for all task executors (agents and models)
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 // Handle model actions

@@ -5,6 +5,9 @@
  * Version: 0.2.1
  * Author: BITCORE
  * Text Domain: bitcore-librarian
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     0.2.1
  */
 
 // Prevent direct access

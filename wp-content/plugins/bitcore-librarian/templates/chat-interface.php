@@ -3,6 +3,9 @@
  * Template: Chat Interface
  * Conversational UI for submitting research intents
  * NO API credentials - UI only
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 ?>
 <div class="bitcore-chat-container">

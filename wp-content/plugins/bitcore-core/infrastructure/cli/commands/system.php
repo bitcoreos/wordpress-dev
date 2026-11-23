@@ -1,5 +1,12 @@
 <?php
 /**
+use BITCORE\Infrastructure\CLI\BitcoreCommand;
+use BITCORE\Infrastructure\Cache\CacheManager;
+use BITCORE\Infrastructure\Logging\Logger;
+use BITCORE\Infrastructure\MultiTenancy\Tenant;
+use BITCORE\Infrastructure\MultiTenancy\TenantRepository;
+use BITCORE\Infrastructure\Queue\QueueWorker;
+use BITCORE\Infrastructure\Queue\WorkerConfig;
  * System and diagnostic WP-CLI commands for Bitcore
  *
  * @package    Bitcore

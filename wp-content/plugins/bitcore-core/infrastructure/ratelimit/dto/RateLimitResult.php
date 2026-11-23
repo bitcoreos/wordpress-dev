@@ -14,6 +14,7 @@ use DateTimeImmutable;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\RateLimit\DTO
+ * @version     1.0.0
  */
 readonly class RateLimitResult
 {

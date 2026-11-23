@@ -10,6 +10,7 @@ declare(strict_types=1);
  *
  * @package BITCORE
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Rest_Auth_Filter {

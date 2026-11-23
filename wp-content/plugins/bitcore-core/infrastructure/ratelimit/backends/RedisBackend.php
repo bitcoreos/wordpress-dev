@@ -16,6 +16,7 @@ use RedisException;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\RateLimit\Backends
+ * @version     1.0.0
  */
 class RedisBackend implements RateLimitBackendInterface
 {

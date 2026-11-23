@@ -3,6 +3,9 @@ declare(strict_types=1);
 /**
  * BITCORE Settings Page
  * Complete configuration for all BITCORE components
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 // Handle form submission

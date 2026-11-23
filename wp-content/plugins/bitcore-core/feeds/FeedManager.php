@@ -8,6 +8,7 @@ declare(strict_types=1);
  * @package BITCORE\Feeds
  * @author hyperion
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Feeds;

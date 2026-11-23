@@ -12,6 +12,7 @@ namespace BITCORE\Infrastructure\RateLimit\Contracts;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\RateLimit\Contracts
+ * @version     1.0.0
  */
 interface RateLimitBackendInterface
 {

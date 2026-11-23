@@ -3,6 +3,9 @@
  * PSR-4 Autoloader for Paperclip Integration Modules
  *
  * Handles namespace-based autoloading with WordPress class- prefix convention.
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 if (!defined('ABSPATH')) exit;

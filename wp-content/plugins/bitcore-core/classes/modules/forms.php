@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @author     hyperion
  */
 
-declare(strict_types=1);
 
 if (!defined('ABSPATH')) {
     exit;

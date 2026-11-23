@@ -2,6 +2,9 @@
 declare(strict_types=1);
 /**
  * BITCORE Agents & Models - Unified Management
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 // Handle model actions

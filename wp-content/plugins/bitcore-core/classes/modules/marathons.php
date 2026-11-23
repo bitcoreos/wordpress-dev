@@ -5,6 +5,7 @@
  * @package BITCORE_Core
  * @since 1.3.0
  * @deprecated Use the canonical /bitcore/v1/tasks endpoint with task_type=milestone.
+ * @version     1.0.0
  */
 
 declare(strict_types=1);

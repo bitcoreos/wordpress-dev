@@ -2,6 +2,9 @@
 declare(strict_types=1);
 /**
  * BITCORE API & Tools Page
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 $eliza_url = get_option('bitcore_eliza_url', 'http://127.0.0.1:3000');

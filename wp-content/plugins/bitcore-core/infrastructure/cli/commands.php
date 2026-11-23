@@ -9,13 +9,14 @@
  * @package BITCORE
  * @subpackage Infrastructure\CLI
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);
 
 namespace BITCORE\Infrastructure\CLI;
 
-use BITCORE\Infrastructure\MultiTenancy\TenantResolver;
+use TenantResolver;
 use BITCORE\Infrastructure\MultiTenancy\Tenant;
 use BITCORE\Infrastructure\MultiTenancy\TenantRepository;
 use BITCORE\Infrastructure\MultiTenancy\SchemaManager;

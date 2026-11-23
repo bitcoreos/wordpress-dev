@@ -7,6 +7,9 @@ declare(strict_types=1);
  * New endpoints:
  * - GET  /bitcore/v1/mcp/tools     - List MCP tools (abilities as tools)
  * - POST /bitcore/v1/mcp/call      - Execute MCP tool (ability)
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 class BITCORE_Rest_MCP_Tools_API {

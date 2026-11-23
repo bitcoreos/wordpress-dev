@@ -2,6 +2,9 @@
 /**
  * Expanded BITCORE Command Center Dashboard
  * Incorporates BITstream + BitHub Cockpit + Features
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 ?>
 <div class="bitcore-command-center">

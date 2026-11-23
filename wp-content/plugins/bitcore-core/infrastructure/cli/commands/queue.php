@@ -1,5 +1,6 @@
 <?php
 /**
+use BITCORE\Infrastructure\Queue\WorkerConfig;
  * Queue WP-CLI commands for Bitcore job processing
  *
  * @package    Bitcore

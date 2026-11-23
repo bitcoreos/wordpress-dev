@@ -6,6 +6,8 @@
  * already-synced Discourse identity and permission metadata into BITCORE usermeta.
  *
  * @package BITCORE\Infrastructure\Auth
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);

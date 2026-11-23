@@ -10,6 +10,8 @@
  *
  * @package BITCORE
  * @subpackage Infrastructure
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 declare(strict_types=1);

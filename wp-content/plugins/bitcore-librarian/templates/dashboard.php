@@ -2,6 +2,9 @@
 /**
  * Template: Final Dashboard
  * BitFlux in left panel, clean header
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 ?>
 <div class="bitcore-saas-container">

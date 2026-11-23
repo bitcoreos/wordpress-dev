@@ -12,6 +12,7 @@ namespace BITCORE\Infrastructure\Auth\Contracts;
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\Auth\Contracts
+ * @version     1.0.0
  */
 interface SessionManagerInterface {
 

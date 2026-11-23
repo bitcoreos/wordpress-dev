@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
 /**
+use BITCORE\Feeds\Chunker;
  * RAG Workspace - Retrieval Augmented Generation
  *
  * @package BITCORE\Feeds
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 if (!defined('ABSPATH')) {

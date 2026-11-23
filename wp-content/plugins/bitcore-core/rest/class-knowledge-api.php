@@ -5,6 +5,8 @@
  * REST endpoints for knowledge pipeline with 6-state permission model.
  *
  * @package BITCORE\Rest
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Rest;

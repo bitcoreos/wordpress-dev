@@ -16,6 +16,7 @@ require_once __DIR__ . '/TokenPayload.php';
  *
  * @since 1.0.0
  * @package BITCORE\Infrastructure\Auth
+ * @version     1.0.0
  */
 final class AuthResult {
     public function __construct(

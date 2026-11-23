@@ -3,6 +3,9 @@ declare(strict_types=1);
 /**
  * BITCORE Admin MCP Page - Functional Version
  * Dynamically discovers and tests MCP tools
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 ?>
 <div class="wrap bitcore-admin">

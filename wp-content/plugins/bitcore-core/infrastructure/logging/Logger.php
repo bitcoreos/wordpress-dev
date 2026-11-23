@@ -7,11 +7,12 @@ declare(strict_types=1);
  *
  * @package BITCORE\Infrastructure\Logging
  * @since 1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Infrastructure\Logging;
 
-use BITCORE\Infrastructure\Multitenancy\TenantContext;
+use BITCORE\Infrastructure\Auth\TenantContext;
 use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Stringable;

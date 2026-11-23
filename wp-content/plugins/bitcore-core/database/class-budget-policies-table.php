@@ -3,6 +3,8 @@
  * Budget Policies Table Schema
  *
  * @package BITCORE\Database
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Database;

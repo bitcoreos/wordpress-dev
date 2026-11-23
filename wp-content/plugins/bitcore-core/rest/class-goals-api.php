@@ -4,6 +4,8 @@
  *
  * @package BITCORE\Rest
  * @deprecated Use the canonical /bitcore/v1/tasks endpoint with task_type=goal.
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Rest;

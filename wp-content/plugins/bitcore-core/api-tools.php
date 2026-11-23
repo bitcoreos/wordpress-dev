@@ -3,6 +3,9 @@ declare(strict_types=1);
 /**
  * BITCORE API & Tools Page
  * OpenAI-compatible API endpoints with Hermes skills
+ * @package     Bitcore
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 // Fetch Hermes skills

@@ -1,5 +1,7 @@
 <?php
 /**
+use BITCORE\Infrastructure\MultiTenancy\Tenant;
+use BITCORE\Infrastructure\MultiTenancy\TenantRepository;
  * Tenant resolution and context detection for Bitcore multitenancy
  *
  * @package    Bitcore

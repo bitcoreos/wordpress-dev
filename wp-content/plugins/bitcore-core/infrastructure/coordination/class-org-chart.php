@@ -7,6 +7,8 @@
  * control and UI labeling; tree operations are inert compatibility methods.
  *
  * @package BITCORE\Infrastructure\Coordination
+ * @since       1.0.0
+ * @version     1.0.0
  */
 
 namespace BITCORE\Infrastructure\Coordination;
