@@ -11,6 +11,12 @@ declare(strict_types=1);
 
 if (!defined('ABSPATH')) { define('ABSPATH', __DIR__ . '/'); }
 
+if (!class_exists('BITCORE_Core')) {
+    class BITCORE_Core {
+        public function __call($name, $arguments) { return null; }
+    }
+}
+
 $GLOBALS['bitcore_mcp_test_state'] = [
     'current_user_id' => 42,
     'options' => [
@@ -85,6 +91,7 @@ if (!class_exists('WP_Error')) {
     }
 }
 
+require_once dirname(__DIR__, 2) . '/classes/services/abstract-connector.php';
 require_once dirname(__DIR__, 2) . '/mcp/core.php';
 require_once dirname(__DIR__, 2) . '/classes/services/connector-bithub.php';
 require_once dirname(__DIR__, 2) . '/classes/services/connector-bitwiki.php';
@@ -207,7 +214,7 @@ final class McpCoreContractStandaloneTest {
 
     private function test_real_bithub_get_topic_uses_discourse_topic_endpoint(): void {
         $this->reset_http_state('{"id":321,"title":"Topic"}');
-        $connector = new BITCORE_Services_Connector_BIThub(new stdClass());
+        $connector = new BITCORE_Services_Connector_BIThub(new BITCORE_Core());
         $result = $connector->get_topic(321);
         $call = $GLOBALS['bitcore_mcp_test_state']['http_get_calls'][0] ?? [];
         $this->assert_same('https://hub.example.test/t/321.json', $call[0] ?? null, 'real_bithub_get_topic_url');
@@ -216,7 +223,7 @@ final class McpCoreContractStandaloneTest {
 
     private function test_real_bithub_get_artifact_numeric_reuses_topic_endpoint(): void {
         $this->reset_http_state('{"id":77,"title":"Artifact"}');
-        $connector = new BITCORE_Services_Connector_BIThub(new stdClass());
+        $connector = new BITCORE_Services_Connector_BIThub(new BITCORE_Core());
         $result = $connector->get_artifact(77);
         $call = $GLOBALS['bitcore_mcp_test_state']['http_get_calls'][0] ?? [];
         $this->assert_same('https://hub.example.test/t/77.json', $call[0] ?? null, 'real_bithub_get_artifact_numeric_url');
@@ -225,7 +232,7 @@ final class McpCoreContractStandaloneTest {
 
     private function test_real_bitwiki_get_index_uses_allpages_query(): void {
         $this->reset_http_state('{"query":{"allpages":[{"title":"Main"}]}}');
-        $connector = new BITCORE_Services_Connector_BITwiki(new stdClass());
+        $connector = new BITCORE_Services_Connector_BITwiki(new BITCORE_Core());
         $result = $connector->get_index();
         $url = $GLOBALS['bitcore_mcp_test_state']['http_get_calls'][0][0] ?? '';
         $this->assert_contains('list=allpages', $url, 'real_bitwiki_get_index_allpages_query');
@@ -234,7 +241,7 @@ final class McpCoreContractStandaloneTest {
 
     private function test_real_bitwiki_get_article_delegates_to_parse_query(): void {
         $this->reset_http_state('{"parse":{"title":"ASHI Plan"}}');
-        $connector = new BITCORE_Services_Connector_BITwiki(new stdClass());
+        $connector = new BITCORE_Services_Connector_BITwiki(new BITCORE_Core());
         $result = $connector->get_article('ASHI_Plan');
         $url = urldecode($GLOBALS['bitcore_mcp_test_state']['http_get_calls'][0][0] ?? '');
         $this->assert_contains('action=parse', $url, 'real_bitwiki_get_article_parse_query');
@@ -244,7 +251,7 @@ final class McpCoreContractStandaloneTest {
 
     private function test_real_n8n_agent_and_swarm_status_payloads(): void {
         $this->reset_http_state('{}');
-        $connector = new BITCORE_Services_Connector_N8N(new stdClass());
+        $connector = new BITCORE_Services_Connector_N8N(new BITCORE_Core());
         $connector->get_agent_status('Aria<script>');
         $connector->get_swarm_status();
         $first = json_decode($GLOBALS['bitcore_mcp_test_state']['http_post_calls'][0][1]['body'] ?? '{}', true);

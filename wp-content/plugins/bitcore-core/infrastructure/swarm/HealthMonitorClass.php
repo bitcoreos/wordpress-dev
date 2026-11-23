@@ -1,13 +1,5 @@
 <?php
 /**
-use BITCORE\Infrastructure\Cache\CacheManager;
-use BITCORE\Infrastructure\Logging\Logger;
-use BITCORE\Infrastructure\Swarm\A2ADispatcher;
-use BITCORE\Infrastructure\Swarm\AgentHealthStatus;
-use BITCORE\Infrastructure\Swarm\CheckType;
-use BITCORE\Infrastructure\Swarm\HealthCheckResult;
-use BITCORE\Infrastructure\Swarm\HealthCheckerInterface;
-use BITCORE\Infrastructure\Swarm\HealthState;
  * Main health monitor class for Bitcore swarm
  *
  * @package    Bitcore
@@ -17,6 +9,17 @@ use BITCORE\Infrastructure\Swarm\HealthState;
  */
 
 declare(strict_types=1);
+
+namespace BITCORE\Infrastructure\Swarm;
+
+use BITCORE\Infrastructure\Cache\CacheManager;
+use BITCORE\Infrastructure\Logging\Logger;
+use BITCORE\Infrastructure\Swarm\A2ADispatcher;
+use BITCORE\Infrastructure\Swarm\AgentHealthStatus;
+use BITCORE\Infrastructure\Swarm\CheckType;
+use BITCORE\Infrastructure\Swarm\HealthCheckResult;
+use BITCORE\Infrastructure\Swarm\HealthCheckerInterface;
+use BITCORE\Infrastructure\Swarm\HealthState;
 
 if (!defined('ABSPATH')) {
     exit;

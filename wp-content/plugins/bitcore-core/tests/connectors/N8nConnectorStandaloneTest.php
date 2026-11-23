@@ -64,6 +64,7 @@ if (!function_exists('wp_remote_retrieve_response_code')) {
     function wp_remote_retrieve_response_code(array $response): int { return (int) ($response['response']['code'] ?? 0); }
 }
 
+require_once dirname(__DIR__, 2) . '/classes/services/abstract-connector.php';
 require_once dirname(__DIR__, 2) . '/classes/services/connector-n8n.php';
 
 final class BitcoreN8nConnectorStandaloneTest {

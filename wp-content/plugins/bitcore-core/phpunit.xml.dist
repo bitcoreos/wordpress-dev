@@ -2,61 +2,22 @@
 <phpunit
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
-    bootstrap="tests/bootstrap.php"
-    colors="true"
+    bootstrap="tests/bootstrap-standalone.php"
+    colors="false"
     cacheDirectory=".phpunit.cache"
 >
-    <coverage includeUncoveredFiles="true">
-        <report>
-            <clover outputFile="coverage.xml"/>
-            <html outputDirectory="coverage-report" lowUpperBound="50" highLowerBound="90"/>
-        </report>
-    </coverage>
-
+    <!--
+        Engine split. This config is the WordPress-free engine (PHPUnit 10+).
+        WordPress-dependent suites live in config/phpunit.xml.dist under PHPUnit 9.
+        Explicit file lists are used because 29 of the 38 *Test.php files are
+        self-executing scripts (18 with a file-scope exit) that PHPUnit cannot
+        collect; they are executed by tests/run-standalone.sh instead.
+    -->
     <testsuites>
-        <testsuite name="Core">
-            <directory suffix="Test.php">tests/container/</directory>
-            <directory suffix="Test.php">tests/multitenancy/</directory>
-            <directory suffix="Test.php">tests/intelligence/</directory>
-        </testsuite>
-        <testsuite name="Auth">
-            <directory suffix="Test.php">tests/auth/</directory>
-        </testsuite>
-        <testsuite name="Admin">
-            <directory suffix="Test.php">tests/admin/</directory>
-        </testsuite>
-        <testsuite name="Connectors">
-            <directory suffix="Test.php">tests/connectors/</directory>
-        </testsuite>
-        <testsuite name="Infrastructure">
-            <directory suffix="Test.php">tests/infrastructure/</directory>
-        </testsuite>
-        <testsuite name="Queue">
-            <directory suffix="Test.php">tests/queue/</directory>
-        </testsuite>
-        <testsuite name="Cache">
-            <directory suffix="Test.php">tests/cache/</directory>
-        </testsuite>
-        <testsuite name="Logging">
-            <directory suffix="Test.php">tests/logging/</directory>
-        </testsuite>
-        <testsuite name="Webhooks">
-            <directory suffix="Test.php">tests/webhooks/</directory>
-        </testsuite>
-        <testsuite name="CLI">
-            <directory suffix="Test.php">tests/cli/</directory>
-        </testsuite>
-        <testsuite name="Ratelimit">
-            <directory suffix="Test.php">tests/ratelimit/</directory>
-        </testsuite>
-        <testsuite name="REST">
-            <directory suffix="Test.php">tests/rest/</directory>
-        </testsuite>
-        <testsuite name="MCP">
-            <directory suffix="Test.php">tests/mcp/</directory>
-        </testsuite>
-        <testsuite name="Knowledge">
-            <directory suffix="Test.php">tests/Knowledge/</directory>
+        <testsuite name="Standalone-Unit">
+            <file>tests/container/ContainerTest.php</file>
+            <file>tests/connectors/AbstractConnectorTest.php</file>
+            <file>tests/rest/RestSchemaTest.php</file>
         </testsuite>
     </testsuites>
 
@@ -66,9 +27,4 @@
             <directory suffix=".php">infrastructure/</directory>
         </include>
     </source>
-
-    <php>
-        <const name="WP_TESTS_PHPUNIT_POLYFILLS_PATH" value="vendor/yoast/phpunit-polyfills"/>
-        <const name="WP_TESTS_CONFIG_FILE_PATH" value="tests/wp-config.php"/>
-    </php>
 </phpunit>

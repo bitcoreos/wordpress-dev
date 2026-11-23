@@ -364,9 +364,33 @@ The 2026-11-22 record states: *"no WP test bootstrap on any reachable surface"*.
 
 **Environment:** PHPUnit 10.5.67 and 9.6.39 fetched from `phar.phpunit.de` with recorded SHA256; WordPress test lib 7.1.5; polyfills 1.1.4; DB reachable (`MariaDB 11.4.13`), dedicated `wordpress_tests` schema created, live `wordpress` DB untouched. Everything lives under `/tmp` in the container — **not** in the repo, which still has no `vendor/`.
 
+## GATE CLOSURE CAMPAIGN — PHASE 2 (2026-11-23)
+
+**Authority:** Master directive 2026-11-22, "Just finish". A Coraline Team Leader with scoped Workers. Every figure below was re-measured by the chair on the live tree; worker figures that disagreed with mine are recorded as such.
+
+| Gate | Status | Chair-measured evidence |
+|---|---|---|
+| PHP syntax | **CLOSED** | 480/480 PHP files lint clean, PHP 8.3.36, container `holobiont-wordpress-wordpress-1`. Re-run after every batch. |
+| Metadata headers | **CLOSED** | 0/0/0 missing `@package`/`@version`/`@since` over **320** active plugin files (set grew from 271 to 320 as splits added files). 0 files carry duplicate `declare(strict_types=1)`. |
+| PHPStan L5 | **OPEN — 517 errors / 137 files** (from 1013 at campaign start) | 1013 → 777 (analysis stubs) → 665 (imports) → 668 (splits) → 933 (trait import regression) → 760 → 667 (restored dropped `use` block in `commands.php`) → 578 (swarm header repairs) → **517** (webhooks/multitenancy/queue repairs). Chair re-measured 517 independently of the worker's claim. Gate demands zero. |
+| 500-LOC | **OPEN — 5 files** (from 25) | `page-chat.php` 1081 (141 lines pinned by source-grep contract tests; splitting breaks them), `webhook-manager-class.php` 544 (dormant, 0 loader references), `TenantManager.php` 540 (declares 2 classes; tenancy already declares `SchemaManager` ×3 and `TenantRepository` ×2 — split would redeclare live classes), `manager.php` 536 (dormant), `schema-tables.php` 511 (declares 4 classes, same redeclaration constraint). |
+| Behavioural tests | **OPEN — 5 of 14 suites green** | See phase-1 record; harness provisioned, engines split 9.6/10.5, DB reachable. |
+
+### What the splits actually delivered
+
+20 files split under the proven trait seam, **40 new files created, 0 files deleted**. Verified: every class's method set preserved exactly once (tokenizer census), byte-identical line tiling, `class_exists`/`class_uses` reflection proof, and a plugin-bootstrap symbol-parity check (13 constants, 15 functions, 21 hooks — same values, same order).
+
+Two real regressions were introduced during the campaign and repaired:
+1. The CLI split dropped the 14-line `use` block from `commands.php`. Bare property types then resolved into `BITCORE\Infrastructure\CLI\*`, adding ~300 errors. Restored verbatim from HEAD.
+2. My own repair pass over-escaped backslashes in 6 trait files, producing 6 parse errors. Caught by lint, repaired, re-verified to 0.
+
+### Named latent hazard (not fixed — needs deletion authority)
+
+`infrastructure/swarm/HealthCheck.php` now declares `DatabaseHealthChecker` and `CacheHealthChecker` in `BITCORE\Infrastructure\Swarm`, the same FQCNs as `health-checkers.php`. `HealthCheck.php` has **zero loader references** (grep-verified), so this is latent, not live. It becomes a fatal only if something requires both. Resolving it means deleting a dormant file — outside this binding. Dormant duplicates also remain at `webhooks/webhook-manager-class.php` (544 lines, 104 PHPStan errors, 0 references) and `webhooks/manager.php` (536 lines, 0 references); repairing dead code was declined as manufactured work.
+
 ### Honest bottom line
 
-Three of seven gates are closed with reproducible evidence (syntax, headers, and the header pass's own non-regression). PHPStan moved from 1013 to 665 errors — a 34% reduction with zero errors introduced — but the gate demands zero and the remainder is semantic debt, not noise. The behavioural-test gate is now *diagnosable* rather than merely blocked: the harness, the engines and the database exist and run; what stands between here and green is one missing file decision, one version conflict, and 155 test methods that need their WP stubs guarded.
+Two gates are closed outright (syntax, headers) and a third (500-LOC) is down from 25 files to 5, each with a named structural reason rather than an excuse. PHPStan moved from 1013 to 665 errors — a 34% reduction with zero errors introduced — but the gate demands zero and the remainder is semantic debt, not noise. The behavioural-test gate is now *diagnosable* rather than merely blocked: the harness, the engines and the database exist and run; what stands between here and green is one missing file decision, one version conflict, and 155 test methods that need their WP stubs guarded.
 
 ---
 

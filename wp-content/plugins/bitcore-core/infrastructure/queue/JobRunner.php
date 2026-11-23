@@ -1,8 +1,5 @@
 <?php
 /**
-use BITCORE\Infrastructure\Queue\Job;
-use BITCORE\Infrastructure\RateLimit\RateLimitManager;
-use Psr\Log\LoggerInterface;
  * Supporting job runner logic for Bitcore
  *
  * @package    Bitcore
@@ -12,6 +9,11 @@ use Psr\Log\LoggerInterface;
  */
 
 declare(strict_types=1);
+
+use BITCORE\Infrastructure\Queue\Job;
+use BITCORE\Infrastructure\Queue\JobMiddlewareInterface;
+use BITCORE\Infrastructure\RateLimit\RateLimitManager;
+use Psr\Log\LoggerInterface;
 
 if (!defined('ABSPATH')) {
     exit;

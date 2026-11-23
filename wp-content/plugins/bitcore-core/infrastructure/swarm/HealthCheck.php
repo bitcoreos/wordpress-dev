@@ -1,8 +1,5 @@
 <?php
 /**
-use BITCORE\Infrastructure\Cache\CacheManager;
-use BITCORE\Infrastructure\Swarm\CheckType;
-use BITCORE\Infrastructure\Swarm\HealthCheckResult;
  * Supporting health check logic for Bitcore
  *
  * @package    Bitcore
@@ -12,6 +9,12 @@ use BITCORE\Infrastructure\Swarm\HealthCheckResult;
  */
 
 declare(strict_types=1);
+
+namespace BITCORE\Infrastructure\Swarm;
+
+use BITCORE\Infrastructure\Cache\CacheManager;
+use BITCORE\Infrastructure\Swarm\CheckType;
+use BITCORE\Infrastructure\Swarm\HealthCheckResult;
 
 if (!defined('ABSPATH')) {
     exit;

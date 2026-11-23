@@ -1,0 +1,225 @@
+<style>
+.bitcore-command-center {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    
+    padding: 1.5rem;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+}
+
+.command-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.command-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--danger);
+}
+
+.status-dot.online {
+    background: var(--success);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.dashboard-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.dashboard-card.agents-card,
+.dashboard-card.tasks-card {
+    grid-column: span 2;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid var(--border);
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-content {
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.task-columns {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.task-column h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin: 0 0 0.5rem 0;
+}
+
+.live-indicator {
+    font-size: 0.75rem;
+    color: var(--success);
+    animation: pulse 1.5s infinite;
+}
+
+.health-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.health-status {
+    color: var(--warning);
+}
+
+.health-status.healthy {
+    color: var(--success);
+}
+
+.health-status.unhealthy {
+    color: var(--danger);
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--border);
+    color: var(--text-primary);
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.chat-input-area input,
+.chat-input-area select {
+    padding: 0.5rem;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 0.375rem;
+    color: var(--text-primary);
+}
+
+.chat-input-area input {
+    flex: 1;
+}
+
+.agent-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    margin-bottom: 0.5rem;
+    background: rgba(0,0,0,0.2);
+}
+
+.agent-avatar {
+    font-size: 1.5rem;
+}
+
+.agent-info {
+    flex: 1;
+}
+
+.agent-name {
+    font-weight: 500;
+}
+
+.agent-role {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.agent-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.agent-status.working { background: var(--success); }
+.agent-status.standby { background: var(--warning); }
+.agent-status.offline { background: var(--text-secondary); }
+</style>
