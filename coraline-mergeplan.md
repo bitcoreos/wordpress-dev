@@ -444,3 +444,7 @@ public function query(string $query, array $options = []): array {
 ---
 
 **This document is living. Both agents must edit and approve.**
+
+---
+
+*Superseded by `merge-plan-unified.md` finalization 2026-11-22; see FINALIZATION RECORD.*

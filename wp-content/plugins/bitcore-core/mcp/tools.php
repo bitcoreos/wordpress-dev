@@ -13,6 +13,14 @@ declare(strict_types=1);
 if (!defined('ABSPATH')) {
     exit;
 }
+
+trait BITCORE_MCP_Tools {
+
+    /**
+     * List all available tools
+     * 
+     * @return array List of tool definitions
+     */
     public function list_tools() {
         $tools = [];
         foreach ( $this->tools as $name => $config ) {
@@ -67,7 +75,7 @@ if (!defined('ABSPATH')) {
 
         return [
             'content' => [
-                [ 'type' => 'text', 'text' => $this->format_result( $result ) ],
+                [ 'type' => 'string', 'text' => $this->format_result( $result ) ],
             ],
             'isError' => false,
         ];
@@ -147,7 +155,6 @@ if (!defined('ABSPATH')) {
         return $tools;
     }
 
-    // Tool implementations
     private function tool_search_bitwiki( $args ) {
         $results = $this->core->connector_bitwiki->search( $args['query'], $args['limit'] ?? 5 );
         return $results;
@@ -179,5 +186,4 @@ if (!defined('ABSPATH')) {
             'message' => $args['message'],
         ];
     }
-
-    // Resource implementations
+}

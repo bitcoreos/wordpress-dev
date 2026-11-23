@@ -81,3 +81,4 @@ wp eval "print_r(array_keys(get_user_by('id', 3)->allcaps));"
 ---
 *Created: 2026-03-30*
 *Status: PATCH READY, AWAITING EXECUTION*
+*EXECUTED: patch landed in `bitcore-core.php` (`Capabilities::register()` inside `bitcore_activate()`, line 339, hooked at line 341) — verified 2026-11-22.*

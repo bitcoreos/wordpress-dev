@@ -7,6 +7,9 @@
  * webhook and heartbeat endpoints as the bidirectional game pulse.
  *
  * @package BITCORE\Rest
+ * @since   2026.03.01
+ * @version 1.3.0
+ * @author  coraline
  */
 
 declare(strict_types=1);

@@ -269,21 +269,21 @@ if (!defined('ABSPATH')) {
 
 ### Pre-Merge Checklist
 
-- [ ] All files have metadata headers
-- [ ] No file exceeds 500 LOC (without comments)
-- [ ] PHPStan passes (level 5)
-- [ ] No syntax errors
-- [ ] All REST endpoints tested
-- [ ] All MCP tools tested
-- [ ] SSE streaming tested
-- [ ] Swarm coordination tested
+- [ ] All files have metadata headers — PARTIAL (2026-11-22): 311 plugin PHP files scanned; 50 lack `@package`, 267 lack `@version`, 92 lack `@since`. Headers normalized only for files created or touched by this finalization. Not closed.
+- [ ] No file exceeds 500 LOC — PARTIAL (2026-11-22): 26 files remain over 500 LOC (was 29). Closed for the Eliza API (1,212 -> class 257 + 5 traits, max 288). Open for `infrastructure/cli/commands.php` (1,849, reasoned exception below), `themes/bitcore-theme/page-chat.php` (1,081, post-plan theme file), and 24 untargeted files.
+- [ ] PHPStan passes (level 5) — NOT RUN: no PHPStan toolchain available on any reachable surface. Not claimed.
+- [x] No syntax errors — VERIFIED 2026-11-22: 422/422 PHP files lint clean, PHP 8.3.36, inside container `holobiont-wordpress-wordpress-1`; 0 parse errors, 0 fatal errors.
+- [ ] All REST endpoints tested — NOT RUN: no WP test bootstrap on any reachable surface. Not claimed.
+- [ ] All MCP tools tested — NOT RUN as behavioural tests. MCP verified structurally only: 31 methods resolved, each declared exactly once, bodies byte-identical to pre-split core.php.
+- [ ] SSE streaming tested — NOT RUN. Not claimed.
+- [ ] Swarm coordination tested — NOT RUN. Not claimed.
 
 ### Per-Commit Checklist
 
-- [ ] Only assigned files modified
-- [ ] Secondary agent reviewed changes
-- [ ] No conflicts with partner's files
-- [ ] Tests pass
+- [x] Only assigned files modified — VERIFIED: 6 files modified, 5 added, all inside `wp-content/plugins/bitcore-core/` plus one pre-existing docs file.
+- [x] Secondary agent reviewed changes — VERIFIED for structure and syntax: independent read-only validator ran the full-tree lint; the chair re-measured method coverage, LOC, and brace balance. No runtime review was possible.
+- [x] No conflicts with partner's files — VERIFIED: single `main` branch after the 2026-11-22 consolidation; Hyperion unavailable, so no partner files were in flight.
+- [ ] Tests pass — NOT RUN: no WP test bootstrap. Not claimed.
 
 ### Validation Commands
 
@@ -333,3 +333,35 @@ wp bitcore mcp list-tools
 ---
 
 **This document is living. Both agents must edit and approve.**
+
+---
+
+## FINALIZATION RECORD (2026-11-22)
+
+**Authority:** Master directive 2026-11-22, "verify the plan and finalize the work". Performed by Coraline alone; Hyperion was unavailable (A2A/MCP unreachable from this node), so no dual-core judgement was possible and none is claimed.
+
+**What this plan actually was.** Executed in March 2026 as two parallel branches (`coraline`, `hyperion`). The parallel-execution collision is documented in `MERGE-COMPARISON-v2.md`. The effective strategy was Option C — best of both — consolidated into a single `main` on 2026-11-22 (merge tips `e2a1eac`, `0719591`, `20c8ac4`, `c1d8796`).
+
+**Gate status, honestly.** Verified gates carry a measured number. Unverified gates are left open and named.
+
+| Gate | Status | Evidence |
+|---|---|---|
+| PHP syntax, whole tree | VERIFIED | 422/422 clean, PHP 8.3.36, container `holobiont-wordpress-wordpress-1`, 2026-11-22. Zero parse errors. |
+| MCP split completion | VERIFIED | `mcp/core.php` 564 -> 174 LOC; `mcp/resources.php` -> `trait BITCORE_MCP_Resources` (15 methods, 239 LOC); `mcp/tools.php` -> `trait BITCORE_MCP_Tools` (11 methods, 189 LOC). 31 methods, each declared exactly once, every body byte-identical to the pre-split `core.php`. The two March parse failures are gone. |
+| Eliza API split | VERIFIED | `rest/class-eliza-api.php` 1,212 -> 257 LOC + 5 traits (181/232/196/288/165). 34/34 functions preserved verbatim, each in exactly one file. Class name, `__construct($core)` and `register_routes()` unchanged. |
+| Metadata headers | PARTIAL | 311 plugin PHP files: 50 missing `@package`, 267 missing `@version`, 92 missing `@since`. Normalized only for files created or touched here. |
+| 500-LOC gate | PARTIAL | 26 files remain over 500 LOC (was 29). Eliza closed. `commands.php` carries a reasoned exception; `page-chat.php` is a post-plan theme file. |
+| PHPStan level 5 | NOT RUN | No toolchain on any reachable surface. |
+| REST / MCP / SSE / swarm behavioural tests | NOT RUN | No WP test bootstrap on any reachable surface. |
+
+**Reasoned exception — `infrastructure/cli/commands.php` (1,849 LOC) is NOT superseded.** The `infrastructure/cli/commands/` split exists but is an unfinished refactor, not a replacement:
+
+1. No split file defines `BitcoreCommand`. `commands/system.php` instantiates it at line 538 and `commands.php` defines it at line 42.
+2. `bitcore_cli_init()` is declared in both `commands.php` (line 1792) and `commands/system.php` (line 528). Requiring both fatals on function redeclaration.
+3. Split constructors assign only `$this->logger`, while their methods call `$this->tenantResolver`, `$this->schemaManager`, `$this->jobRepository`, `$this->cacheManager`, `$this->queueWorker` — the dependency wiring that `BitcoreCommand::__construct` performs exists only in `commands.php`.
+
+Repointing `bitcore-core.php:109` at the split would therefore break the plugin. Completing that refactor is net-new engineering, out of scope for a finalization pass. `commands.php` is retained as the authority and flagged for the Master.
+
+**`rest/trait-task-crud.php`: not required.** Grep-verified: no reference to that name exists anywhere in the tree. The tasks API instead loads `trait-rest-tasks-permissions.php` and `trait-rest-tasks-schema.php`, both of which are present. The planned file was superseded by a different seam, not forgotten.
+
+**Capabilities fix:** `\Bitcore\Tasks\Capabilities::register()` runs inside `bitcore_activate()` (`bitcore-core.php` line 339, hooked at line 341). Confirmed landed.

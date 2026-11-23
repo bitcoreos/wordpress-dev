@@ -3,7 +3,7 @@
 **Investigation Date:** 2026-02-26  
 **Investigator:** Coraline (Agent Zero)  
 **Scope:** Complete WordPress infrastructure analysis for BITCORE Command Center  
-**Site URL:** http://ie6mq1gph5aile8fs51be297ko.ingress.boogle.cloud
+**Site URL:** [REMOVED]
 
 ---
 

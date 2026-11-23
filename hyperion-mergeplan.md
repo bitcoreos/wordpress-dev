@@ -281,3 +281,7 @@ wp bitcore mcp list-tools
 ---
 
 **END OF COORDINATED MERGE PLAN**
+
+---
+
+*Superseded by `merge-plan-unified.md` finalization 2026-11-22; see FINALIZATION RECORD.*
