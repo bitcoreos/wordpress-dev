@@ -26,6 +26,7 @@ class ExponentialBackoffStrategy implements RetryStrategyInterface {
     private int $baseDelay;
     private int $maxDelay;
     private float $multiplier;
+    private int $maxAttempts;
 
     /**
      * Constructor.
@@ -97,5 +98,26 @@ class ExponentialBackoffStrategy implements RetryStrategyInterface {
 
         // Network errors = retry
         return true;
+    }
+
+    /**
+     * Get maximum retry attempts.
+     *
+     * @since 1.0.0
+     * @return int Maximum attempts
+     */
+    public function getMaxAttempts(): int {
+        return $this->maxAttempts;
+    }
+
+    /**
+     * Check if retries are exhausted.
+     *
+     * @since 1.0.0
+     * @param int $attempts Number of attempts made
+     * @return bool True if no more retries allowed
+     */
+    public function isExhausted(int $attempts): bool {
+        return $attempts >= $this->maxAttempts;
     }
 }

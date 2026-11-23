@@ -93,5 +93,13 @@ if (!is_file($core_file)) {
     exit(1);
 }
 
-$test = new X402CoreBootstrapTest(file_get_contents($core_file));
+// Post-split: init_services and the x402 service gets live in the core init
+// trait; the facilitator include and service registrations live in the core
+// container trait. Read them alongside the core composition file in that
+// order so the include-before-registration check still reads real source.
+$source = (string) file_get_contents($core_file)
+    . (string) file_get_contents($root . '/classes/traits/trait-core-init.php')
+    . (string) file_get_contents($root . '/classes/traits/trait-core-container.php');
+
+$test = new X402CoreBootstrapTest($source);
 exit($test->run());

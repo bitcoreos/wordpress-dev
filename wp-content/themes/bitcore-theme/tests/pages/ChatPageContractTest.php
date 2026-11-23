@@ -5,14 +5,79 @@ final class ChatPageContractTest {
     private int $passed = 0;
     private int $failed = 0;
     private string $source;
+    private string $pageChatPath;
+    private array $partialSources = [];
 
     public function __construct() {
         $path = dirname(__DIR__, 2) . '/page-chat.php';
         if (!is_file($path)) {
-            fwrite(STDERR, "Missing page-chat.php\n");
+            fwrite(STDERR, 'Missing page-chat.php' . PHP_EOL);
             exit(1);
         }
-        $this->source = file_get_contents($path) ?: '';
+        $this->pageChatPath = $path;
+        $this->source = $this->aggregate_template_source($path, dirname(__DIR__, 2));
+    }
+
+    /**
+     * Behaviour assertions must not pin an implementation location: the chat
+     * template is a thin orchestrator plus include()d template-parts. Read the
+     * orchestrator and every partial it includes as one logical source.
+     */
+    private function aggregate_template_source(string $path, string $themeRoot): string {
+        $main = (string) file_get_contents($path);
+        $sources = [$main];
+        $queue = [$main];
+        $seen = [$path => true];
+        $needle = 'get_template_directory()';
+        while ($queue !== []) {
+            $src = array_shift($queue);
+            $offset = 0;
+            while (($hit = strpos($src, $needle, $offset)) !== false) {
+                $offset = $hit + strlen($needle);
+                $rel = $this->included_template_part($src, $offset);
+                if ($rel === null) {
+                    continue;
+                }
+                $full = $themeRoot . '/' . $rel;
+                if (isset($seen[$full]) || !is_file($full)) {
+                    continue;
+                }
+                $seen[$full] = true;
+                $part = (string) file_get_contents($full);
+                $this->partialSources[$rel] = $part;
+                $sources[] = $part;
+                $queue[] = $part;
+            }
+        }
+        return implode(PHP_EOL, $sources);
+    }
+
+    /**
+     * Return the theme-relative template-parts path at $offset, or null.
+     */
+    private function included_template_part(string $src, int $offset): ?string {
+        $window = substr($src, $offset, 200);
+        $sq = chr(39);
+        $dq = chr(34);
+        $positions = [];
+        foreach ([$sq, $dq] as $quote) {
+            $p = strpos($window, $quote);
+            if ($p !== false) {
+                $positions[$p] = $quote;
+            }
+        }
+        if ($positions === []) {
+            return null;
+        }
+        ksort($positions);
+        $first = array_key_first($positions);
+        $quote = $positions[$first];
+        $close = strpos($window, $quote, $first + 1);
+        if ($close === false) {
+            return null;
+        }
+        $rel = ltrim(substr($window, $first + 1, $close - $first - 1), '/');
+        return strpos($rel, 'template-parts/') === 0 ? $rel : null;
     }
 
     public function run(): int {
@@ -26,6 +91,7 @@ final class ChatPageContractTest {
         $this->test_chat_has_starter_messages_and_autostarts_session();
         $this->test_accessibility_and_mobile_contract();
         $this->test_no_placeholders_or_dead_polling_state();
+        $this->test_page_chat_stays_within_loc_gate();
         echo "\nAssertions passed: {$this->passed}\n";
         echo "Assertions failed: {$this->failed}\n";
         return $this->failed === 0 ? 0 : 1;
@@ -133,6 +199,18 @@ final class ChatPageContractTest {
             $this->assert_not_contains($needle, $this->source, 'chat_no_' . preg_replace('/[^a-z0-9]+/i', '_', $needle));
         }
         $this->assert_not_contains('let pollingInterval = null;', $this->source, 'chat_no_unused_polling_interval_state');
+    }
+
+    private function test_page_chat_stays_within_loc_gate(): void {
+        $max = 500;
+        $raw = (string) file_get_contents($this->pageChatPath);
+        $orchestratorLines = substr_count($raw, chr(10));
+        $this->assert_true($orchestratorLines < $max, 'chat_orchestrator_under_500_lines');
+        $this->assert_true($this->partialSources !== [], 'chat_split_into_template_parts');
+        foreach ($this->partialSources as $rel => $body) {
+            $lines = substr_count($body, chr(10));
+            $this->assert_true($lines < $max, 'chat_partial_under_500_lines_' . preg_replace('/[^a-z0-9]+/i', '_', $rel));
+        }
     }
 
     private function extract_function_body(string $functionName): string {

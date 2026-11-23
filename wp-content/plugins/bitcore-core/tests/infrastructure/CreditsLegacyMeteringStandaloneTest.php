@@ -46,7 +46,12 @@ final class CreditsLegacyMeteringStandaloneTest {
     }
 
     private function test_eliza_api_uses_unified_credits_manager(): void {
-        $source = file_get_contents($this->root . '/rest/class-eliza-api.php');
+        // Post-split: the credits decision/consume calls live in the Eliza traits;
+        // read them alongside the entry class so the contract still proves the
+        // Eliza API routes usage through the unified credits manager.
+        $source = (string) file_get_contents($this->root . '/rest/class-eliza-api.php')
+            . (string) file_get_contents($this->root . '/rest/traits/trait-eliza-rate-limit.php')
+            . (string) file_get_contents($this->root . '/rest/traits/trait-eliza-auth.php');
         $this->assert_true(is_string($source) && strpos($source, 'Credits_Manager') !== false, 'eliza_api_references_credits_manager');
         $this->assert_true(is_string($source) && strpos($source, 'bitcore_credits_usage') === false, 'eliza_api_does_not_touch_storage_key_directly');
         $this->assert_true(is_string($source) && strpos($source, 'can_consume(') !== false, 'eliza_api_checks_credits_decision');
@@ -54,7 +59,10 @@ final class CreditsLegacyMeteringStandaloneTest {
     }
 
     private function test_core_provisioning_relies_on_lazy_credits_initialization(): void {
-        $source = file_get_contents($this->root . '/classes/core.php');
+        // Post-split: active-agent meta and the lazy-credits note live in the
+        // core eliza trait; read it alongside the core composition file.
+        $source = (string) file_get_contents($this->root . '/classes/core.php')
+            . (string) file_get_contents($this->root . '/classes/traits/trait-core-eliza.php');
         $this->assert_true(is_string($source) && strpos($source, 'Credits usage is lazily initialized by Credits_Manager.') !== false, 'core_documents_lazy_credits_initialization');
         $this->assert_true(is_string($source) && strpos($source, 'bitcore_eliza_active_agent') !== false, 'core_still_sets_active_agent');
         $this->assert_true(is_string($source) && strpos($source, 'bitcore_eliza_active_agent_name') !== false, 'core_still_sets_active_agent_name');

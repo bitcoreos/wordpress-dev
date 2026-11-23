@@ -156,7 +156,7 @@ readonly class WebhookResult {
         public int $statusCode,
         public array $responseHeaders,
         public string $responseBody,
-        public ?Throwable $error = null,
+        public ?\Throwable $error = null,
         public int $duration = 0
     ) {}
 }
@@ -183,10 +183,10 @@ interface RetryStrategyInterface {
      *
      * @since 1.0.0
      * @param int $attempt Current attempt number
-     * @param Throwable $error The error that caused failure
+     * @param \Throwable $error The error that caused failure
      * @return bool True if retry should be attempted
      */
-    public function shouldRetry(int $attempt, Throwable $error): bool;
+    public function shouldRetry(int $attempt, \Throwable $error): bool;
 }
 
 /**
@@ -200,6 +200,7 @@ class ExponentialBackoffStrategy implements RetryStrategyInterface {
     private int $baseDelay;
     private int $maxDelay;
     private float $multiplier;
+    private int $maxAttempts;
 
     /**
      * Constructor.
@@ -247,10 +248,10 @@ class ExponentialBackoffStrategy implements RetryStrategyInterface {
      *
      * @since 1.0.0
      * @param int $attempt Current attempt number
-     * @param Throwable $error The error
+     * @param \Throwable $error The error
      * @return bool True if should retry
      */
-    public function shouldRetry(int $attempt, Throwable $error): bool {
+    public function shouldRetry(int $attempt, \Throwable $error): bool {
         // Check if it's a WebhookResult with status code
         if ($error instanceof WebhookResult) {
             $statusCode = $error->statusCode;
@@ -271,6 +272,26 @@ class ExponentialBackoffStrategy implements RetryStrategyInterface {
 
         // Network errors = retry
         return true;
+    }
+    /**
+     * Get maximum retry attempts.
+     *
+     * @since 1.0.0
+     * @return int Maximum attempts
+     */
+    public function getMaxAttempts(): int {
+        return $this->maxAttempts;
+    }
+
+    /**
+     * Check if retries are exhausted.
+     *
+     * @since 1.0.0
+     * @param int $attempts Number of attempts made
+     * @return bool True if no more retries allowed
+     */
+    public function isExhausted(int $attempts): bool {
+        return $attempts >= $this->maxAttempts;
     }
 }
 
@@ -343,6 +364,7 @@ class WebhookRepository {
     private \wpdb $db;
     private string $subscriptionsTable;
     private string $deliveriesTable;
+
 
 
 

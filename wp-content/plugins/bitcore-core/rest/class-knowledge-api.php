@@ -40,7 +40,21 @@ class Knowledge_Api {
     public function __construct() {
         global $wpdb;
         $this->wpdb = $wpdb;
-        $this->register_routes();
+
+        // Register immediately when constructed inside the rest_api_init action
+        // (the production path: BITCORE_Core_Init_Trait::init_rest() runs at
+        // priority 5 on rest_api_init). Anywhere else — for example direct
+        // construction in a unit test — defer to rest_api_init so WordPress does
+        // not raise an incorrect-usage notice for early route registration.
+        $running_rest_init = function_exists('doing_action')
+            ? \doing_action('rest_api_init')
+            : true; // Stub harness without the WP hook API: keep inline registration.
+
+        if ($running_rest_init || !function_exists('add_action')) {
+            $this->register_routes();
+        } else {
+            add_action('rest_api_init', [$this, 'register_routes']);
+        }
     }
 
     public function register_routes(): void {

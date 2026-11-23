@@ -114,4 +114,28 @@ class ExponentialBackoffStrategy implements RetryStrategyInterface {
     public function isExhausted(int $attempts): bool {
         return $attempts >= $this->maxAttempts;
     }
+
+    /**
+     * Determine if retry should be attempted based on error.
+     *
+     * 2xx = success, 4xx (except 429) = permanent failure, 5xx/429 = retry
+     *
+     * @since 1.0.0
+     * @param int $attempt Current attempt number
+     * @param Throwable $error The error
+     * @return bool True if should retry
+     */
+    public function shouldRetry(int $attempt, \Throwable $error): bool {
+        if ($error instanceof WebhookResult) {
+            $statusCode = $error->statusCode;
+            if ($statusCode >= 200 && $statusCode < 300) {
+                return false;
+            }
+            if ($statusCode >= 400 && $statusCode < 500 && $statusCode !== 429) {
+                return false;
+            }
+            return true;
+        }
+        return true;
+    }
 }

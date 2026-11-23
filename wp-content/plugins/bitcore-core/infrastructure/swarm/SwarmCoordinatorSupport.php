@@ -199,7 +199,7 @@ readonly class SwarmTask {
  * @package BITCORE\Infrastructure\Swarm
  * @since 1.0.0
  */
-readonly class TaskAssignment {
+class TaskAssignment {
 
     /**
      * Assignment ID.

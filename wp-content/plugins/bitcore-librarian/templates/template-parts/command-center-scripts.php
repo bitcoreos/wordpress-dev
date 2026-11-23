@@ -1,3 +1,15 @@
+<?php
+/**
+ * Template partial (presentation fragment).
+ *
+ * Emits no output: this PHP block carries the file metadata only.
+ *
+ * @package    Bitcore
+ * @subpackage template-parts
+ * @since      1.0.0
+ * @version    1.0.0
+ */
+?>
 <script>
 jQuery(document).ready(function($) {
     // Initialize Command Center

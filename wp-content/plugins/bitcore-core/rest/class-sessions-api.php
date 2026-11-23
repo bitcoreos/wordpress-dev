@@ -65,10 +65,16 @@ class Sessions_Api extends WP_REST_Controller {
         return current_user_can('read') || true;
     }
 
+    /**
+     * @return bool True when the current user can edit posts.
+     */
     public function create_item_permissions_check($request): bool {
         return current_user_can('edit_posts');
     }
 
+    /**
+     * @return bool True when the current user can edit posts.
+     */
     public function delete_item_permissions_check($request): bool {
         return current_user_can('edit_posts');
     }

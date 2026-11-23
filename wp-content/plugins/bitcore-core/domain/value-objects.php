@@ -46,7 +46,10 @@ abstract class AbstractValueObject implements ValueObjectInterface {
         return (string) $this->value;
     }
 
-    public function equals(self $other): bool {
+    public function equals(ValueObjectInterface $other): bool {
+        if (!$other instanceof self) {
+            return false;
+        }
         return $this->value === $other->value;
     }
 }

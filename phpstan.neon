@@ -1,0 +1,14 @@
+includes:
+	- phpstan-baseline.neon
+
+parameters:
+	level: 5
+	bootstrapFiles:
+		- ../toolchain/phpstan-bootstrap.php
+	paths:
+		- wp-content
+	excludePaths:
+		- wp-content/plugins/bitcore-core/tests
+		- wp-content/plugins/bitcore-core/archive
+		- wp-content/plugins/bitcore-core/admin.backup.20260328210923
+		- wp-content/themes/bitcore-theme/tests

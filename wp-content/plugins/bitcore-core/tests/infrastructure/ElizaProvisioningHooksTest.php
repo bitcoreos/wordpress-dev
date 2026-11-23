@@ -93,14 +93,21 @@ final class ElizaProvisioningHooksStandaloneTest {
         return (new ReflectionClass(BITCORE_Core::class))->newInstanceWithoutConstructor();
     }
 
+    private function core_bootstrap_source(): string {
+        // Post-split: the global hook registrations live in the core init trait;
+        // read it alongside the core composition file.
+        return (string) file_get_contents(dirname(__DIR__, 2) . '/classes/core.php')
+            . (string) file_get_contents(dirname(__DIR__, 2) . '/classes/traits/trait-core-init.php');
+    }
+
     private function test_source_registers_global_user_hooks_from_core_init(): void {
-        $source = file_get_contents(dirname(__DIR__, 2) . '/classes/core.php');
+        $source = $this->core_bootstrap_source();
         $this->assert_true(is_string($source) && strpos($source, "add_action('user_register', [\$this, 'eliza_user_registered'])") !== false, 'core_registers_user_register_hook');
         $this->assert_true(is_string($source) && strpos($source, "add_action('wp_login', [\$this, 'eliza_user_login'], 10, 2)") !== false, 'core_registers_wp_login_hook');
     }
 
     private function test_source_registers_subscription_purchase_hook_from_core_init(): void {
-        $source = file_get_contents(dirname(__DIR__, 2) . '/classes/core.php');
+        $source = $this->core_bootstrap_source();
         $this->assert_true(is_string($source) && strpos($source, "add_action('bitcore_subscription_purchase', [\$this, 'provision_subscription_purchase'], 10, 3)") !== false, 'core_registers_subscription_purchase_hook');
     }
 

@@ -308,7 +308,11 @@ final class KnowledgeApiGraphContractStandaloneTest {
     }
 
     private function test_core_bootstrap_loads_knowledge_api(): void {
-        $core = file_get_contents(BITCORE_PATH . 'classes/core.php');
+        // Post-split: the knowledge-api require and instantiation live in the
+        // core init trait; read it alongside the core composition file so the
+        // contract still proves core bootstrap loads the Knowledge API.
+        $core = (string) file_get_contents(BITCORE_PATH . 'classes/core.php')
+            . (string) file_get_contents(BITCORE_PATH . 'classes/traits/trait-core-init.php');
         $this->assert_true(is_string($core), 'core_file_readable');
         $this->assert_true(str_contains($core, "rest/class-knowledge-api.php"), 'core_requires_knowledge_api');
         $this->assert_true(str_contains($core, 'new \\BITCORE\\Rest\\Knowledge_Api') || str_contains($core, 'new \BITCORE\Rest\Knowledge_Api'), 'core_instantiates_knowledge_api');

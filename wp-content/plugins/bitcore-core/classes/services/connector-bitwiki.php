@@ -138,7 +138,7 @@ class BITCORE_Services_Connector_BITwiki extends BITCORE_Abstract_Connector {
 
         $body = json_decode( wp_remote_retrieve_body( $response ), true );
 
-        return $data['parse'] ?? null;
+        return $body['parse'] ?? null;
     }
 
     /**

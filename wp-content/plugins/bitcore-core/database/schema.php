@@ -64,6 +64,7 @@ class SchemaManager {
         $this->createConnectorsTable();
         $this->createSessionsTable();
         $this->createEventsTable();
+        $this->createKnowledgeTable();
 
         // Run updates if needed
         if ($this->needsUpdate()) {
@@ -201,6 +202,42 @@ class SchemaManager {
             PRIMARY KEY (id),
             KEY event_type (event_type),
             KEY user_id (user_id),
+            KEY created_at (created_at)
+        ) {$charsetCollate};";
+
+        dbDelta($sql);
+    }
+
+    /**
+     * Create knowledge pipeline table.
+     *
+     * Backs BITCORE\Rest\Knowledge_Api (six-state permission model) and the
+     * Eliza/Knowledge surfaces that read and write knowledge items.
+     *
+     * @return void
+     */
+    private function createKnowledgeTable(): void {
+        $table = $this->wpdb->prefix . 'bitcore_knowledge';
+        $charsetCollate = $this->wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE {$table} (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            user_id bigint(20) unsigned NOT NULL DEFAULT 0,
+            session_id varchar(100) DEFAULT NULL,
+            title varchar(255) NOT NULL DEFAULT '',
+            content longtext,
+            content_type varchar(50) NOT NULL DEFAULT 'markdown',
+            tags longtext,
+            status varchar(20) NOT NULL DEFAULT 'private',
+            bitwiki_page_title varchar(255) DEFAULT NULL,
+            bitwiki_page_id bigint(20) unsigned DEFAULT NULL,
+            published_at datetime DEFAULT NULL,
+            created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY user_id (user_id),
+            KEY status (status),
+            KEY session_id (session_id),
             KEY created_at (created_at)
         ) {$charsetCollate};";
 

@@ -122,7 +122,7 @@ class BITCORE_Services_Connector_BIThub extends BITCORE_Abstract_Connector {
         $url = $this->api_url . '/t/' . $topic_id . '.json';
 
         $args = [
-            'headers' => $this->get_headers(),
+            'headers' => $this->get_default_headers(),
             'timeout' => 30,
         ];
 
@@ -162,7 +162,7 @@ class BITCORE_Services_Connector_BIThub extends BITCORE_Abstract_Connector {
         $response = wp_remote_get(
             $url,
             [
-                'headers' => $this->get_headers(),
+                'headers' => $this->get_default_headers(),
                 'timeout' => 30,
             ]
         );
@@ -223,7 +223,7 @@ class BITCORE_Services_Connector_BIThub extends BITCORE_Abstract_Connector {
                 'raw' => $content,
                 'category' => $category_id,
             ],
-            'headers' => $this->get_headers(),
+            'headers' => $this->get_default_headers(),
             'timeout' => 30,
         ];
 

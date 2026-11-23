@@ -199,7 +199,7 @@ readonly class SwarmTask {
  * @author hyperion
  * @since 1.0.0
  */
-readonly class TaskAssignment {
+class TaskAssignment {
 
     /**
      * Assignment ID.

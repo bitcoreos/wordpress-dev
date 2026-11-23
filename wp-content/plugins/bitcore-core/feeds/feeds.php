@@ -14,6 +14,9 @@ if (!defined('ABSPATH')) {
 
 require_once __DIR__ . '/trait-feeds-endpoints.php';
 require_once __DIR__ . '/trait-feeds-admin.php';
+use BITCORE\Feeds\FeedsEndpoints;
+use BITCORE\Feeds\FeedsAdmin;
+
 
 class Feeds_Loader
 {

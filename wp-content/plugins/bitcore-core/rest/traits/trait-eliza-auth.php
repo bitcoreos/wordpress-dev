@@ -154,7 +154,7 @@ trait BITCORE_Rest_Eliza_Auth_Trait {
      */
     private function create_credits_manager() {
         if (!class_exists('BITCORE\\Infrastructure\\Credits_Manager')) {
-            $path = dirname(__DIR__) . '/infrastructure/class-credits.php';
+            $path = dirname(__DIR__, 2) . '/infrastructure/class-credits.php';
             if (is_file($path)) {
                 require_once $path;
             }

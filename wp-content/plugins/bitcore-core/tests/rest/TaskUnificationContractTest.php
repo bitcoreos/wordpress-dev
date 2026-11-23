@@ -70,9 +70,13 @@ final class TaskUnificationContractTest {
 
     private function test_active_tasks_route_uses_canonical_controller(): void {
         $main = $this->read($this->main);
-        $this->assert_contains("rest_api_init", $main, 'main_has_rest_api_init_hooks');
+        // Post-split: REST registration moved from the entry file into the
+        // rest-assets part. Read it alongside the entry file for the positive
+        // checks; the negative check below keeps the entry-only haystack.
+        $main_with_parts = $main . $this->read($this->root . '/parts/05-rest-assets.php');
+        $this->assert_contains("rest_api_init", $main_with_parts, 'main_has_rest_api_init_hooks');
         $this->assert_true(
-            str_contains($main, "class-rest-tasks.php") || str_contains($main, "REST_Tasks"),
+            str_contains($main_with_parts, "class-rest-tasks.php") || str_contains($main_with_parts, "REST_Tasks"),
             'main_loads_or_references_canonical_rest_tasks_controller'
         );
         $this->assert_not_contains(

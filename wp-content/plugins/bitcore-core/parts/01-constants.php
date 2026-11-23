@@ -17,6 +17,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Defensive default: the entry file normally provides this variable before the
+// part is included. Resolves to the same path the bootstrap passes via __FILE__.
+if (!isset($bitcore_entry_file)) {
+    $bitcore_entry_file = dirname(__DIR__) . '/bitcore-core.php';
+}
+
 // Define constants.
 define('BITCORE_VERSION', '1.3.0');
 define('BITCORE_DB_VERSION', '1.3.0');

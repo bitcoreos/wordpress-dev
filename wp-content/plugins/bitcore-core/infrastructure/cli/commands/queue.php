@@ -1,6 +1,5 @@
 <?php
 /**
-use BITCORE\Infrastructure\Queue\WorkerConfig;
  * Queue WP-CLI commands for Bitcore job processing
  *
  * @package    Bitcore
@@ -14,6 +13,8 @@ declare(strict_types=1);
 if (!defined('ABSPATH')) {
     exit;
 }
+
+use BITCORE\Infrastructure\Queue\WorkerConfig;
 class Bitcore_Queue_Commands {
     private $logger;
 

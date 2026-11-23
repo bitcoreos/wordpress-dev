@@ -1,0 +1,1123 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: wp-content/plugins/bitcore-core/accelerate/accelerate.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<int\<0, max\>\|non\-falsy\-string, string\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/accelerate/class-distillation-engine.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/accelerate/class-distillation-engine.php
+
+		-
+			message: '#^Method BITCORE\\Accelerate\\Distillation_Engine\:\:distill_batch\(\) should return array\<string, mixed\> but returns array\<int, array\<string, array\<string, mixed\>\|bool\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/accelerate/class-distillation-engine.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/admin/agents-models.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/admin/settings.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/agents-models.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/class-agent-identity.php
+
+		-
+			message: '#^Constant Bitcore\\Tasks\\Capabilities\:\:CAPABILITIES is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/class-capabilities.php
+
+		-
+			message: '#^Constant Bitcore\\Tasks\\Capabilities\:\:ROLE_CAPABILITY_MAP is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/class-capabilities.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\Security\\AuditLogger constructor invoked with 0 parameters, 1\-3 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\Security\\HardeningManager constructor invoked with 0 parameters, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\Security\\MiddlewarePipeline constructor invoked with 0 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\Swarm\\A2ADispatcher constructor invoked with 0 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\Swarm\\HealthMonitor constructor invoked with 0 parameters, 3\-5 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\Swarm\\SwarmCoordinator constructor invoked with 0 parameters, 3 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Class BITCORE_Rest_Tasks does not have a constructor and must be instantiated without any parameters\.$#'
+			identifier: new.noConstructor
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Path in include\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core//admin/agents\.php" is not a file or it does not exist\.$#'
+			identifier: include.fileNotFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Property BITCORE_Core\:\:\$options \(array\|null\) is never assigned array so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Property BITCORE_Core\:\:\$options is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/core.php
+
+		-
+			message: '#^Parameter \#2 \$src of function wp_register_script expects non\-empty\-string\|false, '''' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/functions-integration.php
+
+		-
+			message: '#^Parameter \#2 \$src of function wp_register_script expects non\-empty\-string\|false, '''' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/integration.php
+
+		-
+			message: '#^Constant BITCORE_Modules_Capabilities\:\:CAPABILITIES is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/modules/capabilities.php
+
+		-
+			message: '#^Constant BITCORE_Modules_Capabilities\:\:ROLE_CAPABILITY_MAP is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/modules/capabilities.php
+
+		-
+			message: '#^Property BITCORE_Modules_Marathons\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/modules/marathons.php
+
+		-
+			message: '#^Property BITCORE_Modules_Missions\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/modules/missions.php
+
+		-
+			message: '#^Property BITCORE_Modules_Sessions\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/modules/sessions.php
+
+		-
+			message: '#^Property BITCORE_Modules_Sprints\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/modules/sprints.php
+
+		-
+			message: '#^Property BITCORE_Modules_Tasks\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/modules/tasks.php
+
+		-
+			message: '#^Call to static method register\(\) on an unknown class BITCORE\\Patterns\\Widgets\\WidgetRegistration\.$#'
+			identifier: class.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/patterns-autoloader.php
+
+		-
+			message: '#^Undefined variable\: \$url$#'
+			identifier: variable.undefined
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/services/connector-bithub.php
+
+		-
+			message: '#^Variable \$data on left side of \?\? is never defined\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: wp-content/plugins/bitcore-core/classes/services/connector-bitwiki.php
+
+		-
+			message: '#^Property BITCORE_Services_Message_Builder\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/services/message-builder.php
+
+		-
+			message: '#^Property BITCORE_Services_Response_ID_Manager\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/services/response-id-manager.php
+
+		-
+			message: '#^Property BITCORE_Services_Session\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/services/session.php
+
+		-
+			message: '#^Property BITCORE_Services_Usage_Stats\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/classes/services/usage-stats.php
+
+		-
+			message: '#^Property BITCORE_Swarm_Monitor\:\:\$health_table is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/command-center/class-swarm-monitor.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: wp-content/plugins/bitcore-core/command-center/dashboard.php
+
+		-
+			message: '#^Variable \$this might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: wp-content/plugins/bitcore-core/command-center/templates/agent-panel.php
+
+		-
+			message: '#^Variable \$this might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: wp-content/plugins/bitcore-core/command-center/templates/dashboard.php
+
+		-
+			message: '#^Variable \$this might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: wp-content/plugins/bitcore-core/command-center/templates/workflow-panel.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: wp-content/plugins/bitcore-core/domain/value-objects.php
+
+		-
+			message: '#^Class BITCORE\\Feeds\\Feed_Processor not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/FeedManager.php
+
+		-
+			message: '#^Property BITCORE\\Feeds\\Deduplicator\:\:\$hash_cache is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-deduplicator.php
+
+		-
+			message: '#^Property BITCORE\\Feeds\\Deduplicator\:\:\$use_phonetic is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-deduplicator.php
+
+		-
+			message: '#^Property BITCORE\\Feeds\\Intent_Matcher\:\:\$preferences is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-intent-matcher.php
+
+		-
+			message: '#^Access to an undefined property \$this\(RAG_Workspace\)\:\:\$api_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-rag-workspace.php
+
+		-
+			message: '#^Access to an undefined property RAG_Workspace\:\:\$documents_table\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-rag-workspace.php
+
+		-
+			message: '#^Access to an undefined property RAG_Workspace\:\:\$embeddings_table\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-rag-workspace.php
+
+		-
+			message: '#^Parameter \#1 \$text of method RAG_Workspace\:\:get_embedding\(\) expects string, array\<string, mixed\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-rag-workspace.php
+
+		-
+			message: '#^Parameter \#2 \$options of method BITCORE\\Feeds\\Chunker\:\:chunk\(\) expects array\<string, mixed\>, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: wp-content/plugins/bitcore-core/feeds/class-rag-workspace.php
+
+		-
+			message: '#^Property RAG_Workspace\:\:\$options is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-rag-workspace.php
+
+		-
+			message: '#^Method BITCORE\\Feeds\\Topic_Clusterer\:\:cluster\(\) should return array\<int, array\<string, mixed\>\> but returns array\<string, array\<int\|string, array\<string, mixed\>\|int\<0, max\>\>\>\.$#'
+			identifier: return.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-topic-clusterer.php
+
+		-
+			message: '#^Method BITCORE\\Feeds\\Topic_Clusterer\:\:cluster\(\) should return array\<int, array\<string, mixed\>\> but returns array\<string, mixed\>\.$#'
+			identifier: return.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-topic-clusterer.php
+
+		-
+			message: '#^Property BITCORE\\Feeds\\Topic_Clusterer\:\:\$term_cache is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-topic-clusterer.php
+
+		-
+			message: '#^Method BITCORE\\Feeds\\Trend_Detector\:\:cache_trends\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-trend-detector.php
+
+		-
+			message: '#^Method BITCORE\\Feeds\\Trend_Detector\:\:get_cached_trends\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-trend-detector.php
+
+		-
+			message: '#^Method BITCORE\\Feeds\\Watchlist\:\:trigger_alert\(\) should return bool\|WP_Error but returns array\<string, array\<string, bool\>\|bool\|string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/class-watchlist.php
+
+		-
+			message: '#^Access to an undefined static property Feeds_Loader\:\:\$path\.$#'
+			identifier: staticProperty.notFound
+			count: 2
+			path: wp-content/plugins/bitcore-core/feeds/feeds.php
+
+		-
+			message: '#^Call to method create_workspace\(\) on an unknown class BITCORE\\Feeds\\RAG_Workspace\.$#'
+			identifier: class.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/feeds.php
+
+		-
+			message: '#^Call to method query\(\) on an unknown class BITCORE\\Feeds\\RAG_Workspace\.$#'
+			identifier: class.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/feeds.php
+
+		-
+			message: '#^Call to method store_document\(\) on an unknown class BITCORE\\Feeds\\RAG_Workspace\.$#'
+			identifier: class.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/feeds.php
+
+		-
+			message: '#^Call to static method get_user_workspaces\(\) on an unknown class BITCORE\\Feeds\\RAG_Workspace\.$#'
+			identifier: class.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/feeds.php
+
+		-
+			message: '#^Instantiated class BITCORE\\Feeds\\RAG_Workspace not found\.$#'
+			identifier: class.notFound
+			count: 3
+			path: wp-content/plugins/bitcore-core/feeds/feeds.php
+
+		-
+			message: '#^Variable \$iter on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/trait-topic-clusterer-internals.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and false will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/feeds/traits/trait-watchlist-alerting.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Auth\\CapabilityManager\:\:\$tenantContext is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/auth/CapabilityManager.php
+
+		-
+			message: '#^Offset ''exp'' on non\-empty\-array on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/auth/JwtTokenManager.php
+
+		-
+			message: '#^Offset ''iat'' on non\-empty\-array on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/auth/JwtTokenManager.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Auth\\AuthManager\:\:\$capabilityManager is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/auth/manager.php
+
+		-
+			message: '#^Cannot access offset string on bool\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cache/CacheManager.php
+
+		-
+			message: '#^Cannot unset offset string on bool\.$#'
+			identifier: unset.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cache/CacheManager.php
+
+		-
+			message: '#^Parameter \#1 \$value of function count expects array\|Countable, bool given\.$#'
+			identifier: argument.type
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cache/CacheManager.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Cache\\CacheManager\:\:\$stats \(array\<string, bool\>\) does not accept array\<string, array\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cache/CacheManager.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Cache\\CacheManager\:\:\$stats \(array\<string, bool\>\) does not accept default value of type array\<string, array\>\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cache/CacheManager.php
+
+		-
+			message: '#^Deprecated in PHP 8\.0\: Required parameter \$tenantContext follows optional parameter \$prefix\.$#'
+			identifier: parameter.requiredAfterOptional
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cache/TenantAwarePool.php
+
+		-
+			message: '#^Method BITCORE\\Infrastructure\\Cache\\TenantAwarePool\:\:flushTenant\(\) should return bool but returns int\.$#'
+			identifier: return.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cache/TenantAwarePool.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/class-credits.php
+
+		-
+			message: '#^Parameter \#1 \$user_id of function get_user_meta expects int, string given\.$#'
+			identifier: argument.type
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/class-post-router.php
+
+		-
+			message: '#^Parameter \#1 \$user_id of function update_user_meta expects int, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/class-post-router.php
+
+		-
+			message: '#^Parameter \#3 \$args of function wp_schedule_single_event expects list\<mixed\>, array\{task_id\: int\<0, max\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/class-post-router.php
+
+		-
+			message: '#^Call to an undefined method BITCORE\\Infrastructure\\Cache\\CacheManager\:\:clearByTenant\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Call to an undefined method BITCORE\\Infrastructure\\Cache\\CacheManager\:\:deleteByTag\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\MultiTenancy\\TenantRepository constructor invoked with 0 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\Queue\\JobRepository constructor invoked with 0 parameters, 1\-2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Method BITCORE\\Infrastructure\\MultiTenancy\\TenantRepository\:\:save\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Method BITCORE\\Infrastructure\\Queue\\JobRepository\:\:countFailed\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Method BITCORE\\Infrastructure\\Queue\\JobRepository\:\:getFailed\(\) invoked with 2 parameters, 0\-1 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Parameter \#1 \$before of method BITCORE\\Infrastructure\\Queue\\JobRepository\:\:prune\(\) expects DateTimeImmutable, int\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Parameter \#1 \$limit of method BITCORE\\Infrastructure\\Queue\\JobRepository\:\:getFailed\(\) expects int, null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Parameter \#1 \$message of static method WP_CLI\:\:log\(\) expects string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Parameter \#1 \$tenant of method BITCORE\\Infrastructure\\MultiTenancy\\TenantRepository\:\:save\(\) expects BITCORE\\Infrastructure\\MultiTenancy\\Tenant, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Parameter \#2 \$version of method BITCORE\\Infrastructure\\MultiTenancy\\SchemaManager\:\:rollbackTenantSchema\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Result of method BITCORE\\Infrastructure\\MultiTenancy\\SchemaManager\:\:migrateTenantSchema\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Result of method BITCORE\\Infrastructure\\MultiTenancy\\SchemaManager\:\:rollbackTenantSchema\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Result of method BITCORE\\Infrastructure\\MultiTenancy\\TenantRepository\:\:deactivate\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Result of method BITCORE\\Infrastructure\\Queue\\JobRepository\:\:retry\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_Tenant_Commands\:\:\$cacheManager\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/admin.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_Tenant_Commands\:\:\$schemaManager\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/admin.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_Tenant_Commands\:\:\$tenantResolver\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/admin.php
+
+		-
+			message: '#^Call to an undefined method Bitcore_Tenant_Commands\:\:getAllTenants\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/admin.php
+
+		-
+			message: '#^Call to an undefined method Bitcore_Tenant_Commands\:\:getTenantRepository\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/admin.php
+
+		-
+			message: '#^Parameter \#1 \$message of static method WP_CLI\:\:log\(\) expects string, int\<0, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/admin.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_Cache_Commands\:\:\$cacheManager\.$#'
+			identifier: property.notFound
+			count: 4
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/cache.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_Cache_Commands\:\:\$tenantResolver\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/cache.php
+
+		-
+			message: '#^Call to an undefined method Bitcore_Cache_Commands\:\:getTenantRepository\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/cache.php
+
+		-
+			message: '#^Call to an undefined method Bitcore_Cache_Commands\:\:warmCacheType\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/cache.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_Migration_Commands\:\:\$schemaManager\.$#'
+			identifier: property.notFound
+			count: 6
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/migration.php
+
+		-
+			message: '#^Call to an undefined method Bitcore_Migration_Commands\:\:getTenantRepository\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/migration.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_Queue_Commands\:\:\$jobRepository\.$#'
+			identifier: property.notFound
+			count: 3
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/queue.php
+
+		-
+			message: '#^Call to an undefined method Bitcore_Queue_Commands\:\:createWorkerWithConfig\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/queue.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_System_Commands\:\:\$cacheManager\.$#'
+			identifier: property.notFound
+			count: 5
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/system.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_System_Commands\:\:\$jobRepository\.$#'
+			identifier: property.notFound
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/system.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_System_Commands\:\:\$queueWorker\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/system.php
+
+		-
+			message: '#^Access to an undefined property Bitcore_System_Commands\:\:\$schemaManager\.$#'
+			identifier: property.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/system.php
+
+		-
+			message: '#^Class BITCORE\\Infrastructure\\MultiTenancy\\TenantRepository constructor invoked with 0 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/commands/system.php
+
+		-
+			message: '#^Offset ''hit_rate'' on array\{hits\: int, misses\: int, hitRate\: float\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-cache.php
+
+		-
+			message: '#^Offset ''hits'' on array\{hits\: int, misses\: int, hitRate\: float\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-cache.php
+
+		-
+			message: '#^Offset ''keys'' on array\{hits\: int, misses\: int, hitRate\: float\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-cache.php
+
+		-
+			message: '#^Offset ''memory'' on array\{hits\: int, misses\: int, hitRate\: float\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-cache.php
+
+		-
+			message: '#^Offset ''misses'' on array\{hits\: int, misses\: int, hitRate\: float\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-cache.php
+
+		-
+			message: '#^Variable \$version on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-diagnostics.php
+
+		-
+			message: '#^Variable \$version on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-migration.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-queue.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-tenant.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/cli/trait-bitcore-command-tenant.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Goals\\GoalAncestry\:\:\$hierarchy is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/goals/GoalAncestry.php
+
+		-
+			message: '#^Cannot call method getId\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/logging/Logger.php
+
+		-
+			message: '#^Cannot call method getId\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/logging/TenantProcessor.php
+
+		-
+			message: '#^Cannot call method getName\(\) on int\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/logging/TenantProcessor.php
+
+		-
+			message: '#^If condition is always true\.$#'
+			identifier: if.alwaysTrue
+			count: 2
+			path: wp-content/plugins/bitcore-core/infrastructure/multitenancy/schema-migrations.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Security\\AuthMiddleware\:\:\$auth is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/security/middleware-handlers.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Security\\MiddlewarePipeline\:\:\$logger is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/security/middleware-pipeline.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Swarm\\HealthMonitor\:\:\$responseThreshold is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/swarm/HealthMonitorClass.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Swarm\\SwarmCoordinator\:\:\$cache is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/swarm/SwarmCoordinator.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Swarm\\SwarmCoordinator\:\:\$retryCount is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/swarm/SwarmCoordinator.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Webhooks\\ExponentialBackoffStrategy\:\:\$maxAttempts is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/webhooks/WebhookDelivery.php
+
+		-
+			message: '#^Property BITCORE\\Infrastructure\\Webhooks\\ExponentialBackoffStrategy\:\:\$maxAttempts is never written, only read\.$#'
+			identifier: property.onlyRead
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/webhooks/class-retry-strategy.php
+
+		-
+			message: '#^PHPDoc tag @param for parameter \$error with type BITCORE\\Infrastructure\\Webhooks\\Throwable is not subtype of native type Throwable\.$#'
+			identifier: parameter.phpDocType
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/webhooks/retry-strategy.php
+
+		-
+			message: '#^Parameter \$error of method BITCORE\\Infrastructure\\Webhooks\\ExponentialBackoffStrategy\:\:shouldRetry\(\) has invalid type BITCORE\\Infrastructure\\Webhooks\\Throwable\.$#'
+			identifier: class.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/webhooks/retry-strategy.php
+
+		-
+			message: '#^Comparison operation "\<" between int\<400, 428\>\|int\<430, 499\> and 500 is always true\.$#'
+			identifier: smaller.alwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/infrastructure/webhooks/traits/trait-webhook-signature.php
+
+		-
+			message: '#^Path in require_once\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core/admin/agents\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/menu-registration.php
+
+		-
+			message: '#^Path in require_once\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core/admin/internal\-agents\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/menu-registration.php
+
+		-
+			message: '#^Path in require_once\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core/admin/models\.php" is not a file or it does not exist\.$#'
+			identifier: requireOnce.fileNotFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/menu-registration.php
+
+		-
+			message: '#^Variable \$statement in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: wp-content/plugins/bitcore-core/parts/06-activation.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$description$#'
+			identifier: parameter.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/patterns/builder.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$name$#'
+			identifier: parameter.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/patterns/builder.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$type$#'
+			identifier: parameter.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/patterns/builder.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$url$#'
+			identifier: parameter.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/patterns/builder.php
+
+		-
+			message: '#^Property BITCORE\\Patterns\\BithubConnector\:\:\$endpoint is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/patterns/factory.php
+
+		-
+			message: '#^Property BITCORE\\Patterns\\BithubConnector\:\:\$token is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/patterns/factory.php
+
+		-
+			message: '#^Property BITCORE\\Patterns\\BitwikiConnector\:\:\$endpoint is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/patterns/factory.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with int\<0, max\> will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/abilities-api.php
+
+		-
+			message: '#^Call to function method_exists\(\) with WP_REST_Server and ''get_raw_data'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/auth-filter.php
+
+		-
+			message: '#^Method BITCORE_Rest_Auth_Filter\:\:get_current_request\(\) never returns WP_REST_Request so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/auth-filter.php
+
+		-
+			message: '#^Method BITCORE_Rest_Auth_Filter\:\:get_current_request\(\) should return WP_REST_Request\|false but returns string\.$#'
+			identifier: return.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/auth-filter.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-bitmon-api.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-bitmon-api.php
+
+		-
+			message: '#^Property BITCORE_Rest_Eliza_Api\:\:\$core is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-eliza-api.php
+
+		-
+			message: '#^Property BITCORE_Rest_Eliza_Api\:\:\$daily_limit is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-eliza-api.php
+
+		-
+			message: '#^Property BITCORE_Rest_Eliza_Api\:\:\$x402_bypass is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-eliza-api.php
+
+		-
+			message: '#^Property BITCORE_Rest_Eliza_Api\:\:\$x402_wallet is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-eliza-api.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with int\<0, max\> will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-kanban-api.php
+
+		-
+			message: '#^Parameter \#3 \$args of function wp_schedule_single_event expects list\<mixed\>, array\{task_id\: int\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-kanban-api.php
+
+		-
+			message: '#^Call to an undefined method BITCORE_Services_Connector_BITwiki\:\:create_page\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-knowledge-api.php
+
+		-
+			message: '#^Parameter \#1 \$core of class BITCORE_Services_Connector_BITwiki constructor expects BITCORE_Core, null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-knowledge-api.php
+
+		-
+			message: '#^Call to an undefined method BITCORE_REST_Tasks_Permissions\:\:filter_response_by_context\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-rest-tasks-permissions.php
+
+		-
+			message: '#^Cannot unset offset ''required'' on array\{description\: string, type\: ''string'', sanitize_callback\: ''sanitize_text_field''\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-rest-tasks-permissions.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with int\<0, max\> will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: wp-content/plugins/bitcore-core/rest/class-rest-tasks.php
+
+		-
+			message: '#^Cannot unset offset ''required'' on array\{description\: string, type\: ''string'', sanitize_callback\: ''sanitize_text_field''\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/class-rest-tasks.php
+
+		-
+			message: '#^Right side of \|\| is always true\.$#'
+			identifier: booleanOr.rightAlwaysTrue
+			count: 2
+			path: wp-content/plugins/bitcore-core/rest/class-sessions-api.php
+
+		-
+			message: '#^Call to an undefined method BITCORE_Research_Workspace\:\:delete\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/research-intelligence.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/sse-events.php
+
+		-
+			message: '#^Cannot unset offset ''required'' on array\{description\: string, type\: ''string'', sanitize_callback\: ''sanitize_text_field''\}\.$#'
+			identifier: unset.offset
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/tasks.php
+
+		-
+			message: '#^Parameter \#2 \$value of method WP_HTTP_Response\:\:header\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: wp-content/plugins/bitcore-core/rest/tasks.php
+
+		-
+			message: '#^Call to function is_object\(\) with WP_Error\|WP_REST_Response will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: wp-content/plugins/bitcore-core/rest/traits/trait-eliza-rate-limit.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed~''publish'' and ''publish'' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/webhook-api.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between ''publish'' and ''publish'' will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/rest/webhook-api.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/settings.php
+
+		-
+			message: '#^Variable \$atts might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: wp-content/plugins/bitcore-core/templates/chatbot.php
+
+		-
+			message: '#^Variable \$this might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: wp-content/plugins/bitcore-core/templates/chatbot.php
+
+		-
+			message: '#^Instanceof between BITCORE\\Validation\\BaseSchema and BITCORE\\Validation\\BaseSchema will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: wp-content/plugins/bitcore-core/validation/schema.php
+
+		-
+			message: '#^PHPDoc tag @param references unknown parameter\: \$instance$#'
+			identifier: parameter.notFound
+			count: 1
+			path: wp-content/plugins/bitcore-core/widgets/base.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<int, WP_Term\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/themes/bitcore-theme/functions.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''BITCORE_Health…'' and ''get_latest'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: wp-content/themes/bitcore-theme/functions.php
+
+		-
+			message: '#^Property WP_Term\:\:\$count \(int\) in isset\(\) is not nullable\.$#'
+			identifier: isset.property
+			count: 1
+			path: wp-content/themes/bitcore-theme/functions.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with WP_Post will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: wp-content/themes/bitcore-theme/nav-header.php

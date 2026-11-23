@@ -51,6 +51,28 @@ tests_add_filter('muplugins_loaded', function () use ($plugin_dir) {
     require $plugin_dir . '/bitcore-core.php';
 });
 
+// Provision the plugin schema into the WordPress test database. Production runs
+// this through bitcore_activate()/PatternAutoloader::activate(); the PHPUnit
+// harness never fires the activation hook, so run the same SchemaManager here.
+// This touches only the test database selected by the WP test library.
+tests_add_filter('plugins_loaded', function () use ($plugin_dir) {
+    require_once $plugin_dir . '/database/schema.php';
+    if (!class_exists('BITCORE\\Database\\SchemaManager')) {
+        return;
+    }
+
+    // Mark the schema current first: install() creates every table with dbDelta
+    // (idempotent) and then skips the versioned ALTER migrations, which would
+    // otherwise re-add columns dbDelta already created.
+    $version = defined('BITCORE_DB_VERSION') ? BITCORE_DB_VERSION : '1.3.0';
+    if (get_option('bitcore_db_version') !== $version) {
+        update_option('bitcore_db_version', $version);
+    }
+
+    (new \BITCORE\Database\SchemaManager())->install();
+}, 99);
+
+
 require $wp_tests_dir . '/includes/bootstrap.php';
 
 // Shared PHPUnit base class, when present (the WP-free engine supplies its own).

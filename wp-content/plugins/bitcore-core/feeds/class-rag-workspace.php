@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
-/**
+
 use BITCORE\Feeds\Chunker;
+use BITCORE\Feeds\RAG_Embedding;
+
+/**
  * RAG Workspace - Retrieval Augmented Generation
  *
  * @package BITCORE\Feeds

@@ -15,14 +15,17 @@ if (!defined('ABSPATH')) {
 
 class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
 
-    protected string $namespace = 'bitcore/v1';
-    protected string $rest_base = 'artifacts';
+    /** @var string */
+    protected $namespace = 'bitcore/v1';
+    /** @var string */
+    protected $rest_base = 'artifacts';
     private BITCORE_Artifact_Repository $repository;
-    private BITCORE_Artifact_Schema $schema;
+    /** @var BITCORE_Artifact_Schema */
+    private $artifact_schema;
 
     public function __construct() {
         $this->repository = new BITCORE_Artifact_Repository();
-        $this->schema = new BITCORE_Artifact_Schema();
+        $this->artifact_schema = new BITCORE_Artifact_Schema();
     }
 
     public function register_routes(): void {
@@ -37,7 +40,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
                 'methods' => WP_REST_Server::CREATABLE,
                 'callback' => [$this, 'create_item'],
                 'permission_callback' => [$this, 'create_item_permissions_check'],
-                'args' => $this->schema->get_endpoint_args('POST'),
+                'args' => $this->artifact_schema->get_endpoint_args('POST'),
             ],
             'schema' => [$this, 'get_public_item_schema'],
         ]);
@@ -53,7 +56,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
                 'methods' => WP_REST_Server::EDITABLE,
                 'callback' => [$this, 'update_item'],
                 'permission_callback' => [$this, 'update_item_permissions_check'],
-                'args' => $this->schema->get_endpoint_args('PUT'),
+                'args' => $this->artifact_schema->get_endpoint_args('PUT'),
             ],
             [
                 'methods' => WP_REST_Server::DELETABLE,
@@ -71,7 +74,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
         ]);
     }
 
-    public function get_items(WP_REST_Request $request): WP_REST_Response {
+    public function get_items($request): WP_REST_Response {
         $type = $request->get_param('type');
         $page = (int) $request->get_param('page');
         $per_page = (int) $request->get_param('per_page');
@@ -97,7 +100,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
         ], 200);
     }
 
-    public function create_item(WP_REST_Request $request): WP_REST_Response {
+    public function create_item($request): WP_REST_Response {
         $data = [
             'name' => $request->get_param('name'),
             'type' => $request->get_param('type') ?: 'generic',
@@ -107,7 +110,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
             'author' => get_current_user_id(),
         ];
 
-        $errors = $this->schema->validate($data);
+        $errors = $this->artifact_schema->validate($data);
         if (!empty($errors)) {
             return new WP_REST_Response(['success' => false, 'errors' => $errors], 400);
         }
@@ -118,7 +121,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
         return new WP_REST_Response(['success' => true, 'data' => $item], 201);
     }
 
-    public function get_item(WP_REST_Request $request): WP_REST_Response {
+    public function get_item($request): WP_REST_Response {
         $id = (int) $request->get_param('id');
         $item = $this->repository->find($id);
 
@@ -129,7 +132,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
         return new WP_REST_Response(['success' => true, 'data' => $item], 200);
     }
 
-    public function update_item(WP_REST_Request $request): WP_REST_Response {
+    public function update_item($request): WP_REST_Response {
         $id = (int) $request->get_param('id');
         $item = $this->repository->find($id);
 
@@ -157,7 +160,7 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
         return new WP_REST_Response(['success' => true, 'data' => $item], 200);
     }
 
-    public function delete_item(WP_REST_Request $request): WP_REST_Response {
+    public function delete_item($request): WP_REST_Response {
         $id = (int) $request->get_param('id');
         $item = $this->repository->find($id);
 
@@ -170,11 +173,11 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
     }
 
     public function get_schema_response(): WP_REST_Response {
-        return new WP_REST_Response($this->schema->get_schema(), 200);
+        return new WP_REST_Response($this->artifact_schema->get_schema(), 200);
     }
 
     public function get_public_item_schema(): array {
-        return $this->schema->get_schema();
+        return $this->artifact_schema->get_schema();
     }
 
     public function get_collection_params(): array {
@@ -185,23 +188,38 @@ class BITCORE_Artifact_REST_Controller extends WP_REST_Controller {
         ];
     }
 
-    public function get_items_permissions_check(WP_REST_Request $request): bool {
+    /**
+     * @return bool True when the current user is authenticated.
+     */
+    public function get_items_permissions_check($request): bool {
         return is_user_logged_in();
     }
 
-    public function get_item_permissions_check(WP_REST_Request $request): bool {
+    /**
+     * @return bool True when the current user is authenticated.
+     */
+    public function get_item_permissions_check($request): bool {
         return is_user_logged_in();
     }
 
-    public function create_item_permissions_check(WP_REST_Request $request): bool {
+    /**
+     * @return bool True when the current user is authenticated.
+     */
+    public function create_item_permissions_check($request): bool {
         return is_user_logged_in();
     }
 
-    public function update_item_permissions_check(WP_REST_Request $request): bool {
+    /**
+     * @return bool True when the current user is authenticated.
+     */
+    public function update_item_permissions_check($request): bool {
         return is_user_logged_in();
     }
 
-    public function delete_item_permissions_check(WP_REST_Request $request): bool {
+    /**
+     * @return bool True when the current user is authenticated.
+     */
+    public function delete_item_permissions_check($request): bool {
         return is_user_logged_in();
     }
 }
