@@ -20,4 +20,5 @@ for f in $(find "$ROOT/tests" -name '*Test.php' | sort); do
 done
 printf '\n--- standalone summary: scripts_pass=%s scripts_fail=%s ---\n' "$PASS" "$FAIL"
 if [ -n "$LIST" ]; then printf 'failed scripts:%b\n' "$LIST"; fi
+if [ "$FAIL" -ne 0 ]; then exit 1; fi
 exit 0

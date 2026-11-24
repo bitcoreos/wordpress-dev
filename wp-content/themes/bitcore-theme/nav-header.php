@@ -3,6 +3,10 @@
  * Navigation Header for BITCORE WordPress Surface
  * Links only to EXISTING pages using slug-based resolution for resilience.
  * Include: <?php include(get_template_directory() . '/nav-header.php'); ?>
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 
 // Resolve pages by slug — returns URL or null if missing.

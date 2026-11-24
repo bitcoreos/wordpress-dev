@@ -2,6 +2,10 @@
 /**
  * Standalone regression test for BITCORE theme block pattern files.
  * Run: php wp-content/themes/bitcore-theme/tests/BlockPatternHeaderTest.php
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 
 $theme_dir = dirname(__DIR__);

@@ -2,6 +2,10 @@
 /**
  * Template Name: BITCORE Office Suite
  * Description: Full-featured personal workspace with BitFlux avatar
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 
 get_header();

@@ -32,26 +32,25 @@ Single `main` branch. The March 2026 dual-branch merge (coraline + hyperion) was
 
 ## Verification status
 
-Measured 2026-11-23 on the committed tree inside `holobiont-wordpress-wordpress-1` (PHP 8.3.36).
+Historical verification from 2026-11-23 used isolated PHP runs; see the later reverification note in `merge-plan-unified.md`. These checks do not prove the plugin works on a live WordPress request.
 
 | Gate | Result |
 |---|---|
-| `php -l`, whole tree | **440/440 clean**, 0 parse errors |
-| PHPStan level 5 | **passes, exit 0** — 232 errors baselined in `phpstan-baseline.neon` |
-| Files over 500 LOC | **0** |
-| Metadata headers | **0** missing `@package` / `@version` / `@since` across 315 files |
-| Behavioural tests | **70 tests / 897 assertions, 0 fail, 0 error, 0 skip** |
+| `php -l`, `wp-content` | **440/440 clean** on PHP 8.3.36 |
+| PHPStan level 5 | **Exit 0 with a baseline**: 183 entries suppress 228 existing diagnostics |
+| Active files over 500 LOC | **0**; archived files excluded |
+| Metadata headers | **0 missing** `@package` / `@version` / `@since` across 380 production PHP files in both plugins and themes |
+| Isolated test suites | **41 PHPUnit tests / 69 assertions**, plus **29 standalone plugin scripts** and **10 theme contract scripts**; all exit 0. No deployed-plugin request was tested. |
 
 ### Reproducing the PHPStan gate
 
-The analysis toolchain (WordPress stubs, 14 project stubs, bootstrap, config) lives in `../toolchain/` beside this repo and is committed for reproducibility.
+The analysis toolchain (WordPress stubs, project stubs, bootstrap, config) is a **local sibling** at `../toolchain/`; it is **not tracked in this repository**. PHPStan 2.3.7 and the local toolchain are required to reproduce this run. On the Pi's PHP container, with this repository and the sibling toolchain copied to a disposable directory:
 
 ```bash
-# Repository root, with the toolchain present as a sibling directory
-php phpstan.phar analyse -c phpstan.neon --no-progress
+php phpstan.phar analyse -c phpstan.neon --debug --no-progress
 ```
 
-The committed baseline records pre-existing debt so the gate stays enforceable: new code cannot add errors. Regenerate only through `toolchain/phpstan-gen.neon`, which omits the baseline include (PHPStan will not start when an included baseline file is absent).
+The baseline records unresolved diagnostics; a passing result is **baseline-backed**, not zero source defects. The baseline-generation config is local at `../toolchain/phpstan-gen.neon`, not available from this repository alone.
 
 ### Test suites
 

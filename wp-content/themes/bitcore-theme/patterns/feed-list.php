@@ -1,19 +1,17 @@
 <?php
 /**
- * Pattern: Feed List
+ * Title: Feed List
+ * Slug: bitcore-theme/feed-list
+ * Categories: bitcore-theme
+ * Description: Activity feed list for dashboard.
  *
  * @package BITCORE_Theme
+ * @since 2026.11.23
+ * @version 1.0.0
+ * @author coraline
  */
-
-defined( 'ABSPATH' ) || exit;
-
-register_block_pattern(
-    'bitcore-theme/feed-list',
-    array(
-        'title'       => __( 'Feed List', 'bitcore-theme' ),
-        'description' => __( 'Activity feed list for dashboard.', 'bitcore-theme' ),
-        'categories'  => array( 'bitcore-theme' ),
-        'content'     => '<!-- wp:group {"className":"bitcore-feed-container"} -->
+?>
+<!-- wp:group {"className":"bitcore-feed-container"} -->
 <div class="wp-block-group bitcore-feed-container">
     <!-- wp:group {"className":"bitcore-feed__header","layout":{"type":"flex","flexWrap":"nowrap","justifyContent":"space-between"}} -->
     <div class="wp-block-group bitcore-feed__header">
@@ -72,6 +70,4 @@ register_block_pattern(
     </ul>
     <!-- /wp:list -->
 </div>
-<!-- /wp:group -->',
-    )
-);
+<!-- /wp:group -->

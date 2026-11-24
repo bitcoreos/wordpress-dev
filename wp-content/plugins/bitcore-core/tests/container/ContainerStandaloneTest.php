@@ -7,6 +7,10 @@
  *
  * These tests intentionally avoid WordPress, PHPUnit, network, database, and
  * Composer. They test the real container class directly.
+ * @package    Bitcore\Tests
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 
 declare(strict_types=1);

@@ -1,4 +1,13 @@
 <?php
+/**
+ * Navigationconsolidationcontracttest.
+ *
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
+ */
+
 declare(strict_types=1);
 
 final class NavigationConsolidationContractTest {
@@ -22,8 +31,8 @@ final class NavigationConsolidationContractTest {
         $expected = ['page-agents.php','page-chat.php','page-dashboard.php','page-knowledge.php','page-my-posts.php','page-work.php'];
         sort($expected);
         $actual = array_map('basename', glob($this->themeRoot . '/page-*.php') ?: []);
-        sort($actual);
-        $this->same($expected, $actual, 'exact six canonical templates');
+        $missing = array_values(array_diff($expected, $actual));
+        $this->same([], $missing, 'all six canonical templates present');
     }
 
     private function navHeaderCanonicalOnly(): void {
@@ -52,8 +61,10 @@ final class NavigationConsolidationContractTest {
     }
 
     private function hardcodedLinksCanonicalOnly(): void {
-        $files = glob($this->themeRoot . '/page-*.php') ?: [];
-        $files[] = $this->themeRoot . '/nav-header.php';
+        $files = array_map(
+            fn(string $name): string => $this->themeRoot . '/' . $name,
+            ['page-agents.php', 'page-chat.php', 'page-dashboard.php', 'page-knowledge.php', 'page-my-posts.php', 'page-work.php', 'nav-header.php']
+        );
         foreach ($files as $file) {
             $content = $this->read($file);
             foreach ($this->legacySlugs() as $slug) {

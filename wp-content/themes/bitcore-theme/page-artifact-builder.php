@@ -2,6 +2,10 @@
 /**
  * Template Name: Artifact Builder
  * Description: Create AI artifacts with guided templates and live preview
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

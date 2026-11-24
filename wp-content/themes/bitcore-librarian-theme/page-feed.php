@@ -2,6 +2,10 @@
 /**
  * Template Name: BITCORE Live Feed
  * Description: Real-time activity feed from hub.bitwiki.org
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

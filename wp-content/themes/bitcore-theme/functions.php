@@ -4,6 +4,8 @@
  *
  * @package BITCORE_Theme
  * @version 2.0.0
+ * @since      2026.11.23
+ * @author     coraline
  */
 
 defined( 'ABSPATH' ) || exit;

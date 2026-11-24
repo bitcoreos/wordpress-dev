@@ -7,6 +7,8 @@
  *
  * @package BITCORE\Tests
  * @since 1.0.0
+ * @version    1.0.0
+ * @author     coraline
  */
 
 $plugin_dir = dirname(__DIR__);

@@ -2,6 +2,10 @@
 /**
  * Template Name: Budget Dashboard
  * Paperclip Integration - Per-Agent Spending & Limits
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 get_header();
 ?>

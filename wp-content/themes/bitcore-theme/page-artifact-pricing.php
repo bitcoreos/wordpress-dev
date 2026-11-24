@@ -2,6 +2,10 @@
 /**
  * Template Name: Artifact Pricing
  * Description: Subscription plans for BITCORE Artifact Hub
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

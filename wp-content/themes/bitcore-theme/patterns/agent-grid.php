@@ -6,6 +6,9 @@
  * Description: Grid display for swarm agents.
  *
  * @package BITCORE_Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!-- wp:group {"className":"bitcore-dashboard__agents"} -->

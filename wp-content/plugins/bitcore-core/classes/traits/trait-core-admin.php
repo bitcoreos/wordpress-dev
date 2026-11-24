@@ -31,7 +31,7 @@ trait BITCORE_Core_Admin_Trait {
     }
 
     public function admin_page(): void { include BITCORE_PATH . '/admin/dashboard.php'; }
-    public function agents_page(): void { include BITCORE_PATH . '/admin/agents.php'; }
+    public function agents_page(): void { include BITCORE_PATH . '/admin/agents-models.php'; }
     public function mcp_page(): void { include BITCORE_PATH . '/admin/mcp.php'; }
     public function settings_page(): void { include BITCORE_PATH . '/admin/settings.php'; }
 

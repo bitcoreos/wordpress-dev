@@ -6,6 +6,9 @@
  * WP-Discourse owns SSO; this template only calls the BITCORE login adapter.
  *
  * @package bitcore-theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

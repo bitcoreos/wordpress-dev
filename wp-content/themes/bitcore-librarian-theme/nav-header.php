@@ -2,6 +2,10 @@
 /**
  * Navigation Header for BITCORE WordPress Surface
  * Include this in all page templates
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <nav class="bitcore-nav">

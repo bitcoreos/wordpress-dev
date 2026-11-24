@@ -4,6 +4,8 @@
  * Personal SaaS dashboard — my tasks, posts, agents, and activity.
  * @package bitcore-theme
  * @since 1.2.1
+ * @version    1.0.0
+ * @author     coraline
  */
 if (!is_user_logged_in()) {
     wp_redirect(bitcore_get_login_url($_SERVER['REQUEST_URI']));

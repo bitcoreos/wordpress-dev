@@ -1,3 +1,13 @@
+<?php
+/**
+ * Work page styles partial.
+ *
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
+ */
+?>
         :root {
             --bg-primary: #0a0a0f;
             --bg-secondary: #12121a;

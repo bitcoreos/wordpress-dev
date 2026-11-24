@@ -60,7 +60,7 @@ add_action('admin_menu', function() {
         'Models',
         'manage_options',
         'bitcore-models',
-        function() { require_once BITCORE_PATH . 'admin/models.php'; }
+        function() { require_once BITCORE_PATH . 'admin/agents-models.php'; }
     );
     
     // Agents - Agent registration/configuration
@@ -70,7 +70,7 @@ add_action('admin_menu', function() {
         'Agents',
         'manage_options',
         'bitcore-agents',
-        function() { require_once BITCORE_PATH . 'admin/agents.php'; }
+        function() { require_once BITCORE_PATH . 'admin/agents-models.php'; }
     );
     
     // Internal Agents
@@ -80,7 +80,7 @@ add_action('admin_menu', function() {
         'Internal Agents',
         'manage_options',
         'bitcore-internal',
-        function() { require_once BITCORE_PATH . 'admin/internal-agents.php'; }
+        function() { require_once BITCORE_PATH . 'admin/agents-models.php'; }
     );
     
     // MCP - MCP server configuration

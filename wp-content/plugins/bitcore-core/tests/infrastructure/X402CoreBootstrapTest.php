@@ -1,4 +1,13 @@
 <?php
+/**
+ * X402corebootstraptest.
+ *
+ * @package    Bitcore\Tests
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
+ */
+
 declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);

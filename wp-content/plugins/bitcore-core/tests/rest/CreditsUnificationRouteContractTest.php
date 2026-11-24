@@ -6,6 +6,10 @@
  * /bitcore/v1/credits. The legacy BudgetManager/schema may remain as an
  * internal compatibility layer, but /budget must not be registered, advertised,
  * or consumed by production UI assets.
+ * @package    Bitcore\Tests
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 final class CreditsUnificationRouteContractTest {
     private string $root;

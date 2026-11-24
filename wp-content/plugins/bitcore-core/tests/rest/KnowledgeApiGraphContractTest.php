@@ -12,6 +12,10 @@
  *   GET /wp-json/bitcore/v1/knowledge/edges -> { edges: [...] }
  *   POST /wp-json/bitcore/v1/context/search -> { items: [...] }
  *   POST /wp-json/bitcore/v1/context -> { success: true, context: {...} }
+ * @package    Bitcore\Tests
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 
 declare(strict_types=1);

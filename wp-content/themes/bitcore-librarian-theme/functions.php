@@ -3,6 +3,9 @@
  * BITCORE Librarian Theme Functions
  * Enterprise-grade WordPress theme for AI-Human Convergence Platform
  * @version 1.1.0
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @author     coraline
  */
 
 // Prevent direct access

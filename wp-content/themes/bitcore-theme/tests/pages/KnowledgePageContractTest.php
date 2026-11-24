@@ -1,4 +1,13 @@
 <?php
+/**
+ * Knowledgepagecontracttest.
+ *
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
+ */
+
 declare(strict_types=1);
 
 final class KnowledgePageContractTest {

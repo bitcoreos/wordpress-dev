@@ -5,6 +5,10 @@
  * Verifies the visible dashboard credits badge consumes the canonical Credits API,
  * not the legacy Budget API. This is a static contract test because the dashboard
  * page embeds its client code inline.
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 final class DashboardCreditsContractTest {
     private string $source;

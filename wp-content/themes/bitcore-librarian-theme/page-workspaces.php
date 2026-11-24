@@ -4,6 +4,8 @@
  * Description: RAG workspace management and document querying interface
  * @package bitcore-librarian-theme
  * @since 1.0.0
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

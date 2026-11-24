@@ -1,3 +1,13 @@
+<?php
+/**
+ * Agents grid styles partial.
+ *
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
+ */
+?>
 
         /* Agent Grid */
         .agent-grid {

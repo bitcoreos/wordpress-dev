@@ -103,12 +103,6 @@ parameters:
 			path: wp-content/plugins/bitcore-core/classes/core.php
 
 		-
-			message: '#^Path in include\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core//admin/agents\.php" is not a file or it does not exist\.$#'
-			identifier: include.fileNotFound
-			count: 1
-			path: wp-content/plugins/bitcore-core/classes/core.php
-
-		-
 			message: '#^Property BITCORE_Core\:\:\$options \(array\|null\) is never assigned array so it can be removed from the property type\.$#'
 			identifier: property.unusedType
 			count: 1
@@ -845,24 +839,6 @@ parameters:
 			identifier: smaller.alwaysTrue
 			count: 1
 			path: wp-content/plugins/bitcore-core/infrastructure/webhooks/traits/trait-webhook-signature.php
-
-		-
-			message: '#^Path in require_once\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core/admin/agents\.php" is not a file or it does not exist\.$#'
-			identifier: requireOnce.fileNotFound
-			count: 1
-			path: wp-content/plugins/bitcore-core/menu-registration.php
-
-		-
-			message: '#^Path in require_once\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core/admin/internal\-agents\.php" is not a file or it does not exist\.$#'
-			identifier: requireOnce.fileNotFound
-			count: 1
-			path: wp-content/plugins/bitcore-core/menu-registration.php
-
-		-
-			message: '#^Path in require_once\(\) "/tmp/gc/repo/wp\-content/plugins/bitcore\-core/admin/models\.php" is not a file or it does not exist\.$#'
-			identifier: requireOnce.fileNotFound
-			count: 1
-			path: wp-content/plugins/bitcore-core/menu-registration.php
 
 		-
 			message: '#^Variable \$statement in empty\(\) always exists and is not falsy\.$#'

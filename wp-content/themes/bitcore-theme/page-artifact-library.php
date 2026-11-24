@@ -2,6 +2,10 @@
 /**
  * Template Name: Artifact Library
  * Description: User's saved artifacts with search/filter
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

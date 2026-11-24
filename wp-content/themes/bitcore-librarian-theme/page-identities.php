@@ -4,6 +4,8 @@
  * Description: Agent identity management and status dashboard
  * @package bitcore-librarian-theme
  * @since 1.0.0
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

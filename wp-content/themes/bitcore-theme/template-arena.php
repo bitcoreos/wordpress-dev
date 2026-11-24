@@ -4,6 +4,9 @@
  * Public AI battle arena and benchmark surface.
  *
  * @package bitcore-theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

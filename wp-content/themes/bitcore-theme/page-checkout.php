@@ -2,6 +2,10 @@
 /**
  * Template Name: Task Checkout
  * Paperclip Integration - Exclusive Execution Status
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 get_header();
 ?>

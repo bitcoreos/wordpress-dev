@@ -2,6 +2,10 @@
 /**
  * Template Name: Artifact Marketplace
  * Description: Browse, buy, and sell artifacts
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 ?>
 <!DOCTYPE html>

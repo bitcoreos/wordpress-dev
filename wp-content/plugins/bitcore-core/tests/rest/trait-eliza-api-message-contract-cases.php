@@ -1,4 +1,13 @@
 <?php
+/**
+ * Trait eliza api message contract cases.
+ *
+ * @package    Bitcore\Tests
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
+ */
+
 declare(strict_types=1);
 
 /**

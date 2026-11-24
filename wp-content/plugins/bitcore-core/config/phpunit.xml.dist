@@ -5,7 +5,6 @@
     bootstrap="../tests/bootstrap.php"
     backupGlobals="false"
     colors="false"
-    cacheDirectory="../.phpunit.cache-wp"
 >
     <!--
         WordPress engine (PHPUnit 9.6).

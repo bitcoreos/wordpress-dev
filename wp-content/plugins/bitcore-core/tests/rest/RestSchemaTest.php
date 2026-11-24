@@ -5,6 +5,8 @@
  *
  * @package BITCORE\Tests\REST
  * @since 1.3.0
+ * @version    1.0.0
+ * @author     coraline
  */
 
 declare(strict_types=1);

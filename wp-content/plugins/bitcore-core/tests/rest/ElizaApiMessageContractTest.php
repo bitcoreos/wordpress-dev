@@ -8,6 +8,10 @@
  * These tests intentionally avoid live WordPress, network, database, and ElizaOS.
  * They assert observable bridge behavior: request path, payload contract, response
  * channel tracking, and user-meta side effects.
+ * @package    Bitcore\Tests
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 
 declare(strict_types=1);

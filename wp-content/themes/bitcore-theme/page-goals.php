@@ -2,6 +2,10 @@
 /**
  * Template Name: Goals Hierarchy
  * Paperclip Integration - Mission → Objective → Task Tree
+ * @package    Bitcore\Theme
+ * @since      2026.11.23
+ * @version    1.0.0
+ * @author     coraline
  */
 get_header();
 ?>
